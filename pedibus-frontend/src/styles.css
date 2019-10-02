@@ -1,1 +1,41 @@
 /* You can add global styles to this file, and also import other style files */
+@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+
+body { 
+  font-family: Roboto, Arial, sans-serif;
+  margin: 0;
+}
+
+.basic-container {
+  padding: 30px;
+}
+
+button {
+    font-family: Arial;
+    background-color: #eee;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    cursor: hand;
+}
+button:hover {
+    background-color: #cfd8dc;
+}
+button:disabled {
+    background-color: #eee;
+    color: #aaa;
+    cursor: auto;
+}
+
+.error-snackbar {
+  color: white;
+  background: #D10D00;
+  font-weight: bolder;
+}
+
+.success-snackbar {
+  color: white;
+  background: #0d9025;
+  font-weight: bolder;
+}
