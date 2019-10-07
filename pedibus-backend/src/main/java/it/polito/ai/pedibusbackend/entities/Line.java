@@ -12,10 +12,9 @@ import java.util.List;
 public class Line {
     @Id
     @GeneratedValue
-    @Column(name = "Id")
     private Long id;
 
-    @Column(name = "Name", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @OneToMany(mappedBy = "line")

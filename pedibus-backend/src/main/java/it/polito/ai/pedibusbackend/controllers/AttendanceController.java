@@ -19,36 +19,36 @@ import java.util.Map;
 
 @RestController
 public class AttendanceController {
-    @Autowired
-    private AttendanceService attendanceService;
-
-    @RequestMapping(value = "/attendances/{lineName}/{date}", method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Long> createAttendance(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
-                                               @RequestBody @Valid AttendanceDTO attendanceDTO, BindingResult bindingResult,
-                                               HttpServletResponse response) throws BadRequestException, NotFoundException {
-        Map<String, Long> responseBody = new HashMap<>();
-
-        if(bindingResult.hasErrors()) {
-            StringBuilder errMsg = new StringBuilder("Invalid format of the request body:");
-            for (FieldError err : bindingResult.getFieldErrors()) {
-                errMsg.append(" " + err.getField() + ": " + err.getDefaultMessage() + ";");
-            }
-            throw new BadRequestException(errMsg.toString());
-        }
-
-        Long attendanceId = attendanceService.addAttendance(attendanceDTO, lineName, date);
-        response.setStatus(HttpServletResponse.SC_CREATED);
-
-        responseBody.put("Id", attendanceId);
-        return responseBody;
-    }
-
-    @RequestMapping(value = "/attendances/{lineName}/{date}/{attendanceId}", method = RequestMethod.DELETE)
-    public void deleteAttendance(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
-                                  @PathVariable Long attendanceId) throws NotFoundException {
-
-        attendanceService.deleteAttendance(attendanceId, lineName, date);
-        return;
-    }
+//    @Autowired
+//    private AttendanceService attendanceService;
+//
+//    @RequestMapping(value = "/attendances/{lineName}/{date}", method = RequestMethod.POST,
+//            produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+//    public Map<String, Long> createAttendance(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+//                                               @RequestBody @Valid AttendanceDTO attendanceDTO, BindingResult bindingResult,
+//                                               HttpServletResponse response) throws BadRequestException, NotFoundException {
+//        Map<String, Long> responseBody = new HashMap<>();
+//
+//        if(bindingResult.hasErrors()) {
+//            StringBuilder errMsg = new StringBuilder("Invalid format of the request body:");
+//            for (FieldError err : bindingResult.getFieldErrors()) {
+//                errMsg.append(" " + err.getField() + ": " + err.getDefaultMessage() + ";");
+//            }
+//            throw new BadRequestException(errMsg.toString());
+//        }
+//
+//        Long attendanceId = attendanceService.addAttendance(attendanceDTO, lineName, date);
+//        response.setStatus(HttpServletResponse.SC_CREATED);
+//
+//        responseBody.put("Id", attendanceId);
+//        return responseBody;
+//    }
+//
+//    @RequestMapping(value = "/attendances/{lineName}/{date}/{attendanceId}", method = RequestMethod.DELETE)
+//    public void deleteAttendance(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+//                                  @PathVariable Long attendanceId) throws NotFoundException {
+//
+//        attendanceService.deleteAttendance(attendanceId, lineName, date);
+//        return;
+//    }
 }

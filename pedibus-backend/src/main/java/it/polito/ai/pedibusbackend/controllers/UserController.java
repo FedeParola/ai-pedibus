@@ -27,10 +27,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -70,69 +67,69 @@ public class UserController {
         }
     }
 
-    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void register(@RequestBody @Valid RegistrationDTO registrationDTO, HttpServletRequest request) throws BadRequestException {
-        /* Check password confirmation */
-        if (!registrationDTO.getPass().equals(registrationDTO.getConfPass())) {
-            throw new BadRequestException("Password confirmation doesn't match");
-        }
-
-        String uuid = userService.registerUser(registrationDTO);
-
-        /* Build the confirmation URL */
-        String requestUrl = request.getRequestURL().toString();
-        String confirmUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/confirm/" + uuid;
-
-        mailService.sendConfirmationMail(registrationDTO.getEmail(), confirmUrl);
-
-        return;
-    }
-
-    @GetMapping(value = "/confirm/{randomUUID}")
-    public ModelAndView confirm(@PathVariable String randomUUID) throws NotFoundException {
-        userService.confirmUser(randomUUID);
-
-        ModelAndView response = new ModelAndView();
-        response.setViewName("accountConfirmed");
-
-        return response;
-    }
-
-    @PostMapping(value = "/recover", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void recover(@RequestBody Map<String, String> emailMap, HttpServletRequest request){
-
-        String email = emailMap.get("email");
-        String uuid = userService.createRecoverToken(email);
-        if(uuid != null)
-        {
-            String requestUrl = request.getRequestURL().toString();
-            String recoverUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/recover/" + uuid;
-            mailService.sendRecoverMail(email, recoverUrl);
-        }
-
-        return;
-    }
-
-    @GetMapping(value = "/recover/{randomUUID}", produces = MediaType.TEXT_HTML_VALUE)
-    public ModelAndView getPassChangeForm(@PathVariable String randomUUID){
-        ModelAndView response = new ModelAndView();
-        response.getModel().put("randomUUID", randomUUID);
-        response.setViewName("passChangeForm");
-        return response;
-    }
-
-    @PostMapping(value = "/recover/{randomUUID}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public void postNewPass(RecoverDTO recoverDTO, @PathVariable String randomUUID) throws NotFoundException {
-        String newPass = recoverDTO.getPass();
-        String confPass = recoverDTO.getConfPass();
-        Matcher m = pattern.matcher(newPass);
-
-        if (newPass == null || confPass == null || !(newPass.equals(recoverDTO.getConfPass()) && m.matches())) {
-            throw new NotFoundException();
-        }
-
-        userService.tryChangePassword(randomUUID, newPass);
-    }
+//    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
+//    public void register(@RequestBody @Valid RegistrationDTO registrationDTO, HttpServletRequest request) throws BadRequestException {
+//        /* Check password confirmation */
+//        if (!registrationDTO.getPass().equals(registrationDTO.getConfPass())) {
+//            throw new BadRequestException("Password confirmation doesn't match");
+//        }
+//
+//        String uuid = userService.registerUser(registrationDTO);
+//
+//        /* Build the confirmation URL */
+//        String requestUrl = request.getRequestURL().toString();
+//        String confirmUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/confirm/" + uuid;
+//
+//        mailService.sendConfirmationMail(registrationDTO.getEmail(), confirmUrl);
+//
+//        return;
+//    }
+//
+//    @GetMapping(value = "/confirm/{randomUUID}")
+//    public ModelAndView confirm(@PathVariable String randomUUID) throws NotFoundException {
+//        userService.confirmUser(randomUUID);
+//
+//        ModelAndView response = new ModelAndView();
+//        response.setViewName("accountConfirmed");
+//
+//        return response;
+//    }
+//
+//    @PostMapping(value = "/recover", consumes = MediaType.APPLICATION_JSON_VALUE)
+//    public void recover(@RequestBody Map<String, String> emailMap, HttpServletRequest request){
+//
+//        String email = emailMap.get("email");
+//        String uuid = userService.createRecoverToken(email);
+//        if(uuid != null)
+//        {
+//            String requestUrl = request.getRequestURL().toString();
+//            String recoverUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/recover/" + uuid;
+//            mailService.sendRecoverMail(email, recoverUrl);
+//        }
+//
+//        return;
+//    }
+//
+//    @GetMapping(value = "/recover/{randomUUID}", produces = MediaType.TEXT_HTML_VALUE)
+//    public ModelAndView getPassChangeForm(@PathVariable String randomUUID){
+//        ModelAndView response = new ModelAndView();
+//        response.getModel().put("randomUUID", randomUUID);
+//        response.setViewName("passChangeForm");
+//        return response;
+//    }
+//
+//    @PostMapping(value = "/recover/{randomUUID}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+//    public void postNewPass(RecoverDTO recoverDTO, @PathVariable String randomUUID) throws NotFoundException {
+//        String newPass = recoverDTO.getPass();
+//        String confPass = recoverDTO.getConfPass();
+//        Matcher m = pattern.matcher(newPass);
+//
+//        if (newPass == null || confPass == null || !(newPass.equals(recoverDTO.getConfPass()) && m.matches())) {
+//            throw new NotFoundException();
+//        }
+//
+//        userService.tryChangePassword(randomUUID, newPass);
+//    }
 
     @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<String> getUsers(@RequestParam("page") Optional<Integer> page, @RequestParam("size") Optional<Integer> size)
@@ -140,28 +137,27 @@ public class UserController {
         return userService.getAllUsers(page, size);
     }
 
-    @PutMapping(value = "/users/{userID}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void modifyUserRole(@PathVariable String userID,@RequestBody @Valid AuthorizationDTO authorizationDTO)
-            throws BadRequestException, ForbiddenException {
-        //retrieve username of currently logged user
+    @PostMapping(value = "users/{userId}/lines", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void addAdminLines(@PathVariable String userId, @RequestBody Set<Long> lines)
+            throws BadRequestException, NotFoundException, ForbiddenException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if(authorizationDTO.getAction().equals("GRANT")){
-            userService.grantUser(userID, authorizationDTO, loggedUser);
-        }else if(authorizationDTO.getAction().equals("REVOKE")){
-            userService.revokeUser(userID,authorizationDTO,loggedUser);
-        }else{
-            throw new BadRequestException();
-        }
-
-        return;
+        userService.addAdminLines(userId, lines, loggedUser);
     }
 
-    @GetMapping(value = "/register/{userID}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String,String> getUser(@PathVariable String userID) throws NotFoundException {
-        Map<String,String> returnedBody = new HashMap<>();
-        returnedBody.put("email",userService.getUser(userID));
-        return returnedBody;
+    @DeleteMapping(value="users/{userId}/lines/{lineId}")
+    public void removeAdminLine(@PathVariable String userId, @PathVariable Long lineId)
+            throws BadRequestException, NotFoundException, ForbiddenException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        userService.removeAdminLine(userId, lineId, loggedUser);
     }
+//
+//    @GetMapping(value = "/register/{userID}", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public Map<String,String> getUser(@PathVariable String userID) throws NotFoundException {
+//        Map<String,String> returnedBody = new HashMap<>();
+//        returnedBody.put("email",userService.getUser(userID));
+//        return returnedBody;
+//    }
 
 }

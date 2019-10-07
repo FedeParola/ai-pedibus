@@ -14,18 +14,18 @@ import java.util.Set;
 
 @RestController
 public class LineController {
-    @Autowired
-    private LineService lineService;
-
-    @RequestMapping(value = "/lines", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Set<String> getLines() {
-        return lineService.getLineNames();
-    }
-
-    @RequestMapping(value = "/lines/{lineName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public LineDTO getLine(@PathVariable String lineName) throws NotFoundException {
-        LineDTO line = lineService.getLine(lineName);
-
-        return line;
-    }
+//    @Autowired
+//    private LineService lineService;
+//
+//    @RequestMapping(value = "/lines", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+//    public Set<String> getLines() {
+//        return lineService.getLineNames();
+//    }
+//
+//    @RequestMapping(value = "/lines/{lineName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+//    public LineDTO getLine(@PathVariable String lineName) throws NotFoundException {
+//        LineDTO line = lineService.getLine(lineName);
+//
+//        return line;
+//    }
 }

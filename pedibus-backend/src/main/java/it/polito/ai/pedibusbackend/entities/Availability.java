@@ -3,17 +3,13 @@ package it.polito.ai.pedibusbackend.entities;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Data
-public class Pupil {
+public class Availability {
     @Id
     @GeneratedValue
     private Long id;
-
-    @Column(nullable = false)
-    private String name;
 
     @ManyToOne
     @JoinColumn(nullable = false)
@@ -21,8 +17,12 @@ public class Pupil {
 
     @ManyToOne
     @JoinColumn(nullable = false)
-    private Line line;
+    private Ride ride;
 
-    @OneToMany(mappedBy = "pupil")
-    private List<Reservation> reservations;
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private Stop stop;
+
+    @Column(nullable = false)
+    private Character status; // 'N': New, 'A': Assigned, 'C': Confirmed
 }

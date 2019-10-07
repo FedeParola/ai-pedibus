@@ -7,6 +7,7 @@ import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AuthorizationManager {
@@ -17,13 +18,26 @@ public class AuthorizationManager {
     }
 
     public static void authorizeLineAccess(User user, Line line) throws ForbiddenException {
-        List<String> userLinesNames = new ArrayList<>();
+        authorizeLineAccess(user, line.getId());
+    }
 
+    public static void authorizeLineAccess(User user, Long lineId) throws ForbiddenException {
         if(!user.getRoles().contains("ROLE_SYSTEM-ADMIN")) {
             if(!(user.getLines().stream()
-                                .map((s)-> s.getName())
-                                .collect(Collectors.toList())
-                                .contains(line.getName()))){
+                    .map((l)-> l.getId())
+                    .collect(Collectors.toList())
+                    .contains(lineId))){
+                throw new ForbiddenException();
+            }
+        }
+    }
+
+    public static void authorizeLinesAccess(User user, Set<Long> lineIds) throws ForbiddenException {
+        if(!user.getRoles().contains("ROLE_SYSTEM-ADMIN")) {
+            if(!(user.getLines().stream()
+                    .map((l)-> l.getId())
+                    .collect(Collectors.toList())
+                    .containsAll(lineIds))) {
                 throw new ForbiddenException();
             }
         }

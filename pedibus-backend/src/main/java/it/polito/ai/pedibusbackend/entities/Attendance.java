@@ -10,20 +10,22 @@ import java.sql.Date;
 public class Attendance {
     @Id
     @GeneratedValue
-    @Column(name = "Id")
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "PupilId", nullable = false)
+    @JoinColumn(nullable = false)
     private Pupil pupil;
 
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private Ride ride;
+
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private Stop stop;
+
     @OneToOne
-    @JoinColumn(name = "ReservationId", nullable = true)
+    @JoinColumn(nullable = true)
     private Reservation reservation;
 
-    @Column(name = "Date", nullable = false)
-    private Date date;
-
-    @Column(name = "Direction", nullable = false)
-    private Character direction;
 }

@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,14 +25,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
 @Service
+@DependsOn("lineService")
 public class UserService implements InitializingBean, UserDetailsService {
     private static final long CONF_TOKEN_EXPIRY_HOURS = 24;
     private static final long RECOVER_TOKEN_EXPIRY_MIN = 30;
@@ -50,129 +49,131 @@ public class UserService implements InitializingBean, UserDetailsService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private EntityManager entityManager;
-
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
-    public String registerUser(RegistrationDTO registrationDTO) throws BadRequestException {
-        /* Check duplicate user */
-        User user = userRepository.findById(registrationDTO.getEmail()).orElse(null);
-        if (user != null) {
-            if (user.isEnabled()) {
-                throw new BadRequestException("Email " + registrationDTO.getEmail() + " already registered");
-
-            /* Check if user isn't confirmed and confirmation is expired */
-            } else {
-                ConfirmationToken token = confirmationTokenRepository.findByUser(user).orElse(null);
-
-                /* User disabled for other reason or waiting for confirmation */
-                if (token == null || !token.isExpired()) {
-                    throw new BadRequestException("Email " + registrationDTO.getEmail() + " already registered");
-
-                /* Expired token, remove user and token and proceed with registration */
-                } else {
-                    confirmationTokenRepository.delete(token);
-                    userRepository.delete(user);
-                }
-            }
-        }
-
-        /* Store the user in disabled state, with USER role */
-        ArrayList<String> roles = new ArrayList<>();
-        roles.add("ROLE_USER");
-        user = User.builder().email(registrationDTO.getEmail())
-                .password(passwordEncoder.encode(registrationDTO.getPass()))
-                .enabled(false)
-                .roles(roles)
-                .build();
-        userRepository.save(user);
-
-        /* Necessary, otherwise the system tries to persist the token before the user and returns an error */
-        entityManager.flush();
-
-        /* Generate and store confirmation token */
-        String uuid = UUID.randomUUID().toString(); // Random UUID
-        ConfirmationToken token = new ConfirmationToken();
-        token.setUser(user);
-        token.setUuid(uuid);
-        token.setExpiryDate(new Timestamp(System.currentTimeMillis() + CONF_TOKEN_EXPIRY_HOURS*60*60*1000));
-        confirmationTokenRepository.save(token);
-
-        return uuid;
-    }
-
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
-    public void confirmUser(String uuid) throws NotFoundException {
-        ConfirmationToken token = confirmationTokenRepository.findByUuid(uuid).orElseThrow(() -> new NotFoundException());
-
-        User user = token.getUser();
-
-        if (token.isExpired()) {
-            /* Delete token and user */
-            confirmationTokenRepository.delete(token);
-            userRepository.delete(user);
-
-            throw new NotFoundException();
-        }
-
-        /* Enable the user */
-        user.setEnabled(true);
-        userRepository.save(user);
-
-        /* Delete the token */
-        confirmationTokenRepository.delete(token);
-
-        return;
-    }
-
-    public String createRecoverToken(String email) {
-        String uuid = UUID.randomUUID().toString();
-
-        RecoverToken token = new RecoverToken();
-        User u = userRepository.findById(email).orElse(null);
-
-        if(u == null)
-        {
-            return null;
-        }
-
-        token.setUser(u);
-        token.setUuid(uuid);
-        token.setExpiryDate(new Timestamp(System.currentTimeMillis() + RECOVER_TOKEN_EXPIRY_MIN*60*1000));
-        recoverTokenRepository.save(token);
-
-        return uuid;
-    }
-
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
-    public void tryChangePassword(String UUID, String newPass) throws NotFoundException {
-        RecoverToken token = recoverTokenRepository.findByUuid(UUID)
-                .orElseThrow(()->new NotFoundException("Recover token with UUID " + UUID + " doesn't exist!"));
-
-        if (token.isExpired()) {
-            recoverTokenRepository.delete(token);
-            throw new NotFoundException("Recover token with UUID " + UUID + " has expired!");
-
-        } else {
-            User user = token.getUser();
-            user.setPassword(passwordEncoder.encode(newPass));
-            userRepository.save(user);
-            recoverTokenRepository.delete(token);
-        }
-
-        return;
-    }
+//
+//    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
+//    public String registerUser(RegistrationDTO registrationDTO) throws BadRequestException {
+//        /* Check duplicate user */
+//        User user = userRepository.findById(registrationDTO.getEmail()).orElse(null);
+//        if (user != null) {
+//            if (user.isEnabled()) {
+//                throw new BadRequestException("Email " + registrationDTO.getEmail() + " already registered");
+//
+//            /* Check if user isn't confirmed and confirmation is expired */
+//            } else {
+//                ConfirmationToken token = confirmationTokenRepository.findByUser(user).orElse(null);
+//
+//                /* User disabled for other reason or waiting for confirmation */
+//                if (token == null || !token.isExpired()) {
+//                    throw new BadRequestException("Email " + registrationDTO.getEmail() + " already registered");
+//
+//                /* Expired token, remove user and token and proceed with registration */
+//                } else {
+//                    confirmationTokenRepository.delete(token);
+//                    userRepository.delete(user);
+//                }
+//            }
+//        }
+//
+//        /* Store the user in disabled state, with USER role */
+//        ArrayList<String> roles = new ArrayList<>();
+//        roles.add("ROLE_USER");
+//        user = User.builder().email(registrationDTO.getEmail())
+//                .password(passwordEncoder.encode(registrationDTO.getPass()))
+//                .enabled(false)
+//                .roles(roles)
+//                .build();
+//        userRepository.save(user);
+//
+//        /* Necessary, otherwise the system tries to persist the token before the user and returns an error */
+//        entityManager.flush();
+//
+//        /* Generate and store confirmation token */
+//        String uuid = UUID.randomUUID().toString(); // Random UUID
+//        ConfirmationToken token = new ConfirmationToken();
+//        token.setUser(user);
+//        token.setUuid(uuid);
+//        token.setExpiryDate(new Timestamp(System.currentTimeMillis() + CONF_TOKEN_EXPIRY_HOURS*60*60*1000));
+//        confirmationTokenRepository.save(token);
+//
+//        return uuid;
+//    }
+//
+//    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
+//    public void confirmUser(String uuid) throws NotFoundException {
+//        ConfirmationToken token = confirmationTokenRepository.findByUuid(uuid).orElseThrow(() -> new NotFoundException());
+//
+//        User user = token.getUser();
+//
+//        if (token.isExpired()) {
+//            /* Delete token and user */
+//            confirmationTokenRepository.delete(token);
+//            userRepository.delete(user);
+//
+//            throw new NotFoundException();
+//        }
+//
+//        /* Enable the user */
+//        user.setEnabled(true);
+//        userRepository.save(user);
+//
+//        /* Delete the token */
+//        confirmationTokenRepository.delete(token);
+//
+//        return;
+//    }
+//
+//    public String createRecoverToken(String email) {
+//        String uuid = UUID.randomUUID().toString();
+//
+//        RecoverToken token = new RecoverToken();
+//        User u = userRepository.findById(email).orElse(null);
+//
+//        if(u == null)
+//        {
+//            return null;
+//        }
+//
+//        token.setUser(u);
+//        token.setUuid(uuid);
+//        token.setExpiryDate(new Timestamp(System.currentTimeMillis() + RECOVER_TOKEN_EXPIRY_MIN*60*1000));
+//        recoverTokenRepository.save(token);
+//
+//        return uuid;
+//    }
+//
+//    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
+//    public void tryChangePassword(String UUID, String newPass) throws NotFoundException {
+//        RecoverToken token = recoverTokenRepository.findByUuid(UUID)
+//                .orElseThrow(()->new NotFoundException("Recover token with UUID " + UUID + " doesn't exist!"));
+//
+//        if (token.isExpired()) {
+//            recoverTokenRepository.delete(token);
+//            throw new NotFoundException("Recover token with UUID " + UUID + " has expired!");
+//
+//        } else {
+//            User user = token.getUser();
+//            user.setPassword(passwordEncoder.encode(newPass));
+//            userRepository.save(user);
+//            recoverTokenRepository.delete(token);
+//        }
+//
+//        return;
+//    }
 
     public List<String> getAllUsers(Optional<Integer> page, Optional<Integer> size) throws BadRequestException {
         List<String> users = new ArrayList<>();
 
-        if(page.isPresent() && size.isPresent()){
-            for (User u: userRepository.findAll(PageRequest.of(page.get(), size.get()))) {
+        if (page.isPresent() && size.isPresent()) {
+            for (User u : userRepository.findAll(PageRequest.of(page.get(), size.get()))) {
                 users.add(u.getEmail());
             }
-        }else if(!page.isPresent() && !size.isPresent()){
+
+        } else if (!page.isPresent() && !size.isPresent()) {
             for (User u: userRepository.findAll()) {
                 users.add(u.getEmail());
             }
-        }else{
+
+        } else {
             throw new BadRequestException();
         }
 
@@ -180,42 +181,53 @@ public class UserService implements InitializingBean, UserDetailsService {
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
-    public void grantUser(String userID, AuthorizationDTO authorizationDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
-        User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
-        User changingUser=userRepository.findById(userID).orElseThrow(() -> new BadRequestException());
+    public void addAdminLines(String userId, Set<Long> lineIds, UserDetails loggedUser)
+            throws BadRequestException, NotFoundException, ForbiddenException {
+        User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+        User changingUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundException());
 
+        if (lineIds.size() == 0) {
+            return;
+        }
 
-        AuthorizationManager.authorizeLineAccess(currentUser, lineRepository.getByName(authorizationDTO.getLineName()));
+        List<Long> currentLinesIds = changingUser.getLines().stream().map(l -> l.getId()).collect(Collectors.toList());
 
-        //check if not already ADMIN of another Line
-        if(!changingUser.getRoles().contains("ROLE_ADMIN")){
+        /* Get lines entities */
+        List<Line> lines = new ArrayList<>();
+        for (Long lineId : lineIds) {
+            if (!currentLinesIds.contains(lineId)) {
+                lines.add(lineRepository.findById(lineId).orElseThrow(() -> new BadRequestException()));
+            }
+        }
+
+        AuthorizationManager.authorizeLinesAccess(currentUser, lineIds);
+
+        if (!changingUser.getRoles().contains("ROLE_ADMIN")) {
             changingUser.getRoles().add("ROLE_ADMIN");
         }
-        changingUser.getLines().add(lineRepository.getByName(authorizationDTO.getLineName()));
 
-        userRepository.save(changingUser);
+        changingUser.getLines().addAll(lines);
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
-    public void revokeUser(String userID, AuthorizationDTO authorizationDTO, UserDetails loggedUser)
-            throws BadRequestException, ForbiddenException {
-        User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
-        User changingUser=userRepository.findById(userID).orElseThrow(() -> new BadRequestException());
+    public void removeAdminLine(String userId, Long lineId, UserDetails loggedUser)
+            throws BadRequestException, NotFoundException, ForbiddenException {
+        User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+        User changingUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundException());
 
-        AuthorizationManager.authorizeLineAccess(currentUser, lineRepository.getByName(authorizationDTO.getLineName()));
+        AuthorizationManager.authorizeLineAccess(currentUser, lineId);
 
-        if(changingUser.getLines().size()==1){
+        if (!changingUser.getLines().removeIf(l -> l.getId().equals(lineId))) {
+            throw new NotFoundException();
+        }
+
+        if(changingUser.getLines().size() == 0) {
             changingUser.getRoles().remove("ROLE_ADMIN");
         }
-        changingUser.getLines().remove(lineRepository.getByName(authorizationDTO.getLineName()));
-
-        userRepository.save(changingUser);
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        log.info("Inizializzazione!");
-
         Line line1 = lineRepository.getByName("Line1");
         Line line2 = lineRepository.getByName("Line2");
         User user;
@@ -227,7 +239,7 @@ public class UserService implements InitializingBean, UserDetailsService {
         /* Create Admin */
         roles = new ArrayList<>();
         roles.add("ROLE_SYSTEM-ADMIN");
-        persistNewUser("admin@email.it", roles, null, "Admin0");
+        persistNewUser("admin@email.it", "admin", "admin", roles, null, "Admin0");
 
         /* Create User0 */
         roles = new ArrayList<>();
@@ -235,7 +247,7 @@ public class UserService implements InitializingBean, UserDetailsService {
         roles.add("ROLE_ADMIN");
         roles.add("ROLE_USER");
         lines.add(line1);
-        user = persistNewUser("user0@email.it", roles, lines, "Password0");
+        user = persistNewUser("user0@email.it", "user0", "user0", roles, lines, "Password0");
 
         /* Create User0's pupils */
         persistNewPupil("Andrea", line1, user);
@@ -246,7 +258,7 @@ public class UserService implements InitializingBean, UserDetailsService {
         roles = new ArrayList<>();
         lines = new ArrayList<>();
         roles.add("ROLE_USER");
-        user = persistNewUser("user1@email.it", roles, lines, "Password1");
+        user = persistNewUser("user1@email.it", "user1", "user1", roles, lines, "Password1");
 
         /* Create User1's pupils */
         persistNewPupil("Luigi", line1, user);
@@ -258,7 +270,7 @@ public class UserService implements InitializingBean, UserDetailsService {
         roles.add("ROLE_ADMIN");
         roles.add("ROLE_USER");
         lines.add(line2);
-        user = persistNewUser("user2@email.it", roles, lines, "Password2");
+        user = persistNewUser("user2@email.it", "user2", "user2", roles, lines, "Password2");
 
         /* Create User2's pupils */
         persistNewPupil("Giovanni", line2, user);
@@ -269,17 +281,18 @@ public class UserService implements InitializingBean, UserDetailsService {
         roles = new ArrayList<>();
         lines = new ArrayList<>();
         roles.add("ROLE_USER");
-        user = persistNewUser("user3@email.it", roles, lines, "Password3");
+        user = persistNewUser("user3@email.it", "user3", "user3", roles, lines, "Password3");
 
         /* Create User0's pupils */
         persistNewPupil("Massimo", line2, user);
         persistNewPupil("Giorgia", line2, user);
-
     }
 
-    User persistNewUser(String email, List<String> roles, List<Line> lines, String password) {
+    User persistNewUser(String email, String name, String surname, List<String> roles, List<Line> lines, String password) {
         User user = User.builder()
                 .email(email)
+                .name(name)
+                .surname(surname)
                 .enabled(true)
                 .roles(roles)
                 .lines(lines)

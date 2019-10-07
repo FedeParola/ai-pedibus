@@ -10,18 +10,18 @@ import java.sql.Date;
 public class Reservation {
     @Id
     @GeneratedValue
-    @Column(name = "Id")
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "PupilId", nullable = false)
+    @JoinColumn(nullable = false)
     private Pupil pupil;
 
-    @Column(name = "Date", nullable = false)
-    private Date date;
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private Ride ride;
 
     @ManyToOne
-    @JoinColumn(name = "StopId", nullable = false)
+    @JoinColumn(nullable = false)
     private Stop stop;
 
     @OneToOne(mappedBy = "reservation")

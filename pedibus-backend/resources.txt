@@ -1,0 +1,23 @@
+/users                              GET, POST
+/users/{userId}                     GET, PUT
+/users/{userId}/pupils              GET
+/users/{userId}/lines               POST
+/users/{userId}/lines/{lineId}      DELETE
+/pupils                             POST
+/pupils/{pupilId}                   GET, PUT, DELETE
+/pupils/{pupilId}/reservations      GET
+/lines                              GET
+/lines/{lineId}                     GET
+/lines/{lineId}/rides               GET
+/lines/{lineId}/pupils              GET
+/rides                              GET, POST
+/rides/{rideId}                     DELETE
+/rides/{rideId}/attendances         GET
+/rides/{rideId}/reservations        GET
+/rides/{rideId}/availabilities      GET
+/reservations                       POST
+/reservations/{reservationId}       PUT, DELETE
+/attendances                        POST
+/attendances/{attendanceId}         PUT, DELETE
+/availabilities                     POST
+/availabilities/{availabilityId}    PUT, DELETE

@@ -17,13 +17,18 @@ import java.util.List;
 @Builder
 public class User {
     @Id
-    @Column(name = "Email")
     private String email;
 
-    @Column(name = "Password", nullable = false)
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private String surname;
+
+    @Column(nullable = false)
     private String password;
 
-    @Column(name = "Enabled", nullable = false)
+    @Column(nullable = false)
     private boolean enabled;
 
     @ElementCollection(fetch = FetchType.EAGER)
