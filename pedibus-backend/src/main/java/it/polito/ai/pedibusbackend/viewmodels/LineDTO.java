@@ -11,6 +11,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LineDTO {
     @NotNull
+    private String email;
+    @NotNull
     private String name;
     @Valid
     private List<StopDTO> outwardStops;

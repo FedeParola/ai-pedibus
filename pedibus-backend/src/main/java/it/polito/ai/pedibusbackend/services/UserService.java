@@ -28,6 +28,8 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import java.sql.Date;
+
 
 @Service
 @DependsOn("lineService")
@@ -41,6 +43,8 @@ public class UserService implements InitializingBean, UserDetailsService {
     private LineRepository lineRepository;
     @Autowired
     private PupilRepository pupilRepository;
+    @Autowired
+    private RideRepository rideRepository;
     @Autowired
     private ConfirmationTokenRepository confirmationTokenRepository;
     @Autowired
@@ -228,8 +232,8 @@ public class UserService implements InitializingBean, UserDetailsService {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Line line1 = lineRepository.getByName("Line1");
-        Line line2 = lineRepository.getByName("Line2");
+        Line line1 = lineRepository.getById(Long.parseLong("1"));
+        Line line2 = lineRepository.getById(Long.parseLong("8"));
         User user;
         Pupil p;
         ArrayList<String> roles;
@@ -247,12 +251,17 @@ public class UserService implements InitializingBean, UserDetailsService {
         roles.add("ROLE_ADMIN");
         roles.add("ROLE_USER");
         lines.add(line1);
+        lines.add(line2);
         user = persistNewUser("user0@email.it", "user0", "user0", roles, lines, "Password0");
 
         /* Create User0's pupils */
         persistNewPupil("Andrea", line1, user);
         persistNewPupil("Federico", line1, user);
         persistNewPupil("Kamil", line1, user);
+
+        /* Create some rides for today */
+        persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'O', true);
+        persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'R', true);
 
         /* Create User1 */
         roles = new ArrayList<>();
@@ -307,6 +316,15 @@ public class UserService implements InitializingBean, UserDetailsService {
         p.setLine(line);
         p.setUser(user);
         pupilRepository.save(p);
+    }
+
+    void persistNewRide(Date date, Line line, Character direction, Boolean consolidated){
+        Ride r = new Ride();
+        r.setDate(date);
+        r.setLine(line);
+        r.setDirection(direction);
+        r.setConsolidated(consolidated);
+        rideRepository.save(r);
     }
 
     @Override

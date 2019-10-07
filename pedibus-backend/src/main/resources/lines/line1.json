@@ -1,36 +1,37 @@
 {
+	"email": "user0@email.it",
 	"name": "Line1",
 	"outwardStops": [
 		{
 			"name": "Ferrucci",
-			"position": 0,
+			"order": 0,
 			"time": "07:30"
 		},
 		{
 			"name": "Sabotino",
-			"position": 1,
+			"order": 1,
 			"time": "07:40"
 		},
 		{
-			"name": "Adriano",
-			"position": 2,
+			"name": "School",
+			"order": 2,
 			"time": "07:50"
 		}
 	],
 	"returnStops": [
 		{
-			"name": "Adriano",
-			"position": 0,
+			"name": "School",
+			"order": 0,
 			"time": "13:10"
 		},
 		{
 			"name": "Sabotino",
-			"position": 1,
+			"order": 1,
 			"time": "13:20"
 		},
 		{
 			"name": "Ferrucci",
-			"position": 2,
+			"order": 2,
 			"time": "13:30"
 		}
 	]

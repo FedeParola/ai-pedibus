@@ -3,11 +3,15 @@ package it.polito.ai.pedibusbackend.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.polito.ai.pedibusbackend.entities.Line;
+import it.polito.ai.pedibusbackend.entities.Pupil;
+import it.polito.ai.pedibusbackend.entities.Ride;
 import it.polito.ai.pedibusbackend.entities.Stop;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.repositories.LineRepository;
+import it.polito.ai.pedibusbackend.repositories.RideRepository;
 import it.polito.ai.pedibusbackend.repositories.StopRepository;
 import it.polito.ai.pedibusbackend.viewmodels.LineDTO;
+import it.polito.ai.pedibusbackend.viewmodels.RideDTO;
 import it.polito.ai.pedibusbackend.viewmodels.StopDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +30,7 @@ import java.net.URL;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @Service
@@ -39,51 +40,97 @@ public class LineService implements InitializingBean {
     private LineRepository lineRepository;
     @Autowired
     private StopRepository stopRepository;
-//
-//    public Set<String> getLineNames() {
-//        Set<String> names = new HashSet<>();
-//
-//        for (Line l: lineRepository.findAll()) {
-//            names.add(l.getName());
-//        }
-//
-//        return names;
-//    }
-//
-//    public LineDTO getLine(String lineName) throws NotFoundException {
-//        /* Get requested line */
-//        Line line = lineRepository.getByName(lineName);
-//        if(line == null) {
-//            throw new NotFoundException("Line " + lineName + " not found");
-//        }
-//
-//        LineDTO lineDTO = new LineDTO();
-//        List<StopDTO> outwardStops = new ArrayList<>();
-//        List<StopDTO> returnStops = new ArrayList<>();
-//
-//        /* Map every stop entity into a DTO and add it to the proper list */
-//        for (Stop stop: line.getStops()) {
-//            StopDTO stopDTO = new StopDTO();
-//
-//            stopDTO.setId(stop.getId());
-//            stopDTO.setName(stop.getName());
-//            stopDTO.setPosition(stop.getPosition());
-//            stopDTO.setTime(new SimpleDateFormat("HH:mm").format(stop.getTime()));
-//
-//            if(stop.getDirection() == 'O') {
-//                outwardStops.add(stopDTO);
-//            } else {
-//                returnStops.add(stopDTO);
-//            }
-//        }
-//
-//        /* Add stop lists to the line DTO */
-//        lineDTO.setOutwardStops(outwardStops);
-//        lineDTO.setReturnStops(returnStops);
-//
-//        return lineDTO;
-//    }
-//
+    @Autowired
+    private RideRepository rideRepository;
+
+    public List<Map<Long, String>> getLines() {
+        List<Map<Long, String>> lines = new ArrayList<>();
+        Map<Long, String> m;
+
+        for (Line l: lineRepository.findAll()) {
+            m = new HashMap<>();
+            m.put(l.getId(),l.getName());
+            lines.add(m);
+        }
+
+        return lines;
+    }
+
+    public LineDTO getLine(Long lineId) throws NotFoundException {
+        /* Get requested line */
+        Line line = lineRepository.getById(lineId);
+        if(line == null) {
+            throw new NotFoundException("Line " + lineId + " not found");
+        }
+
+        LineDTO lineDTO = new LineDTO();
+        List<StopDTO> outwardStops = new ArrayList<>();
+        List<StopDTO> returnStops = new ArrayList<>();
+
+        /* Map every stop entity into a DTO and add it to the proper list */
+        for (Stop stop: line.getStops()) {
+            StopDTO stopDTO = new StopDTO();
+
+            stopDTO.setId(stop.getId());
+            stopDTO.setName(stop.getName());
+            stopDTO.setOrder(stop.getOrder());
+            stopDTO.setTime(new SimpleDateFormat("HH:mm").format(stop.getTime()));
+
+            if(stop.getDirection() == 'O') {
+                outwardStops.add(stopDTO);
+            } else {
+                returnStops.add(stopDTO);
+            }
+        }
+
+        /* Add stop lists to the line DTO */
+        lineDTO.setOutwardStops(outwardStops);
+        lineDTO.setReturnStops(returnStops);
+
+        return lineDTO;
+    }
+
+    public List<RideDTO> getLineRides(Long lineId) throws NotFoundException {
+        List<RideDTO> rides = new ArrayList<>();
+        RideDTO rideDTO;
+
+        Line line = lineRepository.getById(lineId);
+        if(line == null) {
+            throw new NotFoundException("Line " + lineId + " not found");
+        }
+
+        for (Ride ride: rideRepository.getByLine(line)) {
+            rideDTO = new RideDTO();
+            rideDTO.setId(ride.getId());
+            rideDTO.setDate(ride.getDate());
+            rideDTO.setDirection(ride.getDirection());
+            rideDTO.setConsolidated(ride.getConsolidated());
+
+            rides.add(rideDTO);
+        }
+
+        return rides;
+    }
+
+    public List<Map<Long, String>> getLinePupils(Long lineId) throws NotFoundException{
+        List<Map<Long, String>> pupils = new ArrayList<>();
+        Map<Long, String> m;
+
+        /* Get requested line */
+        Line line = lineRepository.getById(lineId);
+        if(line == null) {
+            throw new NotFoundException("Line " + lineId + " not found");
+        }
+
+        for (Pupil p: line.getPupils()) {
+            m = new HashMap<>();
+            m.put(p.getId(),p.getName());
+            pupils.add(m);
+        }
+
+        return pupils;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
         /* Find lines dir resource */
@@ -155,7 +202,7 @@ public class LineService implements InitializingBean {
             for (StopDTO stopDTO: lineDTO.getOutwardStops()) {
                 Stop stop = new Stop();
                 stop.setName(stopDTO.getName());
-                stop.setOrder(stopDTO.getPosition());
+                stop.setOrder(stopDTO.getOrder());
                 stop.setDirection('O');
                 stop.setTime(new Time(sdf.parse(stopDTO.getTime()).getTime()));
                 stop.setLine(line);
@@ -169,7 +216,7 @@ public class LineService implements InitializingBean {
             for (StopDTO stopDTO: lineDTO.getReturnStops()) {
                 Stop stop = new Stop();
                 stop.setName(stopDTO.getName());
-                stop.setOrder(stopDTO.getPosition());
+                stop.setOrder(stopDTO.getOrder());
                 stop.setDirection('R');
                 stop.setTime(new Time(sdf.parse(stopDTO.getTime()).getTime()));
                 stop.setLine(line);
