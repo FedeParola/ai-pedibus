@@ -24,5 +24,5 @@ public class Availability {
     private Stop stop;
 
     @Column(nullable = false)
-    private Character status; // 'N': New, 'A': Assigned, 'C': Confirmed
+    private String status; // NEW, ASSIGNED, CONFIRMED, CONSOLIDATED
 }
