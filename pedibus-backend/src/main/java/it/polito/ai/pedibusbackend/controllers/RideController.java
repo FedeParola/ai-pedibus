@@ -9,6 +9,7 @@ import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.services.RideService;
 import it.polito.ai.pedibusbackend.viewmodels.NewRideDTO;
 import it.polito.ai.pedibusbackend.viewmodels.RideDTO;
+import it.polito.ai.pedibusbackend.viewmodels.UpdateRideDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -51,6 +52,15 @@ public class RideController {
         return rideId;
     }
 
+    @RequestMapping(value = "/rides/{rideId}", method = RequestMethod.PUT)
+    public void updateRide(@PathVariable Long rideId,
+                                  @RequestBody @Valid UpdateRideDTO ride) throws NotFoundException, BadRequestException, ForbiddenException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        rideService.consolidateRide(rideId, ride, loggedUser);
+
+        return;
+    }
+
     @RequestMapping(value = "/rides/{rideId}", method = RequestMethod.DELETE)
     public void deleteRide(@PathVariable Long rideId) throws NotFoundException, BadRequestException, ForbiddenException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -58,6 +68,7 @@ public class RideController {
         rideService.deleteRide(rideId, loggedUser);
         return;
     }
+
 
     @RequestMapping(value = "/rides/{rideId}/reservations", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Reservation> getRideReservations(@PathVariable Long rideId) throws NotFoundException, BadRequestException, ForbiddenException {

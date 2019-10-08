@@ -261,7 +261,7 @@ public class UserService implements InitializingBean, UserDetailsService {
 
         /* Create some rides for today */
         persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'O', true);
-        persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'R', true);
+        persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'R', false);
 
         /* Create User1 */
         roles = new ArrayList<>();
