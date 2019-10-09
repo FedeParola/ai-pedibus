@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        .errorMsg { color: red; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registration</h1>
+        <div class="row">
+            <div class="col">
+                <form method="post" th:action="${'/register/' + uuid}">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" name="name" value="" id="name" class="form-control" th:value="${name}">
+                        <p class="errorMsg" th:text="${errName}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="surname">Surname</label>
+                        <input type="text" name="surname" value="" id="surname" class="form-control" th:value="${surname}">
+                        <p class="errorMsg" th:text="${errSurname}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" value="" id="password" class="form-control">
+                        <p class="errorMsg" th:text="${errPassword}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="passwordConf">Confirm Password</label>
+                        <input type="password" name="passwordConf" value="" id="passwordConf" class="form-control">
+                        <p class="errorMsg" th:text="${errPasswordConf}"></p>
+                    </div>
+                    <div>
+                        <input type="submit" value="Register">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

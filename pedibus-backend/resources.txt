@@ -1,11 +1,11 @@
 /users                              GET, POST
 /users/{userId}                     GET, PUT
 /users/{userId}/availabilities      GET                     bool consolidated, long rideId
-/users/{userId}/pupils              GET
 /users/{userId}/lines               GET, POST
 /users/{userId}/lines/{lineId}      DELETE
+/users/{userId}/pupils              GET
 /pupils                             POST
-/pupils/{pupilId}                   GET, PUT, DELETE
+/pupils/{pupilId}                   PUT, DELETE
 /pupils/{pupilId}/reservations      GET
 /lines                              GET
 /lines/{lineId}                     GET
@@ -19,6 +19,6 @@
 /reservations                       POST
 /reservations/{reservationId}       PUT, DELETE
 /attendances                        POST
-/attendances/{attendanceId}         PUT, DELETE
+/attendances/{attendanceId}         DELETE
 /availabilities                     POST
 /availabilities/{availabilityId}    PUT, DELETE

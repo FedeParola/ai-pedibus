@@ -12,6 +12,12 @@ public class MailService {
     private JavaMailSender mailSender;
 
     @Async
+    public void sendRegistrationMail(String to, String registerUrl) {
+        sendMessage(to, "Pedibus account registration",
+                "Click the link below to complete the registation of your Pedibus account:\n" + registerUrl);
+    }
+
+    @Async
     public void sendConfirmationMail(String to, String confirmUrl) {
         sendMessage(to, "Pedibus account confirmation", "Click the link below to confirm your Pedibus account:\n" + confirmUrl);
     }

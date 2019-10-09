@@ -6,10 +6,7 @@ import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.security.jwt.JwtTokenProvider;
 import it.polito.ai.pedibusbackend.services.MailService;
 import it.polito.ai.pedibusbackend.services.UserService;
-import it.polito.ai.pedibusbackend.viewmodels.AuthorizationDTO;
-import it.polito.ai.pedibusbackend.viewmodels.LoginDTO;
-import it.polito.ai.pedibusbackend.viewmodels.RecoverDTO;
-import it.polito.ai.pedibusbackend.viewmodels.RegistrationDTO;
+import it.polito.ai.pedibusbackend.viewmodels.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +19,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -67,74 +65,138 @@ public class UserController {
         }
     }
 
-//    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-//    public void register(@RequestBody @Valid RegistrationDTO registrationDTO, HttpServletRequest request) throws BadRequestException {
-//        /* Check password confirmation */
-//        if (!registrationDTO.getPass().equals(registrationDTO.getConfPass())) {
-//            throw new BadRequestException("Password confirmation doesn't match");
-//        }
-//
-//        String uuid = userService.registerUser(registrationDTO);
-//
-//        /* Build the confirmation URL */
-//        String requestUrl = request.getRequestURL().toString();
-//        String confirmUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/confirm/" + uuid;
-//
-//        mailService.sendConfirmationMail(registrationDTO.getEmail(), confirmUrl);
-//
-//        return;
-//    }
-//
-//    @GetMapping(value = "/confirm/{randomUUID}")
-//    public ModelAndView confirm(@PathVariable String randomUUID) throws NotFoundException {
-//        userService.confirmUser(randomUUID);
-//
-//        ModelAndView response = new ModelAndView();
-//        response.setViewName("accountConfirmed");
-//
-//        return response;
-//    }
-//
-//    @PostMapping(value = "/recover", consumes = MediaType.APPLICATION_JSON_VALUE)
-//    public void recover(@RequestBody Map<String, String> emailMap, HttpServletRequest request){
-//
-//        String email = emailMap.get("email");
-//        String uuid = userService.createRecoverToken(email);
-//        if(uuid != null)
-//        {
-//            String requestUrl = request.getRequestURL().toString();
-//            String recoverUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/recover/" + uuid;
-//            mailService.sendRecoverMail(email, recoverUrl);
-//        }
-//
-//        return;
-//    }
-//
-//    @GetMapping(value = "/recover/{randomUUID}", produces = MediaType.TEXT_HTML_VALUE)
-//    public ModelAndView getPassChangeForm(@PathVariable String randomUUID){
-//        ModelAndView response = new ModelAndView();
-//        response.getModel().put("randomUUID", randomUUID);
-//        response.setViewName("passChangeForm");
-//        return response;
-//    }
-//
-//    @PostMapping(value = "/recover/{randomUUID}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-//    public void postNewPass(RecoverDTO recoverDTO, @PathVariable String randomUUID) throws NotFoundException {
-//        String newPass = recoverDTO.getPass();
-//        String confPass = recoverDTO.getConfPass();
-//        Matcher m = pattern.matcher(newPass);
-//
-//        if (newPass == null || confPass == null || !(newPass.equals(recoverDTO.getConfPass()) && m.matches())) {
-//            throw new NotFoundException();
-//        }
-//
-//        userService.tryChangePassword(randomUUID, newPass);
-//    }
+    @GetMapping(value = "/register/{uuid}")
+    public ModelAndView getRegistrationForm(@PathVariable String uuid) {
+        ModelAndView response = new ModelAndView();
+        response.getModel().put("uuid", uuid);
+        response.setViewName("registrationForm");
+
+        return response;
+    }
+
+    @PostMapping(value = "/register/{uuid}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ModelAndView register(@PathVariable String uuid,
+                                 @Valid RegistrationDTO registrationDTO,
+                                 BindingResult res) throws NotFoundException {
+        ModelAndView response = new ModelAndView();
+
+        /* Check form correctness */
+        if (res.hasErrors() || !registrationDTO.getPassword().equals(registrationDTO.getPasswordConf())) {
+
+            /* Send back registration form with error messages */
+            if (res.getFieldErrors("name").size() > 0 ) {
+                response.getModel().put("errName", "Missing field");
+            }
+            if (res.getFieldErrors("surname").size() > 0) {
+                response.getModel().put("errSurname", "Missing field");
+            }
+            if (res.getFieldErrors("password").size() > 0) {
+                response.getModel().put("errPassword", "The password must contain at least one uppercase," +
+                        "one lowercase character and a digit and be at least 6 characters long");
+            }
+            if (!registrationDTO.getPassword().equals(registrationDTO.getPasswordConf())) {
+                response.getModel().put("errPasswordConf", "Passwords not corresponding");
+            }
+
+            response.getModel().put("name", registrationDTO.getName());
+            response.getModel().put("surname", registrationDTO.getSurname());
+            response.getModel().put("uuid", uuid);
+            response.setViewName("registrationForm");
+
+        } else {
+            /* Register user */
+            userService.register(uuid, registrationDTO);
+            response.setViewName("registrationCompleted");
+        }
+
+        return response;
+    }
+
+    @PostMapping(value = "/recover", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void recover(@RequestBody Map<String, String> emailMap, HttpServletRequest request){
+
+        String email = emailMap.get("email");
+        String uuid = userService.createRecoverToken(email);
+        if(uuid != null)
+        {
+            String requestUrl = request.getRequestURL().toString();
+            String recoverUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/recover/" + uuid;
+            mailService.sendRecoverMail(email, recoverUrl);
+        }
+
+        return;
+    }
+
+    @GetMapping(value = "/recover/{randomUUID}", produces = MediaType.TEXT_HTML_VALUE)
+    public ModelAndView getPassChangeForm(@PathVariable String randomUUID){
+        ModelAndView response = new ModelAndView();
+        response.getModel().put("randomUUID", randomUUID);
+        response.setViewName("passChangeForm");
+        return response;
+    }
+
+    @PostMapping(value = "/recover/{randomUUID}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public void postNewPass(RecoverDTO recoverDTO, @PathVariable String randomUUID) throws NotFoundException {
+        String newPass = recoverDTO.getPass();
+        String confPass = recoverDTO.getConfPass();
+        Matcher m = pattern.matcher(newPass);
+
+        if (newPass == null || confPass == null || !(newPass.equals(recoverDTO.getConfPass()) && m.matches())) {
+            throw new NotFoundException();
+        }
+
+        userService.tryChangePassword(randomUUID, newPass);
+    }
 
     @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<String> getUsers(@RequestParam("page") Optional<Integer> page, @RequestParam("size") Optional<Integer> size)
-            throws BadRequestException {
-        return userService.getAllUsers(page, size);
+    public List<UserDTO> getUsers() {
+        return userService.getUsers();
+    }
+
+    @PostMapping(value = "/users", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void createUser(@RequestBody NewUserDTO newUser, HttpServletRequest request) throws BadRequestException {
+        String uuid = userService.createUser(newUser);
+
+        /* Build registration URL */
+        String requestUrl = request.getRequestURL().toString();
+        String registerUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/register/" + uuid;
+
+        mailService.sendRegistrationMail(newUser.getEmail(), registerUrl);
+
+        return;
+    }
+
+    @GetMapping(value = "/users/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public UserDTO getUser(@PathVariable String userId)
+            throws NotFoundException, ForbiddenException, BadRequestException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return userService.getUser(userId, loggedUser.getUsername());
+    }
+
+    @PutMapping(value = "/users/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void updateUser(@PathVariable String userId, @RequestBody @Valid UserUpdateDTO userUpdate)
+            throws BadRequestException, NotFoundException, ForbiddenException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        userService.updateUser(userId, userUpdate, loggedUser.getUsername());
+
+        return;
+    }
+
+    @GetMapping(value = "users/{userId}/availabilities", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<AvailabilityDTO> getAvailabilities(@PathVariable String userId,
+                                                   @RequestParam Boolean consolidatedOnly,
+                                                   @RequestParam Long lineId)
+            throws BadRequestException, NotFoundException, ForbiddenException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return userService.getAvailabilities(userId, consolidatedOnly, lineId, loggedUser.getUsername());
+    }
+
+    @GetMapping(value = "users/{userId}/lines", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Long> getAdminLines(@PathVariable String userId) throws NotFoundException {
+        return userService.getAdminLines(userId);
     }
 
     @PostMapping(value = "users/{userId}/lines", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -142,7 +204,7 @@ public class UserController {
             throws BadRequestException, NotFoundException, ForbiddenException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        userService.addAdminLines(userId, lines, loggedUser);
+        userService.addAdminLines(userId, lines, loggedUser.getUsername());
     }
 
     @DeleteMapping(value="users/{userId}/lines/{lineId}")
@@ -150,8 +212,17 @@ public class UserController {
             throws BadRequestException, NotFoundException, ForbiddenException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        userService.removeAdminLine(userId, lineId, loggedUser);
+        userService.removeAdminLine(userId, lineId, loggedUser.getUsername());
     }
+
+    @GetMapping(value = "/users/{userId}/pupils", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<PupilDTO> getPupils(@PathVariable String userId)
+            throws NotFoundException, ForbiddenException, BadRequestException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return userService.getPupils(userId, loggedUser.getUsername());
+    }
+
 //
 //    @GetMapping(value = "/register/{userID}", produces = MediaType.APPLICATION_JSON_VALUE)
 //    public Map<String,String> getUser(@PathVariable String userID) throws NotFoundException {

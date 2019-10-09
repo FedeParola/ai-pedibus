@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Entity
 @Data
-public class ConfirmationToken {
+public class RegistrationToken {
     @Id
     @GeneratedValue
     @Column(name = "Id")
