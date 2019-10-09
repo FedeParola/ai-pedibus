@@ -184,8 +184,15 @@ public class LineService implements InitializingBean {
                                 try{
                                     NewUserDTO newUserDTO = new NewUserDTO();
                                     newUserDTO.setEmail(lineDTO.getEmail());
-                                    userService.createUser(newUserDTO); //could throw BadRequestException
+                                    String uuid = userService.createUser(newUserDTO); //could throw BadRequestException
                                     User u = userRepository.getByEmail(lineDTO.getEmail());
+
+                                    // Build registration URL
+                                    String requestUrl = request.getRequestURL().toString();
+                                    String registerUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/register/" + uuid;
+
+                                    mailService.sendRegistrationMail(newUser.getEmail(), registerUrl);
+
                                     //add user roles
                                     u.getRoles().add("ROLE_ADMIN");
                                     u.getRoles().add("ROLE_USER");
