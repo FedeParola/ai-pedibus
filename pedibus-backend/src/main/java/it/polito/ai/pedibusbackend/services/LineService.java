@@ -2,15 +2,15 @@ package it.polito.ai.pedibusbackend.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.polito.ai.pedibusbackend.entities.Line;
-import it.polito.ai.pedibusbackend.entities.Pupil;
-import it.polito.ai.pedibusbackend.entities.Ride;
-import it.polito.ai.pedibusbackend.entities.Stop;
+import it.polito.ai.pedibusbackend.entities.*;
+import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.repositories.LineRepository;
 import it.polito.ai.pedibusbackend.repositories.RideRepository;
 import it.polito.ai.pedibusbackend.repositories.StopRepository;
+import it.polito.ai.pedibusbackend.repositories.UserRepository;
 import it.polito.ai.pedibusbackend.viewmodels.LineDTO;
+import it.polito.ai.pedibusbackend.viewmodels.NewUserDTO;
 import it.polito.ai.pedibusbackend.viewmodels.RideDTO;
 import it.polito.ai.pedibusbackend.viewmodels.StopDTO;
 import org.slf4j.Logger;
@@ -42,6 +42,10 @@ public class LineService implements InitializingBean {
     private StopRepository stopRepository;
     @Autowired
     private RideRepository rideRepository;
+//    @Autowired
+//    private UserRepository userRepository;
+//    @Autowired
+//    private UserService userService;
 
     public List<Map<Long, String>> getLines() {
         List<Map<Long, String>> lines = new ArrayList<>();
@@ -173,8 +177,28 @@ public class LineService implements InitializingBean {
                         } else {
                             /* Try to add line and stops to the DB */
                             try {
-                                addLine(lineDTO);
+                                Line addedLine = addLine(lineDTO);
                                 log.info("Line " + lineDTO.getName() + " added to the DB");
+                                /*
+                                //try to create a new user
+                                try{
+                                    NewUserDTO newUserDTO = new NewUserDTO();
+                                    newUserDTO.setEmail(lineDTO.getEmail());
+                                    userService.createUser(newUserDTO); //could throw BadRequestException
+                                    User u = userRepository.getByEmail(lineDTO.getEmail());
+                                    //add user roles
+                                    u.getRoles().add("ROLE_ADMIN");
+                                    u.getRoles().add("ROLE_USER");
+                                    //add the line to the user
+                                    u.getLines().add(addedLine);
+                                    userRepository.save(u);
+                                }catch(BadRequestException bre){   //enter here if user already exist
+                                    User u = userRepository.getByEmail(lineDTO.getEmail());
+                                    //add the line to the user
+                                    u.getLines().add(addedLine);
+                                    userRepository.save(u);
+                                }
+                                */
                             } catch(Exception e) {
                                 log.error("Error adding line " + lineDTO.getName() + " to the DB: " + e.getMessage());
                             }
@@ -189,7 +213,7 @@ public class LineService implements InitializingBean {
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
-    protected void addLine(LineDTO lineDTO) throws ParseException {
+    protected Line addLine(LineDTO lineDTO) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("H:m");
 
         /* Map line DTO to entity and persist it */
@@ -225,6 +249,6 @@ public class LineService implements InitializingBean {
             }
         }
 
-        return;
+        return line;
     }
 }
