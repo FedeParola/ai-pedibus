@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LineDTO {
+    private Long id;
     @NotNull
     private String email;
     @NotNull

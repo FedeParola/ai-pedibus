@@ -3,6 +3,7 @@ package it.polito.ai.pedibusbackend.controllers;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.services.LineService;
 import it.polito.ai.pedibusbackend.viewmodels.LineDTO;
+import it.polito.ai.pedibusbackend.viewmodels.PupilDTO;
 import it.polito.ai.pedibusbackend.viewmodels.RideDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -12,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @RestController
 public class LineController {
@@ -21,7 +20,7 @@ public class LineController {
     private LineService lineService;
 
     @RequestMapping(value = "/lines", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Map<Long, String>> getLines() {
+    public List<LineDTO> getLines() {
         return lineService.getLines();
     }
 
@@ -38,7 +37,7 @@ public class LineController {
     }
 
     @RequestMapping(value = "/lines/{lineId}/pupils", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Map<Long, String>> getLinePupils(@PathVariable Long lineId) throws NotFoundException {
+    public List<PupilDTO> getLinePupils(@PathVariable Long lineId) throws NotFoundException {
         return lineService.getLinePupils(lineId);
     }
 

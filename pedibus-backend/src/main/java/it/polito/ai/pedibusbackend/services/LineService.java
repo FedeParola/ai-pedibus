@@ -2,15 +2,16 @@ package it.polito.ai.pedibusbackend.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.polito.ai.pedibusbackend.entities.*;
-import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
+import it.polito.ai.pedibusbackend.entities.Line;
+import it.polito.ai.pedibusbackend.entities.Pupil;
+import it.polito.ai.pedibusbackend.entities.Ride;
+import it.polito.ai.pedibusbackend.entities.Stop;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.repositories.LineRepository;
 import it.polito.ai.pedibusbackend.repositories.RideRepository;
 import it.polito.ai.pedibusbackend.repositories.StopRepository;
-import it.polito.ai.pedibusbackend.repositories.UserRepository;
 import it.polito.ai.pedibusbackend.viewmodels.LineDTO;
-import it.polito.ai.pedibusbackend.viewmodels.NewUserDTO;
+import it.polito.ai.pedibusbackend.viewmodels.PupilDTO;
 import it.polito.ai.pedibusbackend.viewmodels.RideDTO;
 import it.polito.ai.pedibusbackend.viewmodels.StopDTO;
 import org.slf4j.Logger;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -30,7 +30,9 @@ import java.net.URL;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 @Service
@@ -47,14 +49,15 @@ public class LineService implements InitializingBean {
 //    @Autowired
 //    private UserService userService;
 
-    public List<Map<Long, String>> getLines() {
-        List<Map<Long, String>> lines = new ArrayList<>();
-        Map<Long, String> m;
+    public List<LineDTO> getLines() {
+        List<LineDTO> lines = new ArrayList<>();
+        LineDTO lineDTO;
 
         for (Line l: lineRepository.findAll()) {
-            m = new HashMap<>();
-            m.put(l.getId(),l.getName());
-            lines.add(m);
+            lineDTO = new LineDTO();
+            lineDTO.setId(l.getId());
+            lineDTO.setName(l.getName());
+            lines.add(lineDTO);
         }
 
         return lines;
@@ -116,9 +119,9 @@ public class LineService implements InitializingBean {
         return rides;
     }
 
-    public List<Map<Long, String>> getLinePupils(Long lineId) throws NotFoundException{
-        List<Map<Long, String>> pupils = new ArrayList<>();
-        Map<Long, String> m;
+    public List<PupilDTO> getLinePupils(Long lineId) throws NotFoundException{
+        List<PupilDTO> pupils = new ArrayList<>();
+        PupilDTO pupilDTO;
 
         /* Get requested line */
         Line line = lineRepository.getById(lineId);
@@ -127,9 +130,10 @@ public class LineService implements InitializingBean {
         }
 
         for (Pupil p: line.getPupils()) {
-            m = new HashMap<>();
-            m.put(p.getId(),p.getName());
-            pupils.add(m);
+            pupilDTO = new PupilDTO();
+            pupilDTO.setId(p.getId());
+            pupilDTO.setName(p.getName());
+            pupils.add(pupilDTO);
         }
 
         return pupils;
