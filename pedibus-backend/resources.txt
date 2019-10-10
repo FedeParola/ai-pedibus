@@ -1,6 +1,6 @@
 /users                              GET, POST
 /users/{userId}                     GET, PUT
-/users/{userId}/availabilities      GET                     bool consolidated, long rideId
+/users/{userId}/availabilities      GET                     bool consolidatedOnly, long lineId
 /users/{userId}/lines               GET, POST
 /users/{userId}/lines/{lineId}      DELETE
 /users/{userId}/pupils              GET

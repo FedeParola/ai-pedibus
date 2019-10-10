@@ -13,6 +13,14 @@ export class AttendanceService {
     return this.http.get(environment.apiUrl+'/lines');
   }
 
+  getLine(lineId: number) {
+    return this.http.get(environment.apiUrl+'/lines/'+lineId);
+  }
+
+  getAvailabilities(username: string, lineId: number) {
+    return this.http.get(environment.apiUrl+'/users/'+username+'/availabilities?consolidatedOnly=true&lineId='+lineId);
+  }
+
   getReservations(lineName: string, date: Date) {
     return this.http.get(environment.apiUrl+'/reservations/'+lineName+"/"+date.toISOString().substring(0, 10));
   }

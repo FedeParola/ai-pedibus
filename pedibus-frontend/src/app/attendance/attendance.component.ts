@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AttendanceService } from '../attendance.service';
+import { AuthenticationService } from '../authentication.service';
 import { Observable } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -12,28 +13,66 @@ import { MatSnackBar } from '@angular/material';
   styleUrls: ['./attendance.component.css']
 })
 export class AttendanceComponent implements OnInit {
-  currentDate: Date;
-  currentLine: string;
+  currentDate;
+  currentLine;
   reservations$: Observable<any>;
-  lines: string[];
+  lines;
+  lineData$;
+  availabilities;
+  currentAvailability;
+  nextEnabled;
+  prevEnabled;
 
   constructor(private attendanceService: AttendanceService,
+              private authenticationService: AuthenticationService,
               private router: Router,
               private _snackBar: MatSnackBar) {}
 
   ngOnInit() {
-    this.currentDate = new Date();
-    this.attendanceService.getLines().subscribe((res: string[]) => {
+    this.attendanceService.getLines().subscribe((res) => {
       this.lines = res;
       this.currentLine = this.lines[0];
-      this.loadCurrentRoute();
+      this.lineData$ = this.attendanceService.getLine(this.currentLine.id);
+      this.loadAvailabilities();
+      
     },
     (error) => {
       this.handleError(error)
     });
   }
 
-  loadCurrentRoute() {
+  loadAvailabilities() {
+    this.availabilities = null;
+    this.attendanceService.getAvailabilities(this.authenticationService.getUsername(), this.currentLine.id).subscribe(
+      (res) => {
+        this.availabilities = res;
+        this.currentAvailability = 0;
+        this.currentDate = undefined;
+        this.currentDate = new Date(this.availabilities[this.currentAvailability].ride.date).toLocaleDateString("en-GB", {
+          weekday: 'short',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })
+
+        this.prevEnabled = true;
+        this.nextEnabled = true;
+        if (this.currentAvailability == 0 || (this.currentAvailability == 1 && this.availabilities[0].date == this.availabilities[1].date)) {
+          this.prevEnabled = false;
+        }
+        if (this.currentAvailability == this.availabilities.length-1 ||
+            (this.currentAvailability == this.availabilities.length-2 &&
+            this.availabilities[this.availabilities.length-1].date == this.availabilities[this.availabilities.length-2].date)) {
+          this.nextEnabled = false;
+        }
+      },
+      (error) => {
+        this.handleError(error);
+      }
+    )
+  }
+
+  loadCurrentRide() {
     this.reservations$ = this.attendanceService.getReservations(this.currentLine, this.currentDate)
       .pipe(
         catchError((error) => {
@@ -77,20 +116,59 @@ export class AttendanceComponent implements OnInit {
     }
   }
 
-  selectLine(line: string) {
+  selectLine(line) {
     this.currentLine = line;
-    this.loadCurrentRoute();
+    this.lineData$ = this.attendanceService.getLine(this.currentLine.id);
+    this.loadAvailabilities();
   }
 
-  nextRoute() {
-    this.currentDate = new Date(this.currentDate.valueOf()+24*60*60*1000);
-    this.loadCurrentRoute();
+  nextRide() {
+    if (this.availabilities[this.currentAvailability+1].date == this.availabilities[this.currentAvailability].date) {
+      this.currentAvailability += 2;
+    } else {
+      this.currentAvailability++;
+    }
+
+    this.currentDate = new Date(this.availabilities[this.currentAvailability].ride.date).toLocaleDateString("en-GB", {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+ 
+    // this.loadCurrentRide();
+  
+    this.prevEnabled = true;
+    if (this.currentAvailability == this.availabilities.length-1 ||
+        (this.currentAvailability == this.availabilities.length-2 &&
+        this.availabilities[this.availabilities.length-1].date == this.availabilities[this.availabilities.length-2].date)) {
+      this.nextEnabled = false;
+    }
   }
 
-  prevRoute() {
-    this.currentDate = new Date(this.currentDate.valueOf()-24*60*60*1000);
-    this.loadCurrentRoute();
+  prevRide() {
+    if (this.availabilities[this.currentAvailability-1].date == this.availabilities[this.currentAvailability].date) {
+      this.currentAvailability -= 2;
+    } else {
+      this.currentAvailability--;
+    }
+
+    this.currentDate = new Date(this.availabilities[this.currentAvailability].ride.date).toLocaleDateString("en-GB", {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+ 
+    // this.loadCurrentRide();
+    
+    this.nextEnabled = true;
+    if (this.currentAvailability == 0 || (this.currentAvailability == 1 && this.availabilities[0].date == this.availabilities[1].date)) {
+      this.prevEnabled = false;
+    }
   }
+
+
 
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {

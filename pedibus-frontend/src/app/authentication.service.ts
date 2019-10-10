@@ -25,6 +25,7 @@ export class AuthenticationService {
   private setSession(authResult) {
     let payload = decode(authResult.token);
     localStorage.setItem('id_token', authResult.token);
+    localStorage.setItem('username', payload.sub);
     localStorage.setItem("expires_at", JSON.stringify(payload.exp));
   }          
 
@@ -39,6 +40,10 @@ export class AuthenticationService {
 
   isLoggedOut() {
       return !this.isLoggedIn();
+  }
+
+  getUsername() {
+    return localStorage.getItem('username')
   }
 
   getExpiration() {

@@ -5,39 +5,32 @@
           <mat-icon>menu</mat-icon>
         </button>
         <mat-menu #menu="matMenu">
-          <button mat-menu-item *ngFor="let line of lines" (click)="selectLine(line)">{{line}}</button>
+          <button mat-menu-item *ngFor="let line of lines" (click)="selectLine(line)">{{line.name}}</button>
         </mat-menu>
       </div>
-      <mat-card-title>{{currentLine}}</mat-card-title>
-      <mat-card-subtitle>
-      {{currentDate.toLocaleDateString("en-GB", {
-                                                  weekday: 'short',
-                                                  year: 'numeric',
-                                                  month: 'long',
-                                                  day: 'numeric'
-                                                })}}
-      </mat-card-subtitle>
+      <mat-card-title>{{currentLine.name}}</mat-card-title>
+      <mat-card-subtitle>{{currentDate}}</mat-card-subtitle>
       <span class="nav-buttons">
-        <button mat-icon-button (click)="prevRoute()"><mat-icon>chevron_left</mat-icon></button>
-        <button mat-icon-button (click)="nextRoute()"><mat-icon>chevron_right</mat-icon></button>
+        <button mat-icon-button (click)="prevRide()" [disabled]="!prevEnabled"><mat-icon>chevron_left</mat-icon></button>
+        <button mat-icon-button (click)="nextRide()" [disabled]="!nextEnabled"><mat-icon>chevron_right</mat-icon></button>
       </span>
     </mat-card-header>
   
     <mat-card-content>
-      <mat-tab-group *ngIf="reservations$ | async as reservations" mat-align-tabs='center'>
+      <mat-tab-group *ngIf="lineData$ | async as lineData" mat-align-tabs='center'>
         <mat-tab label="Outbound"> 
           <mat-list>
-            <mat-list-item *ngFor="let stop of reservations.outwardReservations"> 
+            <mat-list-item *ngFor="let stop of lineData.outwardStops"> 
               <mat-icon matListIcon>fiber_manual_record</mat-icon>
-              <h4 mat-line><span class="hour">{{stop.stopTime}}</span> <strong>{{stop.stopName}}</strong></h4>
-              <mat-chip-list mat-line>
+              <h4 mat-line><span class="hour">{{stop.time}}</span> <strong>{{stop.name}}</strong></h4>
+              <!-- <mat-chip-list mat-line>
                 <mat-chip *ngFor="let pupil of stop.pupils" (click)="onPupilClick(pupil, 'O')"
                   [class.pupilPresent] = "pupil.attendanceId >= 0" [disabled]="pupil.disabled">
                   {{pupil.name}}
                 </mat-chip>
-              </mat-chip-list>
+              </mat-chip-list> -->
             </mat-list-item>
-            <mat-list-item>
+            <!-- <mat-list-item>
               <h4 mat-line><strong>Pupils without reservation</strong></h4>
               <mat-chip-list mat-line>
                 <mat-chip *ngFor="let pupil of reservations.outwardNoRes" (click)="onPupilClick(pupil, 'O')"
@@ -45,23 +38,23 @@
                   {{pupil.name}}
                 </mat-chip>
               </mat-chip-list>
-            </mat-list-item>
+            </mat-list-item> -->
           </mat-list>
         </mat-tab>
   
         <mat-tab label="Return"> 
             <mat-list>
-              <mat-list-item *ngFor="let stop of reservations.returnReservations">
+              <mat-list-item *ngFor="let stop of lineData.returnStops">
                 <mat-icon matListIcon>fiber_manual_record</mat-icon>
-                <h4 mat-line><span class="hour">{{stop.stopTime}}</span> <strong>{{stop.stopName}}</strong></h4>
-                <mat-chip-list mat-line>
+                <h4 mat-line><span class="hour">{{stop.time}}</span> <strong>{{stop.name}}</strong></h4>
+                <!-- <mat-chip-list mat-line>
                   <mat-chip *ngFor="let pupil of stop.pupils" (click)="onPupilClick(pupil, 'R')"
                     [class.pupilPresent] = "pupil.attendanceId >= 0"  [disabled]="pupil.disabled">
                     {{pupil.name}}
                   </mat-chip>
-                </mat-chip-list>
+                </mat-chip-list> -->
               </mat-list-item>
-              <mat-list-item>
+              <!-- <mat-list-item>
                 <h4 mat-line><strong>Pupils without reservation</strong></h4>
                 <mat-chip-list mat-line>
                   <mat-chip *ngFor="let pupil of reservations.returnNoRes" (click)="onPupilClick(pupil, 'R')"
@@ -69,7 +62,7 @@
                     {{pupil.name}}
                   </mat-chip>
                 </mat-chip-list>
-              </mat-list-item>
+              </mat-list-item> -->
             </mat-list>
           </mat-tab>
       </mat-tab-group>
