@@ -1,103 +1,148 @@
 package it.polito.ai.pedibusbackend.services;
 
-import it.polito.ai.pedibusbackend.entities.Attendance;
-import it.polito.ai.pedibusbackend.entities.Line;
-import it.polito.ai.pedibusbackend.entities.Pupil;
-import it.polito.ai.pedibusbackend.entities.Reservation;
+import it.polito.ai.pedibusbackend.entities.*;
 import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
+import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
-import it.polito.ai.pedibusbackend.repositories.AttendanceRepository;
-import it.polito.ai.pedibusbackend.repositories.LineRepository;
-import it.polito.ai.pedibusbackend.repositories.PupilRepository;
-import it.polito.ai.pedibusbackend.repositories.ReservationRepository;
-import it.polito.ai.pedibusbackend.viewmodels.AttendanceDTO;
+import it.polito.ai.pedibusbackend.repositories.*;
+import it.polito.ai.pedibusbackend.viewmodels.NewAttendanceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
 import java.util.Date;
-import java.util.List;
 
 @Service
 public class AttendanceService {
-//    @Autowired
-//    private AttendanceRepository attendanceRepository;
-//    @Autowired
-//    private LineRepository lineRepository;
-//    @Autowired
-//    private PupilRepository pupilRepository;
-//    @Autowired
-//    private ReservationRepository reservationRepository;
-//
-//    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
-//    public Long addAttendance(AttendanceDTO attendanceDTO, String lineName, Date date) throws NotFoundException, BadRequestException {
-//        Line line = lineRepository.getByName(lineName);
-//
-//        /*Check line and pupil existence*/
-//        if(line == null) {
-//            throw new NotFoundException("Line " + lineName + " not found");
-//        }
-//
-//        Pupil pupil = pupilRepository.findById(attendanceDTO.getPupilId())
-//                .orElseThrow(() -> new NotFoundException("Pupil " + attendanceDTO.getPupilId() + " not found"));
-//
-//        /*Check if the pupil is already present somewhere the same day in the same direction*/
-//        Attendance a = attendanceRepository.getByPupilAndDateAndDirection(pupil, new java.sql.Date(date.getTime()), attendanceDTO.getDirection().charAt(0))
-//                .orElse(null);
-//        if(a != null){
-//            throw new BadRequestException("The pupil was already marked as present");
-//        }
-//
-//        /*Get the (eventually) linked reservation*/
-//        List<Reservation> reservations = reservationRepository.getByPupilAndDate(pupil, new java.sql.Date(date.getTime()));
-//        Reservation foundRes = null;
-//        for(Reservation r : reservations){
-//            if(r.getStop().getDirection().equals(attendanceDTO.getDirection().charAt(0))){
-//                if(!r.getStop().getLine().getName().equals(lineName)){
-//                    throw new BadRequestException("The attendance does not match the reservation");
+    @Autowired
+    private AttendanceRepository attendanceRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private PupilRepository pupilRepository;
+    @Autowired
+    private RideRepository rideRepository;
+    @Autowired
+    private StopRepository stopRepository;
+    @Autowired
+    private ReservationRepository reservationRepository;
+    @Autowired
+    private AvailabilityRepository availabilityRepository;
+
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    public Long addAttendance(@Valid NewAttendanceDTO attendanceDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
+        User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+
+        //Check existence of the referenced entities
+        Ride ride = rideRepository.findById(attendanceDTO.getRideId()).orElse(null);
+        if(ride == null) {
+            throw new BadRequestException("Unknown ride with id " + attendanceDTO.getRideId());
+        }
+
+        Pupil pupil = pupilRepository.findById(attendanceDTO.getPupilId()).orElse(null);
+        if(pupil == null) {
+            throw new BadRequestException("Unknown pupil with id " + attendanceDTO.getPupilId());
+        }
+
+        Stop stop = stopRepository.findById(attendanceDTO.getStopId()).orElse(null);
+        if(stop == null) {
+            throw new BadRequestException("Unknown stop with id " + attendanceDTO.getStopId());
+        }
+
+        //Check if the user can add the attendance (system admin or 'accompagnatore' of that ride)
+        //AuthorizationManager.authorizeAttendanceAccess(currentUser, attendance);
+        if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
+            if(!ride.getConsolidated()) {
+                throw new ForbiddenException();
+            } else {
+                Availability a = availabilityRepository.getByUserAndRide(currentUser, ride);
+                if(a == null) {
+                    throw new ForbiddenException();
+                }
+//                if(ride.getDirection().equals("O")  &&  stop.getOrder() < a.getStop().getOrder()){
+//                    throw new ForbiddenException();
 //                }
-//                foundRes = r;
-//            }
-//        }
-//
-//        /*Create the attendance and add it to the repo*/
-//        Attendance attendance = new Attendance();
-//        attendance.setPupil(pupil);
-//        attendance.setDate(new java.sql.Date(date.getTime()));
-//        attendance.setDirection(attendanceDTO.getDirection().charAt(0));
-//        if(foundRes != null){
-//            attendance.setReservation(foundRes);
-//        }
-//
-//        attendance = attendanceRepository.save(attendance);
-//
-//        return attendance.getId();
-//    }
-//
-//    public void deleteAttendance(Long attendanceId, String lineName, Date date) throws NotFoundException {
-//        Attendance attendance = getAttendanceFromUri(attendanceId, lineName, date);
-//        attendanceRepository.delete(attendance);
-//        return;
-//    }
-//
-//    private Attendance getAttendanceFromUri(Long attendanceId, String lineName, Date date) throws NotFoundException {
-//        Attendance attendance = attendanceRepository.findById(attendanceId)
-//                .orElseThrow(() -> new NotFoundException("Attendance with id " + attendanceId + " not found"));
-//
-//        String attendanceLine;
-//        if(attendance.getReservation() != null){
-//            attendanceLine = attendance.getReservation().getStop().getLine().getName();
-//        }
-//        else{
-//            attendanceLine = attendance.getPupil().getLine().getName();
-//        }
-//
-//        if(!attendance.getDate().equals(date)  ||  !attendanceLine.equals(lineName)) {
-//            throw new NotFoundException("Attendance with id " + attendanceId + " not found");
-//        }
-//
-//        return attendance;
-//    }
+//                if(ride.getDirection().equals("R")  &&  stop.getOrder() > a.getStop().getOrder()){
+//                    throw new ForbiddenException();
+//                }
+            }
+        }
+
+        //Check if current date and time is before than when the stop takes place (with 30 min tolerance)
+        Date now = new Date();
+        now.setTime(now.getTime() - 30 * 60 * 1000);
+        if(stop.getTime().compareTo(now) <  0){
+            throw new BadRequestException();
+        }
+
+        //Check if the stop belongs to the ride
+        if(!ride.getLine().getStops().contains(stop.getId())){
+            throw new BadRequestException();
+        }
+
+        //Check if the pupil is already present somewhere the same day in the same direction
+        Attendance a = attendanceRepository.findByPupilAndDateAndDirection(pupil, ride.getDate(),
+                ride.getDirection()).orElse(null);
+        if(a != null){
+            throw new BadRequestException("The pupil was already marked as present");
+        }
+
+        //Create the attendance and add it to the repository
+        Attendance attendance = new Attendance();
+        attendance.setPupil(pupil);
+        attendance.setRide(ride);
+        attendance.setStop(stop);
+
+        //Get the (potentially) linked reservation
+        Reservation r = reservationRepository.findByPupilAndRideAndStop(pupil, ride, stop).orElse(null);
+        if(r != null){
+            attendance.setReservation(r);
+        }
+
+        attendance = attendanceRepository.save(attendance);
+
+        return attendance.getId();
+    }
+
+    public void deleteAttendance(Long attendanceId, UserDetails loggedUser) throws NotFoundException, BadRequestException,
+            ForbiddenException {
+        User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+
+        Attendance attendance = attendanceRepository.findById(attendanceId).orElse(null);
+        if(attendance == null){
+            throw new NotFoundException("Attendance with id " + attendanceId + " not found");
+        }
+
+        //Check if current date and time is before than when the stop takes place (with 30 min tolerance)
+        Date now = new Date();
+        now.setTime(now.getTime() - 30 * 60 * 1000);
+        if(attendance.getStop().getTime().compareTo(now) <  0){
+            throw new BadRequestException();
+        }
+
+        //Check if the user can add the attendance (system admin or 'accompagnatore' of that ride)
+        //AuthorizationManager.authorizeAttendanceAccess(currentUser, attendance);
+        if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
+            if(!attendance.getRide().getConsolidated()) {
+                throw new ForbiddenException();
+            } else {
+                Availability a = availabilityRepository.getByUserAndRide(currentUser, attendance.getRide());
+                if(a == null){
+                    throw new ForbiddenException();
+                }
+//                if(ride.getDirection().equals("O")  &&  stop.getOrder() < a.getStop().getOrder()){
+//                    throw new ForbiddenException();
+//                }
+//                if(ride.getDirection().equals("R")  &&  stop.getOrder() > a.getStop().getOrder()){
+//                    throw new ForbiddenException();
+//                }
+            }
+        }
+
+        attendanceRepository.delete(attendance);
+    }
 }

@@ -5,9 +5,7 @@ import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.repositories.*;
-import it.polito.ai.pedibusbackend.security.AuthorizationManager;
-import it.polito.ai.pedibusbackend.viewmodels.ReservationDTO;
-import it.polito.ai.pedibusbackend.viewmodels.ReservationsDTO;
+import it.polito.ai.pedibusbackend.viewmodels.NewReservationDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -19,223 +17,134 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import javax.validation.Valid;
+import java.util.Date;
 
 @Service
 @DependsOn("userService")
 public class ReservationService implements InitializingBean {
-//    private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
-//    @Autowired
-//    private UserRepository userRepository;
-//    @Autowired
-//    private StopRepository stopRepository;
-//    @Autowired
-//    private ReservationRepository reservationRepository;
-//    @Autowired
-//    private LineRepository lineRepository;
-//    @Autowired
-//    private PupilRepository pupilRepository;
-//    @Autowired
-//    private AttendanceRepository attendanceRepository;
-//
-//    public ReservationsDTO getReservations(String lineName, Date date, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
-//        /* Get the requested line */
-//        Line line = lineRepository.getByName(lineName);
-//        if(line == null) {
-//            throw new NotFoundException("Line " + lineName + " not found");
-//        }
-//        User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException()); //get the current user from db
-//
-//        // AuthorizationManager.authorizeLineAccess(currentUser, line);
-//
-//        ReservationsDTO reservationsDTO = new ReservationsDTO();
-//        Map<Long, Pupil> outNoRes = new HashMap<>();
-//        Map<Long, Pupil> retNoRes = new HashMap<>();
-//        /*Add all the pupils associated to the line to the lists of pupils not reserved*/
-//        for(Pupil p : line.getPupils()){
-//            outNoRes.put(p.getId(), p);
-//            retNoRes.put(p.getId(), p);
-//        }
-//
-//        for(Stop stop : line.getStops()) {
-//            /* Prepare a list of reservations for the current stop */
-//            ReservationsDTO.StopReservations stopReservations = new ReservationsDTO.StopReservations();
-//            stopReservations.setStopName(stop.getName());
-//            stopReservations.setStopTime(stop.getTime().toString().substring(0, 5));
-//
-//            /* Add reservations for the requested date to the list */
-//            for(Reservation reservation : reservationRepository.getByStopAndDate(stop, new java.sql.Date(date.getTime()))) {
-//                Attendance attendance = reservation.getAttendance();
-//                Long attendanceId;
-//                if(attendance == null){
-//                    attendanceId = (long)-1;
-//                }
-//                else{
-//                    attendanceId = attendance.getId();
-//                }
-//                stopReservations.addPupil(reservation.getPupil().getId(), reservation.getPupil().getName(), attendanceId);
-//                /*Remove the pupil from the list of pupils not reserved*/
-//                if(stop.getDirection() == 'O') {
-//                    outNoRes.remove(reservation.getPupil().getId());
-//                } else {
-//                    retNoRes.remove(reservation.getPupil().getId());
-//                }
-//            }
-//
-//            /* Add the reservations to the correct direction */
-//            if(stop.getDirection() == 'O') {
-//                reservationsDTO.getOutwardReservations().add(stopReservations);
-//            } else {
-//                reservationsDTO.getReturnReservations().add(stopReservations);
-//            }
-//        }
-//
-//        /*Check if each pupil is present or not*/
-//        for(Pupil p : outNoRes.values()){
-//            Attendance attendance = attendanceRepository.getByPupilAndDateAndDirection(p, new java.sql.Date(date.getTime()), 'O')
-//                    .orElse(null);
-//            Long attendanceId;
-//            if(attendance == null){
-//                attendanceId = (long)-1;
-//            }
-//            else{
-//                attendanceId = attendance.getId();
-//            }
-//            reservationsDTO.getOutwardNoRes().add(pupilEntityToDto(p, attendanceId));
-//        }
-//        for(Pupil p : retNoRes.values()){
-//            Attendance attendance = attendanceRepository.getByPupilAndDateAndDirection(p, new java.sql.Date(date.getTime()), 'R')
-//                    .orElse(null);
-//            Long attendanceId;
-//            if(attendance == null){
-//                attendanceId = (long)-1;
-//            }
-//            else{
-//                attendanceId = attendance.getId();
-//            }
-//            reservationsDTO.getReturnNoRes().add(pupilEntityToDto(p, attendanceId));
-//        }
-//
-//        return reservationsDTO;
-//    }
-//
-//    private ReservationsDTO.Pupil pupilEntityToDto(Pupil pupil, Long attendanceId){
-//        return new ReservationsDTO.Pupil(pupil.getId(), pupil.getName(), attendanceId);
-//    }
-//
-//    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
-//    public Long addReservation(ReservationDTO reservationDTO, String lineName, Date date, UserDetails loggedUser) throws BadRequestException, NotFoundException {
-//        User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
-//
-//        Line line = lineRepository.getByName(lineName);
-//        if(line == null) {
-//            throw new NotFoundException("Line " + lineName + " not found");
-//        }
-//
-//        Stop stop = stopRepository.findById(reservationDTO.getStopId()).orElse(null);
-//        if(stop == null) {
-//            throw new BadRequestException("Unknown stop with id " + reservationDTO.getStopId());
-//        }
-//
-//        Pupil pupil = pupilRepository.findById(reservationDTO.getPupilId()).orElse(null);
-//        if(pupil == null) {
-//            throw new BadRequestException("Unknown pupil with id " + reservationDTO.getPupilId());
-//        }
-//
-//        if(!line.equals(stop.getLine())) {
-//            throw new BadRequestException("Stop with id " + reservationDTO.getStopId() + "doesn't belong to line " + lineName);
-//        }
-//
-//        if(reservationDTO.getDirection().charAt(0) != stop.getDirection().charValue()) {
-//            throw new BadRequestException("The requested stop isn't available for the requested direction");
-//        }
-//
-//        Reservation reservation = new Reservation();
-//        reservation.setStop(stop);
-//        reservation.setDate(new java.sql.Date(date.getTime()));
-//        reservation.setPupil(pupil);
-//
-//        reservation = reservationRepository.save(reservation);
-//
-//        return reservation.getId();
-//    }
-//
-//    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
-//    public void updateReservation(String lineName, Date date, Long reservationId, ReservationDTO reservationDTO,
-//                                  UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
-//        User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
-//        Reservation reservation = getReservationFromUri(lineName, date, reservationId);
-//        AuthorizationManager.authorizeReservationAccess(currentUser, reservation);
-//
-//        /* Update the stop */
-//        Stop stop = stopRepository.findById(reservationDTO.getStopId()).orElse(null);
-//        if(!reservationDTO.getStopId().equals(reservation.getStop().getId())) {
-//            if(stop == null) {
-//                throw new BadRequestException("Unknown stop with id " + reservationDTO.getStopId());
-//            }
-//
-//            if(!stop.getLine().getName().equals(lineName)) {
-//                throw new BadRequestException("Stop with id " + reservationDTO.getStopId() + "doesn't belong to line " + lineName);
-//            }
-//
-//            if(reservationDTO.getDirection().charAt(0) != stop.getDirection().charValue()) {
-//                throw new BadRequestException("The requested stop isn't available for the requested direction");
-//            }
-//
-//            reservation.setStop(stop);
-//        }
-//
-//        /*Redundant control to prevent an user from modifying the direction without modifying the stopId*/
-//        if(reservationDTO.getDirection().charAt(0) != stop.getDirection().charValue()) {
-//            throw new BadRequestException("The requested stop isn't available for the requested direction");
-//        }
-//
-//        reservationRepository.save(reservation);
-//
-//        return;
-//    }
-//
-//    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
-//    public void deleteReservation(String lineName, Date date, Long reservationId,
-//                                  UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
-//        User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
-//        Reservation reservation = getReservationFromUri(lineName, date, reservationId);
-//        AuthorizationManager.authorizeReservationAccess(currentUser, reservation);
-//
-//        reservationRepository.delete(reservation);
-//
-//        return;
-//    }
-//
-//    public ReservationDTO getReservation(String lineName, Date date, Long reservationId,
-//                                         UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
-//        User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
-//        Reservation reservation = getReservationFromUri(lineName, date, reservationId);
-//        AuthorizationManager.authorizeReservationAccess(currentUser, reservation);
-//
-//        ReservationDTO reservationDTO = new ReservationDTO();
-//        reservationDTO.setId(reservation.getId());
-//        reservationDTO.setDirection(reservation.getStop().getDirection().toString());
-//        reservationDTO.setStopId(reservation.getStop().getId());
-//        reservationDTO.setPupilId(reservation.getPupil().getId());
-//
-//        return reservationDTO;
-//    }
-//
-//    private Reservation getReservationFromUri(String lineName, Date date, Long reservationId) throws NotFoundException {
-//        Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
-//
-//        if(reservation == null) {
-//            throw new NotFoundException("Reservation with id " + reservationId + " not found");
-//        }
-//
-//        if(!date.equals(reservation.getDate()) || !reservation.getStop().getLine().getName().equals(lineName)) {
-//            throw new NotFoundException("Reservation with id " + reservationId + " not found");
-//        }
-//
-//        return reservation;
-//    }
-//
+    private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ReservationRepository reservationRepository;
+    @Autowired
+    private PupilRepository pupilRepository;
+    @Autowired
+    private RideRepository rideRepository;
+    @Autowired
+    private StopRepository stopRepository;
+
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    public Long addReservation(@Valid NewReservationDTO reservationDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
+        User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+
+        //Check existence of the referenced entities
+        Ride ride = rideRepository.findById(reservationDTO.getRideId()).orElse(null);
+        if(ride == null) {
+            throw new BadRequestException("Unknown ride with id " + reservationDTO.getRideId());
+        }
+
+        Pupil pupil = pupilRepository.findById(reservationDTO.getPupilId()).orElse(null);
+        if(pupil == null) {
+            throw new BadRequestException("Unknown pupil with id " + reservationDTO.getPupilId());
+        }
+
+        Stop stop = stopRepository.findById(reservationDTO.getStopId()).orElse(null);
+        if(stop == null) {
+            throw new BadRequestException("Unknown stop with id " + reservationDTO.getStopId());
+        }
+
+        //Check if the logged user is the system admin
+        if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
+            //Check if the pupil belongs to the logged user
+            if(!currentUser.getPupils().contains(pupil.getId())){
+                throw new ForbiddenException();
+            }
+        }
+
+        //Check if current date and time is before than when the ride takes place
+        Date utilDate = new Date();
+        if(ride.getDate().compareTo(new java.sql.Date(utilDate.getTime())) < 0){
+            throw new BadRequestException();
+        }
+
+        //Check if the stop belongs to the ride
+        if(!ride.getLine().getStops().contains(stop.getId())){
+            throw new BadRequestException();
+        }
+
+        //Check if the pupil is already reserved somewhere the same day in the same direction
+        Reservation r = reservationRepository.findByPupilAndDateAndDirection(pupil, ride.getDate(),
+                ride.getDirection()).orElse(null);
+        if(r != null){
+            throw new BadRequestException("The pupil was already reserved that day in the same direction");
+        }
+
+        //Create the reservation and add it to the repository
+        Reservation reservation = new Reservation();
+        reservation.setPupil(pupil);
+        reservation.setRide(ride);
+        reservation.setStop(stop);
+        reservation = reservationRepository.save(reservation);
+
+        return reservation.getId();
+    }
+
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    public void updateReservation(Long reservationId, Long newStopId, UserDetails loggedUser) throws NotFoundException,
+            BadRequestException, ForbiddenException {
+        User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+
+        Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
+        if(reservation == null) {
+            throw new NotFoundException("Reservation with id " + reservationId + " not found");
+        }
+
+        //Check if the user can update the reservation (user who made it or system admin)
+        //AuthorizationManager.authorizeReservationAccess(currentUser, reservation);
+        if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
+            if(!currentUser.getEmail().equals(reservation.getPupil().getUser().getEmail())){
+                throw new ForbiddenException();
+            }
+        }
+
+        //Check stop existence
+        Stop stop = stopRepository.findById(newStopId).orElse(null);
+        if(stop == null) {
+            throw new BadRequestException("Unknown stop with id " + newStopId);
+        }
+
+        //Check that the new stop belongs to the same ride
+        if(!reservation.getRide().getLine().getStops().contains(stop.getId())){
+            throw new BadRequestException();
+        }
+
+        reservation.setStop(stop);
+        reservationRepository.save(reservation);
+    }
+
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    public void deleteReservation(Long reservationId, UserDetails loggedUser) throws NotFoundException, BadRequestException,
+            ForbiddenException {
+        User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+
+        Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
+        if(reservation == null) {
+            throw new NotFoundException("Reservation with id " + reservationId + " not found");
+        }
+
+        //Check if the user can delete the reservation (user who made it or system admin)
+        //AuthorizationManager.authorizeReservationAccess(currentUser, reservation);
+        if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
+            if(!currentUser.getEmail().equals(reservation.getPupil().getUser().getEmail())){
+                throw new ForbiddenException();
+            }
+        }
+
+        reservationRepository.delete(reservation);
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
 //        log.info("Inizializzazione!");

@@ -7,6 +7,9 @@ import it.polito.ai.pedibusbackend.entities.User;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.sql.Date;
+import java.util.Optional;
+
 public interface AvailabilityRepository extends CrudRepository<Availability, Long> {
     Availability getByUserAndRide(User user, Ride ride);
 
@@ -17,4 +20,9 @@ public interface AvailabilityRepository extends CrudRepository<Availability, Lon
     @Query("SELECT a FROM Availability a JOIN a.ride r ON r.line = ?2 " +
             "WHERE a.user = ?1")
     Iterable<Availability> findByUserAndLine(User user, Line line);
+
+    @Query("SELECT a FROM Availability " +
+            "a JOIN a.ride r ON r.date = ?2 AND r.direction = ?3" +
+            "WHERE a.user = ?1")
+    Optional<Availability> findByUserAndDateAndDirection(User user, Date date, Character direction);
 }

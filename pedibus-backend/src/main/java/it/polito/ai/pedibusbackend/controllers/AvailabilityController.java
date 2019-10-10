@@ -3,8 +3,9 @@ package it.polito.ai.pedibusbackend.controllers;
 import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
-import it.polito.ai.pedibusbackend.services.ReservationService;
-import it.polito.ai.pedibusbackend.viewmodels.NewReservationDTO;
+import it.polito.ai.pedibusbackend.services.AvailabilityService;
+import it.polito.ai.pedibusbackend.viewmodels.AvailabilityUpdateDTO;
+import it.polito.ai.pedibusbackend.viewmodels.NewAvailabilityDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,14 +18,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
-public class ReservationController {
+public class AvailabilityController {
     @Autowired
-    private ReservationService reservationService;
+    private AvailabilityService availabilityService;
 
-    @RequestMapping(value="/reservations", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
+    @RequestMapping(value="/availabilities", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Long addReservation(@RequestBody @Valid NewReservationDTO reservation, BindingResult bindingResult,
-                               HttpServletResponse response) throws BadRequestException, ForbiddenException {
+    public Long addAvailability(@RequestBody @Valid NewAvailabilityDTO availability, BindingResult bindingResult,
+                                HttpServletResponse response) throws BadRequestException, ForbiddenException {
         //Get logged user
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -37,28 +38,28 @@ public class ReservationController {
             throw new BadRequestException(errMsg.toString());
         }
 
-        Long reservationId = reservationService.addReservation(reservation, loggedUser);
+        Long availabilityId = availabilityService.addAvailability(availability, loggedUser);
         response.setStatus(HttpServletResponse.SC_CREATED);
 
-        return reservationId;
+        return availabilityId;
     }
 
-    @RequestMapping(value="/reservations/{reservationId}", method = RequestMethod.PUT,
+    @RequestMapping(value="/availabilities/{availabilityId}", method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void updateReservation(@PathVariable Long reservationId, @RequestBody Long newStopId) throws BadRequestException,
-            NotFoundException, ForbiddenException {
+    public void updateAvailability(@PathVariable Long availabilityId, @RequestBody AvailabilityUpdateDTO newAvailability)
+            throws NotFoundException, BadRequestException, ForbiddenException {
         //Get logged user
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        reservationService.updateReservation(reservationId, newStopId, loggedUser);
+        availabilityService.updateAvailability(availabilityId, newAvailability, loggedUser);
     }
 
-    @RequestMapping(value="/reservations/{reservationId}", method = RequestMethod.DELETE)
-    public void deleteReservation(@PathVariable Long reservationId) throws BadRequestException, NotFoundException,
+    @RequestMapping(value="/availabilities/{availabilityId}", method = RequestMethod.DELETE)
+    public void deleteAvailability(@PathVariable Long availabilityId) throws BadRequestException, NotFoundException,
             ForbiddenException {
         //Get logged user
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        reservationService.deleteReservation(reservationId, loggedUser);
+        availabilityService.deleteAvailability(availabilityId, loggedUser);
     }
 }
