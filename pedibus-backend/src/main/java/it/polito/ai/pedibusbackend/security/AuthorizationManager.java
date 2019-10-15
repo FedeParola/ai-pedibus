@@ -1,8 +1,6 @@
 package it.polito.ai.pedibusbackend.security;
 
-import it.polito.ai.pedibusbackend.entities.Line;
-import it.polito.ai.pedibusbackend.entities.Reservation;
-import it.polito.ai.pedibusbackend.entities.User;
+import it.polito.ai.pedibusbackend.entities.*;
 import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
 
 import java.util.ArrayList;
@@ -14,6 +12,19 @@ public class AuthorizationManager {
     public static void authorizeReservationAccess(User user, Reservation reservation) throws ForbiddenException {
         if(!user.getEmail().equals(reservation.getPupil().getUser().getEmail())){
             authorizeLineAccess(user, reservation.getStop().getLine());
+        }
+    }
+
+    public static void authorizeRideConductor(User user, Ride ride, Availability availability) throws ForbiddenException{
+        if(!user.getRoles().contains("ROLE_SYSTEM-ADMIN")){
+            if(!(user.getLines().stream()
+                    .map((l)-> l.getId())
+                    .collect(Collectors.toList())
+                    .contains(ride.getLine().getId()))){
+                if(!availability.getStatus().equals("CONSOLIDATED")){
+                    throw new ForbiddenException();
+                }
+            }
         }
     }
 

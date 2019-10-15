@@ -7,9 +7,7 @@ import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.services.RideService;
-import it.polito.ai.pedibusbackend.viewmodels.NewRideDTO;
-import it.polito.ai.pedibusbackend.viewmodels.RideDTO;
-import it.polito.ai.pedibusbackend.viewmodels.UpdateRideDTO;
+import it.polito.ai.pedibusbackend.viewmodels.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -71,21 +69,21 @@ public class RideController {
 
 
     @RequestMapping(value = "/rides/{rideId}/reservations", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Reservation> getRideReservations(@PathVariable Long rideId) throws NotFoundException, BadRequestException, ForbiddenException {
+    public List<ReservationDTO> getRideReservations(@PathVariable Long rideId) throws NotFoundException, BadRequestException, ForbiddenException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return rideService.getRideReservations(rideId, loggedUser);
     }
 
     @RequestMapping(value = "/rides/{rideId}/attendances", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Attendance> getRideAttendances(@PathVariable Long rideId) throws NotFoundException, BadRequestException, ForbiddenException {
+    public List<AttendanceDTO> getRideAttendances(@PathVariable Long rideId) throws NotFoundException, BadRequestException, ForbiddenException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return rideService.getRideAttendances(rideId, loggedUser);
     }
 
     @RequestMapping(value = "/rides/{rideId}/availabilities", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Availability> getRideAvailabilities(@PathVariable Long rideId) throws NotFoundException, BadRequestException, ForbiddenException {
+    public List<AvailabilityDTO> getRideAvailabilities(@PathVariable Long rideId) throws NotFoundException, BadRequestException, ForbiddenException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return rideService.getRideAvailabilities(rideId, loggedUser);

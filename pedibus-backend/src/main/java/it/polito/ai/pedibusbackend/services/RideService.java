@@ -9,9 +9,7 @@ import it.polito.ai.pedibusbackend.repositories.LineRepository;
 import it.polito.ai.pedibusbackend.repositories.RideRepository;
 import it.polito.ai.pedibusbackend.repositories.UserRepository;
 import it.polito.ai.pedibusbackend.security.AuthorizationManager;
-import it.polito.ai.pedibusbackend.viewmodels.NewRideDTO;
-import it.polito.ai.pedibusbackend.viewmodels.RideDTO;
-import it.polito.ai.pedibusbackend.viewmodels.UpdateRideDTO;
+import it.polito.ai.pedibusbackend.viewmodels.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -185,49 +183,96 @@ public class RideService implements InitializingBean {
         return;
     }
 
-    public List<Reservation> getRideReservations(Long rideId, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
+    public List<ReservationDTO> getRideReservations(Long rideId, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+        List<ReservationDTO> reservations = new ArrayList<>();
+        ReservationDTO reservationDTO;
 
         Ride ride = rideRepository.getById(rideId);
 
-        /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */
-        AuthorizationManager.authorizeLineAccess(currentUser, ride.getLine().getId());
-
-        /* Check if the currentUser has availability status 'CONSOLIDATED' */
+        // Check if the user is SYSTEM-ADMIN or ADMIN of the line or conductor or the ride
+        // Check if the currentUser has availability status 'CONSOLIDATED'
         Availability a = availabilityRepository.getByUserAndRide(currentUser, ride);
-        if(!a.getStatus().equals("CONSOLIDATED")){
-            throw new ForbiddenException();
+        AuthorizationManager.authorizeRideConductor(currentUser, ride, a);
+
+        for (Reservation r: ride.getReservations()) {
+            reservationDTO = new ReservationDTO();
+
+            reservationDTO.setId(r.getId());
+            //add pupil to DTO
+            PupilDTO pupilDTO = new PupilDTO();
+            pupilDTO.setId(r.getPupil().getId());
+            pupilDTO.setName(r.getPupil().getName());
+            pupilDTO.setParentEmail(r.getPupil().getUser().getEmail());
+            reservationDTO.setPupil(pupilDTO);
+            reservationDTO.setStopId(r.getStop().getId());
+            if(r.getAttendance() != null){
+                reservationDTO.setHasAttendance(true);
+                reservationDTO.setAttendanceId(r.getAttendance().getId());
+            }else{
+                reservationDTO.setHasAttendance(false);
+            }
+
+            reservations.add(reservationDTO);
         }
 
-        return ride.getReservations();
+
+        return reservations;
     }
 
-    public List<Attendance> getRideAttendances(Long rideId, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
+    public List<AttendanceDTO> getRideAttendances(Long rideId, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+        List<AttendanceDTO> attendances = new ArrayList<>();
+        AttendanceDTO attendanceDTO;
 
         Ride ride = rideRepository.getById(rideId);
 
-        /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */
-        AuthorizationManager.authorizeLineAccess(currentUser, ride.getLine().getId());
-
-        /* Check if the currentUser has availability status 'CONSOLIDATED' */
+        // Check if the user is SYSTEM-ADMIN or ADMIN of the line or conductor or the ride
+        // Check if the currentUser has availability status 'CONSOLIDATED'
         Availability a = availabilityRepository.getByUserAndRide(currentUser, ride);
-        if(!a.getStatus().equals("CONSOLIDATED")){
-            throw new ForbiddenException();
+        AuthorizationManager.authorizeRideConductor(currentUser, ride, a);
+
+        for (Attendance at: ride.getAttendances()) {
+            attendanceDTO = new AttendanceDTO();
+
+            attendanceDTO.setId(at.getId());
+            attendanceDTO.setPupilId(at.getPupil().getId());
+            attendanceDTO.setStopId(at.getStop().getId());
+            if(at.getReservation() != null){
+                attendanceDTO.setHasReservation(true);
+                attendanceDTO.setReservationId(at.getReservation().getId());
+            }else{
+                attendanceDTO.setHasReservation(false);
+            }
+
+            attendances.add(attendanceDTO);
         }
 
-        return ride.getAttendances();
+        return attendances;
     }
 
-    public List<Availability> getRideAvailabilities(Long rideId, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
+    public List<AvailabilityDTO> getRideAvailabilities(Long rideId, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+        List<AvailabilityDTO> availabilities = new ArrayList<>();
+        AvailabilityDTO availabilityDTO;
 
         Ride ride = rideRepository.getById(rideId);
 
         /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */
         AuthorizationManager.authorizeLineAccess(currentUser, ride.getLine().getId());
 
-        return ride.getAvailabilities();
+        for (Availability av: ride.getAvailabilities()) {
+            availabilityDTO = new AvailabilityDTO();
+
+            availabilityDTO.setId(av.getId());
+            availabilityDTO.setUserId(av.getUser().getEmail());
+            availabilityDTO.setStopId(av.getStop().getId());
+            availabilityDTO.setStatus(av.getStatus());
+
+            availabilities.add(availabilityDTO);
+        }
+
+        return availabilities;
     }
 
     @Override

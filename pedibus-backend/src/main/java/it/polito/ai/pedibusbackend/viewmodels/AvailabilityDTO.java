@@ -10,4 +10,5 @@ public class AvailabilityDTO {
     private RideDTO ride;
     private Long stopId;
     private String status;
+    private String userId;
 }
