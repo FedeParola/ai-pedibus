@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface AttendanceRepository extends CrudRepository<Attendance, Long> {
     @Query("SELECT a FROM Attendance " +
-            "a JOIN a.ride r ON r.date = ?2 AND r.direction = ?3" +
+            "a JOIN a.ride r ON r.date = ?2 AND r.direction = ?3 " +
             "WHERE a.pupil = ?1")
     Optional<Attendance> findByPupilAndDateAndDirection(Pupil pupil, Date date, Character direction);
 }

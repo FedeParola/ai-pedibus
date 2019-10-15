@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Service
 public class AttendanceService {
@@ -73,14 +74,15 @@ public class AttendanceService {
         }
 
         //Check if current date and time is before than when the stop takes place (with 30 min tolerance)
+        Date stopTime = new Date(ride.getDate().getTime() + stop.getTime().getTime());
         Date now = new Date();
         now.setTime(now.getTime() - 30 * 60 * 1000);
-        if(stop.getTime().compareTo(now) <  0){
+        if(stopTime.compareTo(now) <  0){
             throw new BadRequestException();
         }
 
         //Check if the stop belongs to the ride
-        if(!ride.getLine().getStops().contains(stop.getId())){
+        if(!ride.getLine().getStops().stream().anyMatch(s -> s.getId() == stop.getId())){
             throw new BadRequestException();
         }
 
@@ -118,9 +120,10 @@ public class AttendanceService {
         }
 
         //Check if current date and time is before than when the stop takes place (with 30 min tolerance)
+        Date stopTime = new Date(attendance.getRide().getDate().getTime() + attendance.getStop().getTime().getTime());
         Date now = new Date();
         now.setTime(now.getTime() - 30 * 60 * 1000);
-        if(attendance.getStop().getTime().compareTo(now) <  0){
+        if(stopTime.compareTo(now) <  0){
             throw new BadRequestException();
         }
 
