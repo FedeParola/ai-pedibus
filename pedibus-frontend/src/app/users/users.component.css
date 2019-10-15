@@ -1,0 +1,33 @@
+.users-card {
+    min-width: 150px;
+    max-width: 500px;
+    width: 100%;
+    margin: auto;
+    margin-top: 10px;
+}
+
+.spacer {
+    flex: 1 1 auto;
+}
+
+.card-content{
+    text-align: center;
+}
+
+.new-button{
+    font-size: 25px;
+    font-style: normal;
+    width: 40%;
+    margin-top: 40px;
+}
+
+.nav-buttons {
+    position: absolute; 
+    right: 5px;
+    margin-top: 40px;
+}
+
+.mat-list{
+    border-style: solid;
+    border-width: 1px;
+}

@@ -7,4 +7,21 @@
   </mat-toolbar-row>
 </mat-toolbar>
 
+<mat-list class="menu">
+  <mat-list-item>
+    <span class="spacer"></span>
+    <h3 mat-subheader>Menu</h3>
+    <span class="spacer"></span>
+  </mat-list-item>
+  <mat-list-item>
+    <button mat-button (click)="users()">Users</button>
+  </mat-list-item>
+  <mat-list-item>
+    <button mat-button (click)="attendances()">Attendances</button>
+  </mat-list-item>
+  <mat-list-item>
+    <button mat-button>Comunications</button>
+  </mat-list-item>
+</mat-list>
+
 <router-outlet></router-outlet>

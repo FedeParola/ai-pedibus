@@ -2,7 +2,6 @@
     background-color: steelblue;
     font-size: 45px;
     color: whitesmoke;
-    margin-bottom: 10px;
 }
 
 .button {
@@ -12,3 +11,26 @@
 .spacer {
     flex: 1 1 auto;
 }
+
+.menu {
+    background-color: steelblue;
+    width: 20%;
+    min-height: 100%; /* Minimum height for modern browsers */
+    height:100%; /* Minimum height for IE */ 
+    position: fixed;
+}
+
+.mat-subheader{
+    color: whitesmoke;
+    font-size: 35px;
+    font-style: oblique;
+    
+}
+
+.mat-button{
+    width: 100%;
+    color: whitesmoke;
+    font-size: 20px;
+    font-style: normal;
+}
+
