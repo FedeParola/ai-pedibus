@@ -9,5 +9,5 @@ public class PupilDTO {
     private Long id;
     private String name;
     private Long lineId;
-    private String parentEmail;
+    private String userId;
 }

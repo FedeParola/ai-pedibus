@@ -203,12 +203,11 @@ public class RideService implements InitializingBean {
             PupilDTO pupilDTO = new PupilDTO();
             pupilDTO.setId(r.getPupil().getId());
             pupilDTO.setName(r.getPupil().getName());
-            pupilDTO.setParentEmail(r.getPupil().getUser().getEmail());
+            pupilDTO.setUserId(r.getPupil().getUser().getEmail());
             reservationDTO.setPupil(pupilDTO);
             reservationDTO.setStopId(r.getStop().getId());
             if(r.getAttendance() != null){
                 reservationDTO.setHasAttendance(true);
-                reservationDTO.setAttendanceId(r.getAttendance().getId());
             }else{
                 reservationDTO.setHasAttendance(false);
             }
@@ -236,11 +235,15 @@ public class RideService implements InitializingBean {
             attendanceDTO = new AttendanceDTO();
 
             attendanceDTO.setId(at.getId());
-            attendanceDTO.setPupilId(at.getPupil().getId());
+            //add pupil to DTO
+            PupilDTO pupilDTO = new PupilDTO();
+            pupilDTO.setId(at.getPupil().getId());
+            pupilDTO.setName(at.getPupil().getName());
+            pupilDTO.setUserId(at.getPupil().getUser().getEmail());
+            attendanceDTO.setPupil(pupilDTO);
             attendanceDTO.setStopId(at.getStop().getId());
             if(at.getReservation() != null){
                 attendanceDTO.setHasReservation(true);
-                attendanceDTO.setReservationId(at.getReservation().getId());
             }else{
                 attendanceDTO.setHasReservation(false);
             }

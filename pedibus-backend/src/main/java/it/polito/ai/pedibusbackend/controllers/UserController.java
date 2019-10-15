@@ -223,6 +223,14 @@ public class UserController {
         return userService.getPupils(userId, loggedUser.getUsername());
     }
 
+    @GetMapping(value = "/users/{userId}/rides", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<RideDTO> getRides(@PathVariable String userId, @RequestParam Long lineId)
+            throws NotFoundException, ForbiddenException, BadRequestException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return userService.getRides(userId, lineId, loggedUser.getUsername());
+    }
+
 //
 //    @GetMapping(value = "/register/{userID}", produces = MediaType.APPLICATION_JSON_VALUE)
 //    public Map<String,String> getUser(@PathVariable String userID) throws NotFoundException {

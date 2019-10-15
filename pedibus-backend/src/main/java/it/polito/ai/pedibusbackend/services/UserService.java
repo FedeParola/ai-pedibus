@@ -38,6 +38,8 @@ public class UserService implements InitializingBean, UserDetailsService {
     private static final long RECOVER_TOKEN_EXPIRY_MIN = 30;
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
     @Autowired
+    private AttendanceRepository attendanceRepository;
+    @Autowired
     private AvailabilityRepository availabilityRepository;
     @Autowired
     private UserRepository userRepository;
@@ -45,6 +47,8 @@ public class UserService implements InitializingBean, UserDetailsService {
     private LineRepository lineRepository;
     @Autowired
     private PupilRepository pupilRepository;
+    @Autowired
+    private ReservationRepository reservationRepository;
     @Autowired
     private RideRepository rideRepository;
     @Autowired
@@ -125,9 +129,12 @@ public class UserService implements InitializingBean, UserDetailsService {
             userDTO.setEmail(u.getEmail());
             userDTO.setEnabled(u.isEnabled());
             userDTO.setRoles(new ArrayList<>(u.getRoles()));
-            List<UserDTO.Line> lines = new ArrayList<>();
+            List<LineDTO> lines = new ArrayList<>();
             for (Line l : u.getLines()) {
-                lines.add(new UserDTO.Line(l.getId(), l.getName()));
+                LineDTO lineDTO = new LineDTO();
+                lineDTO.setId(l.getId());
+                lineDTO.setName(l.getName());
+                lines.add(lineDTO);
             }
             userDTO.setLines(lines);
             users.add(userDTO);
@@ -335,6 +342,34 @@ public class UserService implements InitializingBean, UserDetailsService {
         return pupilDTOs;
     }
 
+    public List<RideDTO> getRides(String userId, Long lineId, String loggedUserId)
+            throws BadRequestException, ForbiddenException, NotFoundException {
+        /* Authorize access */
+        User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
+        if (!(loggedUserId.equals(userId) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
+            throw new ForbiddenException();
+        }
+
+        /* Retrieve user and line entities */
+        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        Line line = lineRepository.findById(lineId).orElseThrow(BadRequestException::new);
+
+        /* Retrieve rides */
+        Iterable<Ride> rides = rideRepository.getByEscortAndLine(user, line);
+
+        /* Build result structure */
+        List<RideDTO> rideDTOs = new ArrayList<>();
+        for (Ride r : rides) {
+            RideDTO rideDTO = new RideDTO();
+            rideDTO.setId(r.getId());
+            rideDTO.setDate(r.getDate());
+            rideDTO.setDirection(r.getDirection());
+            rideDTOs.add(rideDTO);
+        }
+
+        return rideDTOs;
+    }
+
     @Override
     public void afterPropertiesSet() {
         Line line1 = lineRepository.getById(Long.parseLong("1"));
@@ -358,20 +393,20 @@ public class UserService implements InitializingBean, UserDetailsService {
         user = persistNewUser("user0@email.it", "user0", "user0", roles, lines, "Password0");
 
         /* Create User0's pupils */
-        persistNewPupil("Andrea", line1, user);
-        persistNewPupil("Federico", line1, user);
-        persistNewPupil("Kamil", line1, user);
+        Pupil p1 = persistNewPupil("Andrea", line1, user);
+        Pupil p2 = persistNewPupil("Federico", line1, user);
+        Pupil p3 = persistNewPupil("Kamil", line1, user);
 
         /* Create some rides for yesterday */
         Ride r1 = persistNewRide(new java.sql.Date(System.currentTimeMillis()-24*60*60*1000), line1, 'O', true);
-        Ride r2 = persistNewRide(new java.sql.Date(System.currentTimeMillis()-24*60*60*1000), line1, 'R', true);
 
         /* Create some rides for today */
-        Ride r3 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'O', true);
-        Ride r4 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'R', true);
+        Ride r2 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'O', true);
+        Ride r3 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'R', true);
 
         /* Create some rides for tomorrow */
-        Ride r5 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'O', true);
+        Ride r4 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'O', true);
+        Ride r5 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'R', true);
 
         /* Create some availabilities */
         persistNewAvailability(user, r1, line1.getStops().get(0), "CONSOLIDATED");
@@ -379,6 +414,14 @@ public class UserService implements InitializingBean, UserDetailsService {
         persistNewAvailability(user, r3, line1.getStops().get(0), "CONSOLIDATED");
         persistNewAvailability(user, r4, line1.getStops().get(2), "CONSOLIDATED");
         persistNewAvailability(user, r5, line1.getStops().get(0), "CONSOLIDATED");
+
+        /* Create some reservations */
+        Reservation r = persistNewReservation(p1, r4, line1.getStops().get(0));
+        persistNewReservation(p2, r4, line1.getStops().get(1));
+
+        /* Create some attendances */
+        persistNewAttendance(p1, r4, line1.getStops().get(0), r);
+        persistNewAttendance(p3, r4, line1.getStops().get(0), null);
 
         /* Create User1 */
         roles = new ArrayList<>();
@@ -426,15 +469,15 @@ public class UserService implements InitializingBean, UserDetailsService {
         return userRepository.save(user);
     }
 
-    private void persistNewPupil(String name, Line line, User user) {
+    private Pupil persistNewPupil(String name, Line line, User user) {
         Pupil p = new Pupil();
         p.setName(name);
         p.setLine(line);
         p.setUser(user);
-        pupilRepository.save(p);
+        return pupilRepository.save(p);
     }
 
-    private Ride persistNewRide(Date date, Line line, Character direction, Boolean consolidated){
+    private Ride persistNewRide(Date date, Line line, Character direction, Boolean consolidated) {
         Ride r = new Ride();
         r.setDate(date);
         r.setLine(line);
@@ -443,13 +486,30 @@ public class UserService implements InitializingBean, UserDetailsService {
         return rideRepository.save(r);
     }
 
-    private void persistNewAvailability(User user, Ride ride, Stop stop, String status){
+    private void persistNewAvailability(User user, Ride ride, Stop stop, String status) {
         Availability a = new Availability();
         a.setUser(user);
         a.setRide(ride);
         a.setStop(stop);
         a.setStatus(status);
         availabilityRepository.save(a);
+    }
+
+    private Reservation persistNewReservation(Pupil pupil, Ride ride, Stop stop) {
+        Reservation r = new Reservation();
+        r.setPupil(pupil);
+        r.setRide(ride);
+        r.setStop(stop);
+        return reservationRepository.save(r);
+    }
+
+    private Attendance persistNewAttendance(Pupil pupil, Ride ride, Stop stop, Reservation reservation) {
+        Attendance a = new Attendance();
+        a.setPupil(pupil);
+        a.setRide(ride);
+        a.setStop(stop);
+        a.setReservation(reservation);
+        return attendanceRepository.save(a);
     }
 
     @Override

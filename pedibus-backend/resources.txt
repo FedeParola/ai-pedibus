@@ -4,6 +4,7 @@
 /users/{userId}/lines               GET, POST
 /users/{userId}/lines/{lineId}      DELETE
 /users/{userId}/pupils              GET
+/users/{userId}/rides               GET                     long lineId
 /pupils                             POST
 /pupils/{pupilId}                   PUT, DELETE
 /pupils/{pupilId}/reservations      GET

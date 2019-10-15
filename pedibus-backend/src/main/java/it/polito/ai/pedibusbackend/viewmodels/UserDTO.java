@@ -14,11 +14,5 @@ public class UserDTO {
     private String surname;
     private boolean enabled;
     private List<String> roles;
-    private List<Line> lines;
-
-    @Value
-    public static class Line {
-        private Long id;
-        private String name;
-    }
+    private List<LineDTO> lines;
 }
