@@ -14,14 +14,14 @@
     <span class="spacer"></span>
   </mat-list-item>
   <mat-list-item>
-    <button mat-button>Users</button>
+    <button mat-button (click)="users()">Users</button>
   </mat-list-item>
   <mat-list-item>
-      <button mat-button>Attendances</button>
-    </mat-list-item>
-    <mat-list-item>
-        <button mat-button>Comunications</button>
-      </mat-list-item>
+    <button mat-button (click)="attendances()">Attendances</button>
+  </mat-list-item>
+  <mat-list-item>
+    <button mat-button>Comunications</button>
+  </mat-list-item>
 </mat-list>
 
 <router-outlet></router-outlet>

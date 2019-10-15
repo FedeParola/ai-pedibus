@@ -26,4 +26,12 @@ export class AppComponent implements OnInit{
     this.logoutDisabled = true;
   }
 
+  users(){
+    this.router.navigateByUrl('/users');
+  }
+
+  attendances(){
+    this.router.navigateByUrl('/attendance');
+  }
+
 }

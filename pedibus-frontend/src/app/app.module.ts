@@ -26,13 +26,15 @@ import { RegisterComponent } from './register/register.component';
 import { AttendanceService } from './attendance.service';
 import { AuthenticationService } from './authentication.service';
 import { AuthInterceptor } from './auth-interceptor';
+import { UsersComponent } from './users/users.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     AttendanceComponent,
     LoginComponent,
-    RegisterComponent
+    RegisterComponent,
+    UsersComponent
   ],
   imports: [
     BrowserModule,
