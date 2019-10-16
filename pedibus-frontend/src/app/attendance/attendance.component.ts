@@ -90,7 +90,6 @@ export class AttendanceComponent implements OnInit {
   }
 
   loadRideData() {
-    console.log('Ciao');
     this.attendanceService.getRideData(this.selectedRide.id).subscribe(
       (res) => {
         this.rideData = res;
@@ -229,6 +228,48 @@ export class AttendanceComponent implements OnInit {
 
     this.loadRideData();
   }
+
+  canOutbound() {
+    if (this.selectedRide.direction == 'O') {
+      return true;
+    } else if (this.selectedRideIndex == 0) {
+      return false;
+    } else if (this.selectedRide.date == this.rides[this.selectedRideIndex-1].date) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  canReturn() {
+    if (this.selectedRide.direction == 'R') {
+      return true;
+    } else if (this.selectedRideIndex == this.rides.length-1) {
+      return false;
+    } else if (this.selectedRide.date == this.rides[this.selectedRideIndex+1].date) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // 0 = 'O', 1 = 'R'
+  changeDirection(direction) {
+    // Check if the ride has already changed
+    if (direction == 0 && this.selectedRide.direction == 'O' ||
+        direction == 1 && this.selectedRide.direction == 'R') {
+      return;
+    }
+
+    if (direction == 0) {
+      this.selectedRideIndex--;
+    } else {
+      this.selectedRideIndex++;
+    }
+
+    this.loadRideData();
+  }
+
 
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {

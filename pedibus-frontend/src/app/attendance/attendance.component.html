@@ -17,8 +17,9 @@
     </mat-card-header>
   
     <mat-card-content>
-      <mat-tab-group *ngIf="stops" mat-align-tabs='center'>
-        <mat-tab label="Outbound"> 
+      <mat-tab-group *ngIf="stops && rideData" mat-align-tabs='center'
+        (selectedTabChange)="changeDirection($event.index)" [selectedIndex]="selectedRide.direction == 'O' ? 0 : 1">
+        <mat-tab label="Outbound" [disabled]="!canOutbound()"> 
           <mat-list>
             <mat-list-item *ngFor="let stop of stops.outwardStops"> 
               <mat-icon matListIcon>fiber_manual_record</mat-icon>
@@ -42,29 +43,29 @@
           </mat-list>
         </mat-tab>
   
-        <mat-tab label="Return"> 
-            <mat-list>
-              <mat-list-item *ngFor="let stop of stops.returnStops">
-                <mat-icon matListIcon>fiber_manual_record</mat-icon>
-                <h4 mat-line><span class="hour">{{stop.time}}</span> <strong>{{stop.name}}</strong></h4>
-                <!-- <mat-chip-list mat-line>
-                  <mat-chip *ngFor="let pupil of stop.pupils" (click)="onPupilClick(pupil, 'R')"
-                    [class.pupilPresent] = "pupil.attendanceId >= 0"  [disabled]="pupil.disabled">
-                    {{pupil.name}}
-                  </mat-chip>
-                </mat-chip-list> -->
-              </mat-list-item>
-              <!-- <mat-list-item>
-                <h4 mat-line><strong>Pupils without reservation</strong></h4>
-                <mat-chip-list mat-line>
-                  <mat-chip *ngFor="let pupil of reservations.returnNoRes" (click)="onPupilClick(pupil, 'R')"
-                    [class.pupilPresent] = "pupil.attendanceId >= 0" [disabled]="pupil.disabled">
-                    {{pupil.name}}
-                  </mat-chip>
-                </mat-chip-list>
-              </mat-list-item> -->
-            </mat-list>
-          </mat-tab>
+        <mat-tab label="Return" [disabled]="!canReturn()"> 
+          <mat-list>
+            <mat-list-item *ngFor="let stop of stops.returnStops"> 
+              <mat-icon matListIcon>fiber_manual_record</mat-icon>
+              <h4 mat-line><span class="hour">{{stop.time}}</span> <strong>{{stop.name}}</strong></h4>
+              <mat-chip-list mat-line>
+                <mat-chip *ngFor="let data of rideData?.get(stop.id); let i = index" (click)="onDataClick(data, i)"
+                  [ngClass]="data.type" [disabled]="false">
+                  {{data.pupil.name}}
+                </mat-chip>
+              </mat-chip-list>
+            </mat-list-item>
+            <mat-list-item>
+              <h4 mat-line><strong>Pupils without reservation</strong></h4>
+              <mat-chip-list mat-line>
+                <mat-chip *ngFor="let pupil of missingPupils; let i = index" (click)="onPupilClick(pupil, i)"
+                  class="reservation" [disabled]="false">
+                  {{pupil.name}}
+                </mat-chip>
+              </mat-chip-list>
+            </mat-list-item>
+          </mat-list>
+        </mat-tab>
       </mat-tab-group>
     </mat-card-content>
   </mat-card>
