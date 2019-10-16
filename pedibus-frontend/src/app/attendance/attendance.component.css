@@ -5,16 +5,31 @@
     margin: auto;
   }
   
-  .pupilPresent {
-    background-color:powderblue;
-  }
-  
-  .nav-buttons {
-    position: absolute; 
-    right: 5px;
-  }
-  
-  .hour {
-    font-size: 0.93em;
-    margin-right: 0.5em;
-  }
+.pupilPresent {
+  background-color:powderblue;
+}
+
+.attendance {
+  color: white;
+  background-color: crimson;
+}
+
+.reservation {
+  color: white;
+  background-color: darkgray;
+}
+
+.both {
+  color: white;
+  background-color: midnightblue;
+}
+
+.nav-buttons {
+  position: absolute; 
+  right: 5px;
+}
+
+.hour {
+  font-size: 0.93em;
+  margin-right: 0.5em;
+}
