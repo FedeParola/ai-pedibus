@@ -4,25 +4,21 @@
     </mat-card-header>
     <mat-card-content class="card-content">
         <mat-list>
-            <mat-list-item>
+            <mat-list-item *ngFor="let user of users">
                 <span class="spacer"></span> 
-                <p>User0</p>
+                <p>{{user.email}}</p>
                 <span class="spacer"></span>
-                <button mat-raised-button>Lines</button>
-                <mat-divider></mat-divider>
-            </mat-list-item>
-            <mat-list-item>
-                <span class="spacer"></span> 
-                <p>User1</p>
+                <p *ngIf="user.enabled">{{user.name}} {{user.surname}}</p>
+                <p *ngIf="!user.enabled">Waiting for registration</p>
                 <span class="spacer"></span>
-                <button mat-raised-button>Lines</button>
+                <button mat-raised-button [disabled]="!user.enabled || checkCurrent(user.email)" (click)="openDialogUserLines(user.email, user.lines)">Lines</button>
                 <mat-divider></mat-divider>
             </mat-list-item>
         </mat-list>
-        <button mat-raised-button class="new-button">NEW</button>
+        <button mat-raised-button class="new-button" (click)="openDialogNewUser()">NEW</button>
         <span class="nav-buttons">
-            <button mat-icon-button><mat-icon>chevron_left</mat-icon></button>
-            <button mat-icon-button><mat-icon>chevron_right</mat-icon></button>
+            <button mat-icon-button (click)="prevPage()" [disabled]="!prevEnabled"><mat-icon>chevron_left</mat-icon></button>
+            <button mat-icon-button (click)="nextPage()" [disabled]="!nextEnabled"><mat-icon>chevron_right</mat-icon></button>
         </span>
     </mat-card-content>
 </mat-card>

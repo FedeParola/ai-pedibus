@@ -1,0 +1,20 @@
+<div mat-dialog-content>
+  <form [formGroup]="form">
+    <mat-form-field class="form-field">
+      <input matInput cdkFocusInitial type="email" placeholder="Email" formControlName="email" (input)="checkEmail()">
+      <mat-error *ngIf="form.controls.email.hasError('required')">
+        Email is <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="form.controls.email.hasError('email')">
+        Insert a valid email address
+      </mat-error>
+      <mat-error *ngIf="form.controls.email.hasError('alreadyUsed')">
+          Email already in use
+      </mat-error>
+    </mat-form-field>
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onCancelClick()">Cancel</button>
+  <button mat-button (click)="onAddClick()">Add user</button>
+</div>

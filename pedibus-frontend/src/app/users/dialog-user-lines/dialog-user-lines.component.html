@@ -1,0 +1,24 @@
+<div mat-dialog-content class="dialog-content">
+    <mat-list> 
+        <mat-list-item *ngFor="let line of selectedUserLines">
+            <span class="spacer"></span> 
+            <p>{{line.name}}</p>
+            <span class="spacer"></span>
+            <button mat-raised-button [disabled]="checkDisabled(line)" (click)="removeLine(line)">Remove</button>
+            <mat-divider></mat-divider>
+        </mat-list-item>
+    </mat-list>
+    <p *ngIf="!selectedUserLines.length">User do not have any line yet</p>
+    <div>
+        <mat-form-field>
+            <mat-select cdkFocusInitial [(value)]="selected">
+              <mat-option *ngFor="let line of currentUserLines" [value]="line">
+                {{line.name}}
+              </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <button mat-raised-button (click)="addLine()">Add</button>
+    </div>
+    
+    <button mat-raised-button class="done-button" (click)="onDoneClick()">Done</button>
+</div>

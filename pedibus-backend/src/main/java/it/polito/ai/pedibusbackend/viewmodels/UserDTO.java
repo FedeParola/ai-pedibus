@@ -15,4 +15,5 @@ public class UserDTO {
     private boolean enabled;
     private List<String> roles;
     private List<LineDTO> lines;
+    private Boolean hasNext;
 }

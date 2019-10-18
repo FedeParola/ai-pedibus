@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,11 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 
 @Service
@@ -121,13 +121,28 @@ public class UserService implements InitializingBean, UserDetailsService {
         }
     }
 
-    public List<UserDTO> getUsers() {
+    public List<UserDTO> getUsers(Optional<Integer> page, Optional<Integer> size) throws BadRequestException {
         List<UserDTO> users = new ArrayList<>();
+        List<User> requestedUsers = new ArrayList<>();
 
-        for (User u : userRepository.findAll()) {
+        if(page.isPresent() && size.isPresent()){
+            requestedUsers = userRepository.findAll(PageRequest.of(page.get(), size.get())).getContent()
+                    .stream()
+                    .collect(Collectors.toList());
+        }else if(!page.isPresent() && !size.isPresent()){
+            requestedUsers = StreamSupport
+                    .stream(userRepository.findAll().spliterator(), false)
+                    .collect(Collectors.toList());
+        }else{
+            throw new BadRequestException();
+        }
+
+        for (User u : requestedUsers) {
             UserDTO userDTO = new UserDTO();
             userDTO.setEmail(u.getEmail());
             userDTO.setEnabled(u.isEnabled());
+            userDTO.setName(u.getName());
+            userDTO.setSurname(u.getSurname());
             userDTO.setRoles(new ArrayList<>(u.getRoles()));
             List<LineDTO> lines = new ArrayList<>();
             for (Line l : u.getLines()) {
@@ -138,6 +153,15 @@ public class UserService implements InitializingBean, UserDetailsService {
             }
             userDTO.setLines(lines);
             users.add(userDTO);
+        }
+
+        //set to the last user if is the last
+        if(page.isPresent()){
+            if(userRepository.findAll(PageRequest.of(page.get() + 1, size.get())).isEmpty()){
+                users.get(requestedUsers.size() - 1).setHasNext(false);
+            }else{
+                users.get(requestedUsers.size() -1).setHasNext(true);
+            }
         }
 
         return users;
@@ -188,18 +212,27 @@ public class UserService implements InitializingBean, UserDetailsService {
         return uuid;
     }
 
-    public UserDTO getUser(String userId, String loggedUserId)
+    public UserDTO getUser(String userId, String loggedUserId, Optional<Boolean> check)
             throws NotFoundException, ForbiddenException, BadRequestException {
+        User user;
+        UserDTO userDTO = new UserDTO();;
+
+        //if we are only checking if the user exists
+        if(check.isPresent() && check.get().equals(true)){
+            user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+            userDTO.setEmail(user.getEmail());
+            return userDTO;
+        }
+
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(userId) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
             throw new ForbiddenException();
         }
 
-        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
 
         /* Build result structure */
-        UserDTO userDTO = new UserDTO();
         userDTO.setName(user.getName());
         userDTO.setSurname(user.getSurname());
 
@@ -267,9 +300,20 @@ public class UserService implements InitializingBean, UserDetailsService {
         return availabilityDTOs;
     }
 
-    public List<Long> getAdminLines(String userId) throws NotFoundException {
+    public List<LineDTO> getAdminLines(String userId) throws NotFoundException {
         User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
-        return user.getLines().stream().map(Line::getId).collect(Collectors.toList());
+        List<LineDTO> lines = new ArrayList<>();
+        LineDTO lineDTO;
+
+        for(Line l: user.getLines()){
+            lineDTO = new LineDTO();
+            lineDTO.setId(l.getId());
+            lineDTO.setName(l.getName());
+
+            lines.add(lineDTO);
+        }
+
+        return lines;
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
@@ -438,7 +482,8 @@ public class UserService implements InitializingBean, UserDetailsService {
         lines = new ArrayList<>();
         roles.add("ROLE_ADMIN");
         roles.add("ROLE_USER");
-        lines.add(line2);
+        lines.add(line1);
+        //lines.add(line2);
         user = persistNewUser("user2@email.it", "user2", "user2", roles, lines, "Password2");
 
         /* Create User2's pupils */
@@ -451,6 +496,18 @@ public class UserService implements InitializingBean, UserDetailsService {
         lines = new ArrayList<>();
         roles.add("ROLE_USER");
         user = persistNewUser("user3@email.it", "user3", "user3", roles, lines, "Password3");
+
+        /* Create User4 */
+        roles = new ArrayList<>();
+        lines = new ArrayList<>();
+        roles.add("ROLE_USER");
+        user = persistNewUser("user4@email.it", "user4", "user4", roles, lines, "Password4");
+
+        /* Create User5 */
+        roles = new ArrayList<>();
+        lines = new ArrayList<>();
+        roles.add("ROLE_USER");
+        user = persistNewUser("user5@email.it", "user5", "user5", roles, lines, "Password5");
 
         /* Create User0's pupils */
         persistNewPupil("Massimo", line2, user);

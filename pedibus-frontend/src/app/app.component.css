@@ -34,3 +34,7 @@
     font-style: normal;
 }
 
+[hidden] {
+    display: none;
+}
+

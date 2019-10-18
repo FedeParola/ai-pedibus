@@ -35,7 +35,7 @@ export class RegisterComponent implements OnInit {
 
     if (this.form.valid) {
       this.registerButtonDisabled = true;
-      this.authService.register(val.email, val.password, val.confPassword)
+      this.authService.register(val.email)
           .subscribe(
               () => {
                 console.log("User is registered");

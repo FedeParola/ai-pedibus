@@ -149,8 +149,9 @@ public class UserController {
     }
 
     @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<UserDTO> getUsers() {
-        return userService.getUsers();
+    public List<UserDTO> getUsers(@RequestParam("page") Optional<Integer> page, @RequestParam("size") Optional<Integer> size)
+            throws BadRequestException{
+        return userService.getUsers(page, size);
     }
 
     @PostMapping(value = "/users", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -167,11 +168,11 @@ public class UserController {
     }
 
     @GetMapping(value = "/users/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public UserDTO getUser(@PathVariable String userId)
+    public UserDTO getUser(@PathVariable String userId, @RequestParam("check") Optional<Boolean> check)
             throws NotFoundException, ForbiddenException, BadRequestException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        return userService.getUser(userId, loggedUser.getUsername());
+        return userService.getUser(userId, loggedUser.getUsername(), check);
     }
 
     @PutMapping(value = "/users/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -195,7 +196,7 @@ public class UserController {
     }
 
     @GetMapping(value = "users/{userId}/lines", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Long> getAdminLines(@PathVariable String userId) throws NotFoundException {
+    public List<LineDTO> getAdminLines(@PathVariable String userId) throws NotFoundException {
         return userService.getAdminLines(userId);
     }
 

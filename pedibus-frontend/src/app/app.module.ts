@@ -17,6 +17,8 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatSelectModule} from '@angular/material/select';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -26,9 +28,10 @@ import { RegisterComponent } from './register/register.component';
 import { AttendanceService } from './attendance.service';
 import { AuthenticationService } from './authentication.service';
 import { AuthInterceptor } from './auth-interceptor';
-import { UsersComponent } from './users/users.component';
+import { UsersComponent, DialogNewUserComponent } from './users/users.component';
 import { SimpleRideSelectorComponent } from './simple-ride-selector/simple-ride-selector.component';
 import { RideSelectorComponent } from './ride-selector/ride-selector.component';
+import { DialogUserLinesComponent } from './users/dialog-user-lines/dialog-user-lines.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +41,9 @@ import { RideSelectorComponent } from './ride-selector/ride-selector.component';
     RegisterComponent,
     UsersComponent,
     SimpleRideSelectorComponent,
-    RideSelectorComponent
+    RideSelectorComponent,
+    DialogNewUserComponent,
+    DialogUserLinesComponent
   ],
   imports: [
     BrowserModule,
@@ -57,7 +62,9 @@ import { RideSelectorComponent } from './ride-selector/ride-selector.component';
     MatSnackBarModule,
     MatIconModule,
     MatMenuModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MatDialogModule,
+    MatSelectModule
   ],
   providers: [
     AttendanceService,
@@ -66,6 +73,7 @@ import { RideSelectorComponent } from './ride-selector/ride-selector.component';
       useClass: AuthInterceptor,
       multi: true }
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [DialogNewUserComponent, DialogUserLinesComponent]
 })
 export class AppModule { }

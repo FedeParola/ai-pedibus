@@ -42,9 +42,16 @@ export class LoginComponent implements OnInit {
                   console.log("User is logged in");
                   this.router.navigateByUrl('/attendance');
                   this.appComponent.logoutDisabled=false;
+                  const roles = this.authService.getRoles();
+                  if(roles.indexOf('ROLE_ADMIN') > -1){
+                    this.appComponent.usersDisabled = false;
+                  }else{
+                    this.appComponent.usersDisabled = true;
+                  }
                 },
                 (error) => {
                   this.loginButtonDisabled = false;
+                  this.appComponent.usersDisabled = false;
                   this.handleError(error);
                 }
             );

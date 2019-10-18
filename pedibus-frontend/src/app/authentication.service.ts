@@ -18,20 +18,23 @@ export class AuthenticationService {
     );
   }
 
-  register(email:string, pass:string, confPass: string) {
-    return this.http.post('http://localhost:8080/register', {email, pass, confPass});
+  register(email:string) {
+    return this.http.post(environment.apiUrl+'/users', {email});
   }
       
   private setSession(authResult) {
     let payload = decode(authResult.token);
     localStorage.setItem('id_token', authResult.token);
     localStorage.setItem('username', payload.sub);
+    localStorage.setItem('roles', payload.roles);
     localStorage.setItem("expires_at", JSON.stringify(payload.exp));
   }          
 
   logout() {
       localStorage.removeItem("id_token");
       localStorage.removeItem("expires_at");
+      localStorage.removeItem("username");
+      localStorage.removeItem("roles");
   }
 
   public isLoggedIn() {
@@ -40,6 +43,11 @@ export class AuthenticationService {
 
   isLoggedOut() {
       return !this.isLoggedIn();
+  }
+
+  getRoles(){
+    const roles = localStorage.getItem("roles").split(',');
+    return roles;
   }
 
   getUsername() {
@@ -52,7 +60,7 @@ export class AuthenticationService {
       return new Date(expiresAt*1000);
   }
 
-  checkEmail(email: string){
-    return this.http.get(environment.apiUrl+'/register/'+email);
+  checkEmail(username: string){
+    return this.http.get(environment.apiUrl+'/users/'+username+'?check=true');
   }
 }

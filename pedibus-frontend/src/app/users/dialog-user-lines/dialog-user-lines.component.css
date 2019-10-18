@@ -1,0 +1,13 @@
+.spacer {
+    flex: 1 1 auto;
+}
+
+.dialog-content{
+    text-align: center;
+}
+
+.done-button{
+    margin-top: 30px;
+    margin-bottom: 10px;
+    width: 100%;
+}
