@@ -50,6 +50,11 @@ export class AttendanceComponent implements OnInit {
     this.loadLine();
   }
 
+  onSelectedRideChange(newRideIndex: number) {
+    this.selectedRideIndex = newRideIndex;
+    this.loadRideData();
+  }
+
   loadLine() {
     this.stops = null;
     this.pupils = null;
@@ -78,10 +83,12 @@ export class AttendanceComponent implements OnInit {
       (res) => {
         this.rides = res;
 
-        // Pick the closest ride to current date
-        this.selectedRideIndex = this.rides.length-2;
+        if (this.rides.length > 0) {
+          // Pick the closest ride to current date
+          this.selectedRideIndex = this.rides.length-2;
 
-        this.loadRideData();
+          this.loadRideData();
+        }
       },
       (error) => {
         this.handleError(error)
@@ -181,95 +188,6 @@ export class AttendanceComponent implements OnInit {
       }
     );
   }
-
-  canNextRide() {
-    if (this.selectedRideIndex == -1) {
-      return false;
-    }
-
-    if (this.selectedRideIndex == this.rides.length-1 ||
-        (this.selectedRideIndex == this.rides.length-2 &&
-         this.rides[this.rides.length-1].date == this.rides[this.rides.length-2].date)) {
-      return false;
-    }
-
-    return true;
-  }
-
-  nextRide() {
-    if (this.rides[this.selectedRideIndex+1].date == this.selectedRide.date) {
-      this.selectedRideIndex += 2;
-    } else {
-      this.selectedRideIndex++;
-    }
- 
-    this.loadRideData();
-  }
-
-  canPrevRide() {
-    if (this.selectedRideIndex == -1) {
-      return false;
-    }
-    
-    if (this.selectedRideIndex == 0 ||
-        (this.selectedRideIndex == 1 && this.rides[0].date == this.rides[1].date)) {
-      return false;
-    }
-
-    return true;
-  }
-
-  prevRide() {
-    if (this.rides[this.selectedRideIndex-1].date == this.selectedRide.date) {
-      this.selectedRideIndex -= 2;
-    } else {
-      this.selectedRideIndex--;
-    }
-
-    this.loadRideData();
-  }
-
-  canOutbound() {
-    if (this.selectedRide.direction == 'O') {
-      return true;
-    } else if (this.selectedRideIndex == 0) {
-      return false;
-    } else if (this.selectedRide.date == this.rides[this.selectedRideIndex-1].date) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  canReturn() {
-    if (this.selectedRide.direction == 'R') {
-      return true;
-    } else if (this.selectedRideIndex == this.rides.length-1) {
-      return false;
-    } else if (this.selectedRide.date == this.rides[this.selectedRideIndex+1].date) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  // 0 = 'O', 1 = 'R'
-  changeDirection(direction) {
-    // Check if the ride has already changed
-    if (direction == 0 && this.selectedRide.direction == 'O' ||
-        direction == 1 && this.selectedRide.direction == 'R') {
-      return;
-    }
-
-    if (direction == 0) {
-      this.selectedRideIndex--;
-    } else {
-      this.selectedRideIndex++;
-    }
-
-    this.loadRideData();
-  }
-
 
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {

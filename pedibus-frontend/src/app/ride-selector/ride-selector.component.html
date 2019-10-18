@@ -1,0 +1,11 @@
+<app-simple-ride-selector
+    [lines]="lines" (lineSelect)="selectLine($event)"
+    [line]="line"
+    [ride]="(rides && selectedRide >= 0) ? rides[selectedRide] : undefined"
+    (prevRideClick)="prevRide()"
+    [prevRideDisabled]="!rides || selectedRide === undefined || selectedRide <= 0"
+    (nextRideClick)="nextRide()"
+    [nextRideDisabled]="!rides || selectedRide === undefined || selectedRide >= rides.length-1">
+    <p class="no-rides-msg" *ngIf="rides?.length == 0">No rides available</p>
+    <ng-content></ng-content>
+</app-simple-ride-selector>

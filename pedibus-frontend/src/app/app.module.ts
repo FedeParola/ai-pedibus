@@ -27,6 +27,8 @@ import { AttendanceService } from './attendance.service';
 import { AuthenticationService } from './authentication.service';
 import { AuthInterceptor } from './auth-interceptor';
 import { UsersComponent } from './users/users.component';
+import { SimpleRideSelectorComponent } from './simple-ride-selector/simple-ride-selector.component';
+import { RideSelectorComponent } from './ride-selector/ride-selector.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +36,9 @@ import { UsersComponent } from './users/users.component';
     AttendanceComponent,
     LoginComponent,
     RegisterComponent,
-    UsersComponent
+    UsersComponent,
+    SimpleRideSelectorComponent,
+    RideSelectorComponent
   ],
   imports: [
     BrowserModule,
