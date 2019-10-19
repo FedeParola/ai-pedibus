@@ -51,6 +51,14 @@ export class UsersComponent implements OnInit {
     return false;
   }
 
+  checkSystemAdmin(user): Boolean{
+    const index = this.users.indexOf(user);
+    if(this.users[index].roles.indexOf("ROLE_SYSTEM-ADMIN") > -1){
+      return true;
+    }
+    return false;
+  }
+
   nextPage(){
     this.pageNumber++;
     this.usersService.getUsers(this.pageNumber, this.pageSize).subscribe((res) => {
