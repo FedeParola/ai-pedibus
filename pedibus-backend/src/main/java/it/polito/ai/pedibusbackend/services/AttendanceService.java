@@ -78,7 +78,7 @@ public class AttendanceService {
         Date now = new Date();
         now.setTime(now.getTime() - 30 * 60 * 1000);
         if(stopTime.compareTo(now) <  0){
-            throw new BadRequestException();
+            throw new BadRequestException("TIME_EXCEEDED");
         }
 
         //Check if the stop belongs to the ride
@@ -124,7 +124,7 @@ public class AttendanceService {
         Date now = new Date();
         now.setTime(now.getTime() - 30 * 60 * 1000);
         if(stopTime.compareTo(now) <  0){
-            throw new BadRequestException();
+            throw new BadRequestException("TIME_EXCEEDED");
         }
 
         //Check if the user can add the attendance (system admin or 'accompagnatore' of that ride)

@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { ReactiveFormsModule, EmailValidator } from '@angular/forms';
+import { ReactiveFormsModule, EmailValidator, FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
@@ -16,13 +16,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatDialogModule} from '@angular/material/dialog';
-import {MatSelectModule} from '@angular/material/select';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSelectModule } from '@angular/material/select';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AttendanceComponent } from './attendance/attendance.component';
+import { StopDialogComponent } from './attendance/stop-dialog/stop-dialog.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { AttendanceService } from './attendance.service';
@@ -33,10 +35,12 @@ import { SimpleRideSelectorComponent } from './simple-ride-selector/simple-ride-
 import { RideSelectorComponent } from './ride-selector/ride-selector.component';
 import { DialogUserLinesComponent } from './users/dialog-user-lines/dialog-user-lines.component';
 
+
 @NgModule({
   declarations: [
     AppComponent,
     AttendanceComponent,
+    StopDialogComponent,
     LoginComponent,
     RegisterComponent,
     UsersComponent,
@@ -47,6 +51,7 @@ import { DialogUserLinesComponent } from './users/dialog-user-lines/dialog-user-
   ],
   imports: [
     BrowserModule,
+    FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
     AppRoutingModule,
@@ -56,6 +61,7 @@ import { DialogUserLinesComponent } from './users/dialog-user-lines/dialog-user-
     MatPaginatorModule,
     MatChipsModule,
     MatTabsModule,
+    MatTooltipModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
@@ -74,6 +80,10 @@ import { DialogUserLinesComponent } from './users/dialog-user-lines/dialog-user-
       multi: true }
   ],
   bootstrap: [AppComponent],
-  entryComponents: [DialogNewUserComponent, DialogUserLinesComponent]
+  entryComponents: [
+    DialogNewUserComponent,
+    DialogUserLinesComponent,
+    StopDialogComponent
+  ]
 })
 export class AppModule { }

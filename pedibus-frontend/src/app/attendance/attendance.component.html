@@ -8,8 +8,12 @@
       <mat-icon matListIcon>fiber_manual_record</mat-icon>
       <h4 mat-line><span class="hour">{{stop.time}}</span> <strong>{{stop.name}}</strong></h4>
       <mat-chip-list mat-line>
-        <mat-chip *ngFor="let data of rideData?.get(stop.id); let i = index" (click)="onDataClick(data, i)"
-          [ngClass]="data.type" [disabled]="false">
+        <mat-chip
+          *ngFor="let data of rideData?.get(stop.id); let i = index"
+          (click)="isChipDisabled() ? undefined : onDataClick(data, i)"
+          [ngClass]="data.type"
+          [disabled]="isChipDisabled(stop)"
+          [matTooltip]="data.pupil.userId">
           {{data.pupil.name}}
         </mat-chip>
       </mat-chip-list>
@@ -17,8 +21,12 @@
     <mat-list-item>
       <h4 mat-line><strong>Pupils without reservation</strong></h4>
       <mat-chip-list mat-line>
-        <mat-chip *ngFor="let pupil of missingPupils; let i = index" (click)="onPupilClick(pupil, i)"
-          class="reservation" [disabled]="false">
+        <mat-chip 
+          *ngFor="let pupil of missingPupils; let i = index"
+          (click)="isChipDisabled() ? undefined : onPupilClick(pupil, i)"
+          class="reservation"
+          [disabled]="isChipDisabled()"
+          [matTooltip]="pupil.userId">
           {{pupil.name}}
         </mat-chip>
       </mat-chip-list>

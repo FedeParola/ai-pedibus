@@ -133,6 +133,7 @@ public class LineService implements InitializingBean {
             pupilDTO = new PupilDTO();
             pupilDTO.setId(p.getId());
             pupilDTO.setName(p.getName());
+            pupilDTO.setUserId(p.getUser().getEmail());
             pupils.add(pupilDTO);
         }
 

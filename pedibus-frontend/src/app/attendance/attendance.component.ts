@@ -1,11 +1,13 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { MatSnackBar, MatDialog } from '@angular/material';
+import * as moment from 'moment';
+
 import { AttendanceService } from '../attendance.service';
 import { AuthenticationService } from '../authentication.service';
-import { Observable } from 'rxjs';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
-import { catchError } from 'rxjs/operators';
-import { MatSnackBar } from '@angular/material';
+import { StopDialogComponent } from './stop-dialog/stop-dialog.component';
+
 
 @Component({
   selector: 'app-attendance',
@@ -25,7 +27,8 @@ export class AttendanceComponent implements OnInit {
   constructor(private attendanceService: AttendanceService,
               private authenticationService: AuthenticationService,
               private router: Router,
-              private _snackBar: MatSnackBar) {}
+              private _snackBar: MatSnackBar,
+              private dialog: MatDialog) {}
 
   ngOnInit() {
     this.attendanceService.getLines().subscribe(
@@ -84,8 +87,18 @@ export class AttendanceComponent implements OnInit {
         this.rides = res;
 
         if (this.rides.length > 0) {
-          // Pick the closest ride to current date
-          this.selectedRideIndex = this.rides.length-2;
+          // Pick the closest ride with date >= current date
+          let curDate = moment().format('YYYY-MM-DD');
+          let closestRide = this.rides.length-1;
+
+          while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
+            closestRide--;
+          }
+
+          if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
+            closestRide++;
+          }
+          this.selectedRideIndex = closestRide;
 
           this.loadRideData();
         }
@@ -112,6 +125,18 @@ export class AttendanceComponent implements OnInit {
         this.handleError(error);
       }
     );
+  }
+
+  isChipDisabled(stop?): boolean {
+    // Disable the chip if current time exceed stop time of more than 30 mins 
+    if (stop) {
+      let treshold = moment(this.selectedRide.date+'T'+stop.time).add(30, 'minutes');
+      return moment().isAfter(treshold);
+
+    } else {
+      let treshold = moment(this.selectedRide.date);
+      return moment().isAfter(treshold, 'day');
+    }
   }
 
   private findPupil(pupil) {
@@ -142,7 +167,7 @@ export class AttendanceComponent implements OnInit {
     } else {
       // Both other types represent an attendance, delete it
       this.attendanceService.deleteAttendance(data.attendanceId).subscribe(
-        (res) => {
+        () => {
           if (data.type == 'attendance') {
             // Just deleted an attendance without reservation, delete data an add pupil to missing
             this.rideData.get(data.stopId).splice(i, 1);
@@ -164,29 +189,47 @@ export class AttendanceComponent implements OnInit {
   }
 
   onPupilClick(pupil, i) {
-    // For now create the reservation for the first stop
-    let stopId = this.stops.outwardStops[0].id;
-    this.attendanceService.createAttendance(pupil.id, this.selectedRide.id, stopId).subscribe(
-      (res) => {
-        // Add the attendance to rideData
-        let data = {
-          attendanceId: res,
-          type: 'attendance',
-          pupil: pupil,
-          stopId: stopId
-        };
-        if (!this.rideData.has(stopId)) {
-          this.rideData.set(stopId, []);
-        }
-        this.rideData.get(stopId).push(data);
-        
-        // Remove the pupil from missing ones
-        this.missingPupils.splice(i, 1);
-      },
-      (error) => {
-        this.handleError(error);
+    // Select the right set of stops to choose from and remove the School stop
+    let sStops = this.selectedRide.direction == 'O' ? this.stops.outwardStops : this.stops.returnStops;
+    if (sStops[0].name.toLowerCase() === 'school') {
+      sStops = sStops.slice(1);
+    } else if (sStops[sStops.length-1].name.toLowerCase() === 'school') {
+      sStops = sStops.slice(0, -1);
+    }
+
+    // Display the dialog for stop selection
+    const dialogRef = this.dialog.open(StopDialogComponent, {
+      data: {
+        pupil: pupil,
+        stops: sStops
       }
-    );
+    });
+
+    dialogRef.afterClosed().subscribe(stop => {
+      if (stop) {
+        this.attendanceService.createAttendance(pupil.id, this.selectedRide.id, stop.id).subscribe(
+          (res) => {
+            // Add the attendance to rideData
+            let data = {
+              attendanceId: res,
+              type: 'attendance',
+              pupil: pupil,
+              stopId: stop.id
+            };
+            if (!this.rideData.has(stop.id)) {
+              this.rideData.set(stop.id, []);
+            }
+            this.rideData.get(stop.id).push(data);
+            
+            // Remove the pupil from missing ones
+            this.missingPupils.splice(i, 1);
+          },
+          (error) => {
+            this.handleError(error);
+          }
+        );
+      }
+    });
   }
 
   private handleError(error: HttpErrorResponse) {
