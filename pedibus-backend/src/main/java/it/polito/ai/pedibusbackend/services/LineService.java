@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 @Service
@@ -75,13 +76,15 @@ public class LineService implements InitializingBean {
         List<StopDTO> returnStops = new ArrayList<>();
 
         /* Map every stop entity into a DTO and add it to the proper list */
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         for (Stop stop: line.getStops()) {
             StopDTO stopDTO = new StopDTO();
 
             stopDTO.setId(stop.getId());
             stopDTO.setName(stop.getName());
             stopDTO.setOrder(stop.getOrder());
-            stopDTO.setTime(new SimpleDateFormat("HH:mm").format(stop.getTime()));
+            stopDTO.setTime(sdf.format(stop.getTime()));
 
             if(stop.getDirection() == 'O') {
                 outwardStops.add(stopDTO);
@@ -227,6 +230,7 @@ public class LineService implements InitializingBean {
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     protected Line addLine(LineDTO lineDTO) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("H:m");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         /* Map line DTO to entity and persist it */
         Line line = new Line();
