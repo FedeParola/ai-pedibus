@@ -1,8 +1,5 @@
 package it.polito.ai.pedibusbackend.controllers;
 
-import it.polito.ai.pedibusbackend.entities.Attendance;
-import it.polito.ai.pedibusbackend.entities.Availability;
-import it.polito.ai.pedibusbackend.entities.Reservation;
 import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
