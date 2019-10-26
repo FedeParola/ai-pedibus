@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs/index';
 import { map } from 'rxjs/operators';
 
-import { environment } from '../environments/environment'
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -11,18 +11,6 @@ import { environment } from '../environments/environment'
 export class AttendanceService {
 
   constructor(private http: HttpClient) { }
-
-  getLines() {
-    return this.http.get(environment.apiUrl+'/lines');
-  }
-
-  getStops(lineId: number) {
-    return this.http.get(environment.apiUrl+'/lines/'+lineId);
-  }
-
-  getPupils(lineId: number) {
-    return this.http.get(environment.apiUrl+'/lines/'+lineId+'/pupils');
-  }
 
   getRides(username: string, lineId: number) {
     return this.http.get(environment.apiUrl+'/users/'+username+'/rides?lineId='+lineId);
