@@ -34,6 +34,7 @@ import { UsersComponent, DialogNewUserComponent } from './users/users.component'
 import { SimpleRideSelectorComponent } from './simple-ride-selector/simple-ride-selector.component';
 import { RideSelectorComponent } from './ride-selector/ride-selector.component';
 import { DialogUserLinesComponent } from './users/dialog-user-lines/dialog-user-lines.component';
+import { RidesComponent } from './rides/rides.component';
 
 
 @NgModule({
@@ -47,7 +48,8 @@ import { DialogUserLinesComponent } from './users/dialog-user-lines/dialog-user-
     SimpleRideSelectorComponent,
     RideSelectorComponent,
     DialogNewUserComponent,
-    DialogUserLinesComponent
+    DialogUserLinesComponent,
+    RidesComponent
   ],
   imports: [
     BrowserModule,
