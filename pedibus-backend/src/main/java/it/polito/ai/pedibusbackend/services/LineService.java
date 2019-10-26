@@ -6,6 +6,7 @@ import it.polito.ai.pedibusbackend.entities.Line;
 import it.polito.ai.pedibusbackend.entities.Pupil;
 import it.polito.ai.pedibusbackend.entities.Ride;
 import it.polito.ai.pedibusbackend.entities.Stop;
+import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.repositories.LineRepository;
 import it.polito.ai.pedibusbackend.repositories.RideRepository;
@@ -27,6 +28,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import java.io.File;
 import java.net.URL;
+import java.sql.Date;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -100,7 +102,8 @@ public class LineService implements InitializingBean {
         return lineDTO;
     }
 
-    public List<RideDTO> getLineRides(Long lineId) throws NotFoundException {
+    public List<RideDTO> getLineRides(Long lineId, Date date, Character direction)
+            throws NotFoundException, BadRequestException {
         List<RideDTO> rides = new ArrayList<>();
         RideDTO rideDTO;
 
@@ -109,14 +112,32 @@ public class LineService implements InitializingBean {
             throw new NotFoundException("Line " + lineId + " not found");
         }
 
-        for (Ride ride: rideRepository.getByLine(line)) {
-            rideDTO = new RideDTO();
-            rideDTO.setId(ride.getId());
-            rideDTO.setDate(ride.getDate());
-            rideDTO.setDirection(ride.getDirection());
-            rideDTO.setConsolidated(ride.getConsolidated());
+        if(direction != null){
+            if(!direction.equals('O')  &&  !direction.equals('R')) {
+                throw new BadRequestException("Wrong direction character");
+            }
+            if(date != null){
+                Ride ride = rideRepository.getByLineAndDateAndDirection(line, date, direction).orElse(null);
+                if(ride != null){
+                    rideDTO = new RideDTO();
+                    rideDTO.setId(ride.getId());
+                    rideDTO.setDate(ride.getDate());
+                    rideDTO.setDirection(ride.getDirection());
+                    rideDTO.setConsolidated(ride.getConsolidated());
+                    rides.add(rideDTO);
+                }
+            }
+        }
+        else{
+            for (Ride ride: rideRepository.getByLine(line)) {
+                rideDTO = new RideDTO();
+                rideDTO.setId(ride.getId());
+                rideDTO.setDate(ride.getDate());
+                rideDTO.setDirection(ride.getDirection());
+                rideDTO.setConsolidated(ride.getConsolidated());
 
-            rides.add(rideDTO);
+                rides.add(rideDTO);
+            }
         }
 
         return rides;
