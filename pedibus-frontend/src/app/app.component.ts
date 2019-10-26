@@ -43,4 +43,7 @@ export class AppComponent implements OnInit{
     this.router.navigateByUrl('/attendance');
   }
 
+  rides(){
+    this.router.navigateByUrl('/rides');
+  }
 }
