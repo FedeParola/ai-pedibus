@@ -6,6 +6,7 @@ import * as moment from 'moment';
 
 import { AttendanceService } from '../attendance.service';
 import { AuthenticationService } from '../authentication.service';
+import { LineService } from '../line.service';
 import { StopDialogComponent } from './stop-dialog/stop-dialog.component';
 
 
@@ -26,12 +27,13 @@ export class AttendanceComponent implements OnInit {
 
   constructor(private attendanceService: AttendanceService,
               private authenticationService: AuthenticationService,
+              private lineService: LineService,
               private router: Router,
               private _snackBar: MatSnackBar,
               private dialog: MatDialog) {}
 
   ngOnInit() {
-    this.attendanceService.getLines().subscribe(
+    this.lineService.getLines().subscribe(
       (res) => {
         this.lines = res;
         this.selectedLine = this.lines[0];
@@ -64,7 +66,7 @@ export class AttendanceComponent implements OnInit {
     this.selectedRideIndex = -1;
     this.rides = null;
 
-    this.attendanceService.getStops(this.selectedLine.id).subscribe(
+    this.lineService.getStops(this.selectedLine.id).subscribe(
       (res) => {
         this.stops = res;
       },
@@ -73,7 +75,7 @@ export class AttendanceComponent implements OnInit {
       }
     );
 
-    this.attendanceService.getPupils(this.selectedLine.id).subscribe(
+    this.lineService.getPupils(this.selectedLine.id).subscribe(
       (res) => {
         this.pupils = res;
       },
