@@ -449,15 +449,15 @@ public class UserService implements InitializingBean, UserDetailsService {
         Ride r3 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'R', true);
 
         /* Create some rides for tomorrow */
-        Ride r4 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'O', true);
-        Ride r5 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'R', true);
+        Ride r4 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'O', false);
+        Ride r5 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'R', false);
 
         /* Create some availabilities */
         persistNewAvailability(user, r1, line1.getStops().get(0), "CONSOLIDATED");
-        persistNewAvailability(user, r2, line1.getStops().get(2), "CONSOLIDATED");
-        persistNewAvailability(user, r3, line1.getStops().get(0), "CONSOLIDATED");
-        persistNewAvailability(user, r4, line1.getStops().get(2), "CONSOLIDATED");
-        persistNewAvailability(user, r5, line1.getStops().get(0), "CONSOLIDATED");
+        persistNewAvailability(user, r2, line1.getStops().get(0), "CONSOLIDATED");
+        persistNewAvailability(user, r3, line1.getStops().get(3), "CONSOLIDATED");
+        persistNewAvailability(user, r4, line1.getStops().get(0), "ASSIGNED");
+        // persistNewAvailability(user, r5, line1.getStops().get(3), "CONSOLIDATED");
 
         /* Create some reservations */
         Reservation r = persistNewReservation(p1, r4, line1.getStops().get(0));

@@ -39,3 +39,7 @@ button:disabled {
   background: #0d9025;
   font-weight: bolder;
 }
+
+.mat-tooltip {
+  white-space: pre-line;
+}

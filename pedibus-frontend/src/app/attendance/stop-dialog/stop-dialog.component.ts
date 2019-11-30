@@ -17,8 +17,4 @@ export class StopDialogComponent implements OnInit {
     ngOnInit(): void {
         this.selectedStop = this.data.stops[0];
     }
-
-    cancel(): void {
-        this.dialogRef.close();
-    }
 }
