@@ -362,28 +362,48 @@ public class UserService implements InitializingBean, UserDetailsService {
         }
     }
 
-    public List<PupilDTO> getPupils(String userId, String loggedUserId)
+    public List<PupilDTO> getPupils(String userId, Optional<Integer> page, Optional<Integer> size, String loggedUserId)
             throws ForbiddenException, NotFoundException, BadRequestException {
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(userId) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
             throw new ForbiddenException();
         }
-
         /* Retrieve user */
         User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        List<PupilDTO> pupils = new ArrayList<>();
+        List<Pupil> requestedPupils = new ArrayList<>();
 
-        /* Build result structure */
-        List<PupilDTO> pupilDTOs = new ArrayList<>();
-        for (Pupil p : user.getPupils()) {
+        if(page.isPresent() && size.isPresent()){
+            requestedPupils = pupilRepository.findByUser(user, PageRequest.of(page.get(), size.get())).getContent()
+                    .stream()
+                    .collect(Collectors.toList());
+        }else if(!page.isPresent() && !size.isPresent()){
+            requestedPupils = user.getPupils();
+        }else{
+            throw new BadRequestException();
+        }
+
+        for (Pupil p : requestedPupils) {
             PupilDTO pupilDTO = new PupilDTO();
             pupilDTO.setId(p.getId());
             pupilDTO.setName(p.getName());
             pupilDTO.setLineId(p.getLine().getId());
-            pupilDTOs.add(pupilDTO);
+            pupilDTO.setLineName(p.getLine().getName());
+
+            pupils.add(pupilDTO);
         }
 
-        return pupilDTOs;
+        //set to the last pupil if is the last
+        if(page.isPresent() && requestedPupils.size()>0){
+            if(pupilRepository.findByUser(user,PageRequest.of(page.get() + 1, size.get())).isEmpty()){
+                pupils.get(requestedPupils.size() - 1).setHasNext(false);
+            }else{
+                pupils.get(requestedPupils.size() -1).setHasNext(true);
+            }
+        }
+
+        return pupils;
     }
 
     public List<RideDTO> getRides(String userId, Long lineId, String loggedUserId)
