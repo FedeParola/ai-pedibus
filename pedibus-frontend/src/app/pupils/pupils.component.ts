@@ -99,6 +99,25 @@ export class PupilsComponent implements OnInit {
     };
 
     const dialogRef = this.dialog.open(DialogPupilComponent, dialogConfig);
+
+    dialogRef.afterClosed().subscribe(result => {
+      this.usersService.getUserPupils(this.pageNumber, this.pageSize).subscribe((res) => {
+        this.pupils = res;
+        if(this.pageNumber > 0){
+          this.prevEnabled = true;
+        }else{
+          this.prevEnabled = false;
+        }
+        if(this.pupils[this.pupils.length - 1].hasNext){
+          this.nextEnabled = true;
+        }else{
+          this.nextEnabled = false;
+        }
+      },
+      (error) => {
+        this.handleError(error)
+      });
+    });
   }
 
   removePupil(pupil){
@@ -123,8 +142,8 @@ export class PupilsComponent implements OnInit {
                     { panelClass: 'success-snackbar', duration: 5000 });
     },
     (error) => {
-      this._snackBar.open("Error in the communication with the server!", "",
-                    { panelClass: 'error-snackbar', duration: 5000 });
+      this._snackBar.open("Cannot remove yuor pupil! Check if you have some active reservations fot it, then try again!", "",
+                    { panelClass: 'error-snackbar', duration: 7000 });
     });
   }
 

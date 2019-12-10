@@ -26,7 +26,8 @@ export class DialogPupilComponent implements OnInit {
   currentPupil;
   addPupil:boolean;
   lines;
-
+  previousPupilName;
+  inputValue;
   selected;
 
   constructor(private lineService: LineService,
@@ -47,6 +48,8 @@ export class DialogPupilComponent implements OnInit {
     }else{
       this.addPupil = false;
       this.currentPupil = data.pupil;
+      this.previousPupilName = this.currentPupil.name;//sa the previous name of the pupil before changing
+      this.inputValue = this.previousPupilName;
     }
   }
 
@@ -94,9 +97,15 @@ export class DialogPupilComponent implements OnInit {
 
   onEditClick(): void{
     const val = this.form.value;
+    var name:string;
 
     if (this.form.valid) {
-      this.usersService.updateUserPupil(val.pupilName,this.selected.id,this.currentPupil.id)
+      if(this.previousPupilName == val.pupilName){//if the name of the pupil doesn't change I set the pupil name to null
+        name = null;
+      }else{
+        name=val.pupilName
+      }
+      this.usersService.updateUserPupil(name,this.selected.id,this.currentPupil.id)
       .subscribe(
         () => {
           console.log("Pupil edited");

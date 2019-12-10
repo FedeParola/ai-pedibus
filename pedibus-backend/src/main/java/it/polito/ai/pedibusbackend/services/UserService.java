@@ -460,6 +460,10 @@ public class UserService implements InitializingBean, UserDetailsService {
         Pupil p1 = persistNewPupil("Andrea", line1, user);
         Pupil p2 = persistNewPupil("Federico", line1, user);
         Pupil p3 = persistNewPupil("Kamil", line1, user);
+        Pupil p4 = persistNewPupil("Mario", line2, user);
+        Pupil p5 = persistNewPupil("Marco", line2, user);
+        Pupil p6 = persistNewPupil("Luigi", line1, user);
+        Pupil p7 = persistNewPupil("Pietro", line2, user);
 
         /* Create some rides for yesterday */
         Ride r1 = persistNewRide(new java.sql.Date(System.currentTimeMillis()-24*60*60*1000), line1, 'O', true);
