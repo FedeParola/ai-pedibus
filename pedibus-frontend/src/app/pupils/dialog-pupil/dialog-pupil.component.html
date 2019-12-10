@@ -1,0 +1,26 @@
+<div mat-dialog-content class="dialog-content">
+    <form [formGroup]="form">
+        <mat-form-field class="form-field">
+            <input matInput cdkFocusInitial *ngIf="!addPupil" type="text" formControlName="pupilName" placeholder="Pupil name" value="{{currentPupil.name}}">
+            <input matInput cdkFocusInitial *ngIf="addPupil" type="text" formControlName="pupilName" placeholder="Pupil name">
+            <mat-error *ngIf="form.controls.pupilName.hasError('required')">
+                Pupil name is <strong>required</strong>
+            </mat-error>
+            <mat-error *ngIf="form.controls.pupilName.hasError('pattern')">
+                Pupil name must contain only letters
+            </mat-error>
+        </mat-form-field>
+        <mat-form-field>
+            <mat-select [(value)]="selected">
+                <mat-option *ngFor="let line of lines" [value]="line">
+                    {{line.name}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </form>
+</div>
+<div mat-dialog-actions>
+    <button mat-raised-button class="action-button" (click)="onCancelClick()">Cancel</button>
+    <button mat-raised-button *ngIf="addPupil" class="action-button" (click)="onAddClick()">Add</button>
+    <button mat-raised-button *ngIf="!addPupil" class="action-button" (click)="onEditClick()">Edit</button>
+</div>
