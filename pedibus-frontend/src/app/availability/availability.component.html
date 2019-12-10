@@ -1,0 +1,39 @@
+<app-ride-selector
+    [lines]="lines" (lineSelect)="selectLine($event)"
+    [line]="selectedLine"
+    [rides]="rides"
+    [(selectedRide)]="selectedRideIndex">
+  <div class="content" *ngIf="selectedRide && stops && availabilities">
+    <div class="radio-group-container">
+      <mat-radio-group
+          class="stops-radio-group"
+          [value]="selectedAvailability ? selectedAvailability.stopId : undefined"
+          [disabled]="cantUpdate()"
+          [matTooltip]="cantUpdateExplanation">
+        <mat-radio-button 
+            *ngFor="let stop of (selectedRide.direction == 'O' ? stops.outwardStops : stops.returnStops)"
+            [value]="stop.id"
+            (click)="cantUpdate() ? undefined : onStopClick(stop.id)">
+          <h4 mat-line><span class="hour">{{stop.time}}</span> {{stop.name}}</h4>
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+    <div *ngIf="selectedAvailability" class="status">
+      Status: <strong>{{selectedAvailability.status}}</strong>
+      <button
+          class="confirm-button"
+          mat-raised-button color="primary"
+          *ngIf="selectedAvailability.status === 'ASSIGNED'"
+          [disabled]="cantUpdate()"
+          (click)="confirm()">
+        CONFIRM
+      </button>
+    </div>
+    <div *ngIf="selectedAvailability?.status == 'CONSOLIDATED'" class="escort-msg">
+      You are escort of this ride
+    </div>
+    <div *ngIf="selectedAvailability?.status == 'CONFIRMED'" class="confirmed-msg">
+      You will be escort of this ride once the admin consolidates it
+    </div>
+  </div>
+</app-ride-selector> 

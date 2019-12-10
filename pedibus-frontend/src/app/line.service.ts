@@ -21,4 +21,8 @@ export class LineService {
   getPupils(lineId: number) {
     return this.http.get(environment.apiUrl+'/lines/'+lineId+'/pupils');
   }
+
+  getRides(lineId: number) {
+    return this.http.get(environment.apiUrl+'/lines/'+lineId+'/rides');
+  }
 }

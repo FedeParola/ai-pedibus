@@ -42,7 +42,7 @@ public class PedibusBackendApplication {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedMethods("GET", "HEAD", "POST", "DELETE");
+                registry.addMapping("/**").allowedMethods("GET", "HEAD", "POST", "DELETE", "PUT");
             }
         };
     }
