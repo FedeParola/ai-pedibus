@@ -1,0 +1,36 @@
+body{
+    margin: 0px;
+}
+
+.title {
+    font-size: 45px;
+    color: whitesmoke;
+    margin: 0px;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.toolbar{
+    background-color: steelblue;
+    text-align: center;
+    height: 65px;
+    line-height: 65px;
+}
+
+.container{
+    height: 275px;
+    width: 500px;
+    margin-top: 10px;
+    box-shadow: 0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);
+    border-radius: 4px;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.cardTitle{
+    text-align: center;
+    font-size: 25px;
+    margin: 10px;
+}
+
+.buttonContainer{
+    text-align: center;
+}

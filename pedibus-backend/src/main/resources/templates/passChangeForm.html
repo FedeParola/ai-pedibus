@@ -5,10 +5,16 @@
         <title>Change Password</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
               integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel = "stylesheet"
+              type = "text/css"
+              href = "passChangeForm.css" />
     </head>
     <body>
+        <div class="toolbar">
+            <p class="title">PediBUS</p>
+        </div>
         <div class="container">
-            <h3>Choose a new password</h3>
+            <p class="cardTitle">Choose a new password</p>
             <div class="row">
                 <div class="col">
                     <form method="post" th:action="@{/recover/} + ${randomUUID}">
@@ -20,7 +26,7 @@
                             <label for="confPass">Confirm new password</label>
                             <input type="password" name="confPass" value="" id="confPass" class="form-control" placeholder="Confirm password...">
                         </div>
-                        <div>
+                        <div class="buttonContainer">
                             <input type="submit" value="Change Password" class="btn btn-primary">
                         </div>
                     </form>

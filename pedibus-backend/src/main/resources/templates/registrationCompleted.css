@@ -1,0 +1,25 @@
+.title {
+    font-size: 45px;
+    color: whitesmoke;
+    margin: 0px;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.toolbar{
+    background-color: steelblue;
+    text-align: center;
+    height: 65px;
+    line-height: 65px;
+}
+
+.message{
+    font-size: 45px;
+}
+
+.container{
+    text-align: center;
+}
+
+body{
+    margin: 0px;
+}
