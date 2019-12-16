@@ -41,7 +41,7 @@ import { ReservationComponent } from './reservation/reservation.component';
 import { PupilsDialogComponent } from './reservation/pupils-dialog/pupils-dialog.component';
 import { PupilsComponent } from './pupils/pupils.component';
 import { DialogPupilComponent } from './pupils/dialog-pupil/dialog-pupil.component';
-// import { RidesComponent } from './rides/rides.component';
+import { RidesComponent } from './rides/rides.component';
 
 
 @NgModule({
@@ -62,7 +62,7 @@ import { DialogPupilComponent } from './pupils/dialog-pupil/dialog-pupil.compone
     PupilsDialogComponent,
     PupilsComponent,
     DialogPupilComponent,
-    // RidesComponent
+    RidesComponent
   ],
   imports: [
     BrowserModule,
