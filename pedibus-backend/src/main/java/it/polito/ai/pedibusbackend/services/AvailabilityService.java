@@ -63,8 +63,8 @@ public class AvailabilityService {
         if(!ride.getLine().getStops().stream()
                                      .filter((s) -> s.getId() == stop.getId())
                                      .findAny().isPresent()  ||  !stop.getDirection().equals(ride.getDirection())){
-            throw new BadRequestException("Stop '" + newStop.getId() + "' doesn't belong to ride '" +
-            availability.getRide().getId() + "'");
+            throw new BadRequestException("Stop '" + stop.getId() + "' doesn't belong to ride '" +
+            ride.getId() + "'");
         }
 
         //Check if current date and time is before the deadline (18:00 of the previous day)
