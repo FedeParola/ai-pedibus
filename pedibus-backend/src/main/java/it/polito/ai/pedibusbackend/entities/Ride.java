@@ -26,12 +26,12 @@ public class Ride {
     @Column(nullable = false)
     private Boolean consolidated;
 
-    @OneToMany(mappedBy = "ride")
+    @OneToMany(mappedBy = "ride", cascade = CascadeType.REMOVE)
     private List<Reservation> reservations;
 
-    @OneToMany(mappedBy = "ride")
+    @OneToMany(mappedBy = "ride", cascade = CascadeType.REMOVE)
     private List<Attendance> attendances;
 
-    @OneToMany(mappedBy = "ride")
+    @OneToMany(mappedBy = "ride", cascade = CascadeType.REMOVE)
     private List<Availability> availabilities;
 }

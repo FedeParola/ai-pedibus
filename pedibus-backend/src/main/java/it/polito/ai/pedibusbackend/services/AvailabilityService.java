@@ -56,12 +56,12 @@ public class AvailabilityService {
 
         //Check if the ride is already consolidated
         if(ride.getConsolidated()){
-            throw new BadRequestException();
+            throw new BadRequestException("The ride is already consolidated!");
         }
 
         //Check if the stop belongs to the ride
-        if(!ride.getLine().getStops().contains(stop.getId())){
-            throw new BadRequestException();
+        if(!ride.getLine().getStops().contains(stop)  ||  !stop.getDirection().equals(ride.getDirection())) {
+            throw new BadRequestException("The stop with id " + stop.getId() + " does not belong to the ride with id " + ride.getId());
         }
 
         //Check if current date and time is before the deadline (18:00 of the previous day)
@@ -76,7 +76,7 @@ public class AvailabilityService {
         //Check if the user can provide availability (sys admin for anyone, or any user only for himself)
         if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
             if(!availabilityDTO.getEmail().equals(currentUser.getEmail())){
-                throw new ForbiddenException();
+                throw new ForbiddenException("The user is not allowed to do this action!");
             }
         }
 
@@ -103,11 +103,10 @@ public class AvailabilityService {
 
         //Check if the ride is already consolidated
         if(availability.getRide().getConsolidated()){
-            throw new BadRequestException();
+            throw new BadRequestException("The ride is already consolidated");
         }
 
         //Check if current date and time is before the deadline (18:00 of the previous day)
-        // (giusto?)
         long millis = availability.getRide().getDate().getTime() - 8 * 60 * 60 * 1000;
         Date dayBeforeRide = new Date(millis);
         Date currentDate = new Date();
@@ -127,14 +126,15 @@ public class AvailabilityService {
             }
 
             //Check if the stop belongs to the same ride of the old availability
-            if(!availability.getRide().getLine().getStops().contains(newStopId)){
-                throw new BadRequestException();
+            if(!availability.getRide().getLine().getStops().contains(newStop)  ||  !availability.getRide().getDirection().
+                    equals(newStop.getDirection())){
+                throw new BadRequestException("The new stop does not belong to the same ride of the availability");
             }
 
             //Check if the user can update the availability's stop (sys admin for anyone, or any user only for himself)
             if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
                 if(!availability.getUser().getEmail().equals(currentUser.getEmail())){
-                    throw new ForbiddenException();
+                    throw new ForbiddenException("The user is not allowed to do this action");
                 }
             }
 
@@ -153,21 +153,21 @@ public class AvailabilityService {
                     //only admin of that line or sys admin
                     AuthorizationManager.authorizeLineAccess(currentUser, availability.getRide().getLine());
                 } else {
-                    throw new BadRequestException();
+                    throw new BadRequestException("This transition of status of the availability is not a valid one");
                 }
             } else if(newStatus.equals("ASSIGNED")) {
                 if(oldStatus.equals("NEW")){
                     //only admin of that line or sys admin
                     AuthorizationManager.authorizeLineAccess(currentUser, availability.getRide().getLine());
                 } else {
-                    throw new BadRequestException();
+                    throw new BadRequestException("This transition of status of the availability is not a valid one");
                 }
             } else if(newStatus.equals("CONFIRMED")){
                 if(oldStatus.equals("ASSIGNED")){
                     //only user who provided the availability or sys admin
                     if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
                         if(!currentUser.getEmail().equals(availability.getUser().getEmail())){
-                            throw new ForbiddenException();
+                            throw new ForbiddenException("The user is not allowed to do this action");
                         }
                     }
 
@@ -179,7 +179,7 @@ public class AvailabilityService {
                                 "the same day in the same direction");
                     }
                 } else {
-                    throw new BadRequestException();
+                    throw new BadRequestException("This transition of status of the availability is not a valid one");
                 }
             } else {
                 throw new BadRequestException();
@@ -205,13 +205,13 @@ public class AvailabilityService {
         //AuthorizationManager.authorizeAvailabilityAccess(currentUser, reservation);
         if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
             if(!availability.getUser().getEmail().equals(currentUser.getEmail())){
-                throw new ForbiddenException();
+                throw new ForbiddenException("The user is not allowed to do this action");
             }
         }
 
         //Check if availability is already confirmed or consolidated
         if(availability.getStatus().equals("CONFIRMED")  ||  availability.getStatus().equals("CONSOLIDATED")){
-            throw new BadRequestException();
+            throw new BadRequestException("The availability is already confirmed or consolidate, and thus cannot be deleted");
         }
 
         availabilityRepository.delete(availability);

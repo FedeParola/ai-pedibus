@@ -17,7 +17,9 @@ export class SimpleRideSelectorComponent {
   @Input() prevRideDisabled: boolean;
   @Input() nextRideDisabled: boolean;
   
-
+  @Input() currentDate;
+  @Input() currentDirection;
+  
   constructor() { }
 
   selectLine(line) {

@@ -58,11 +58,11 @@ public class AttendanceService {
         //AuthorizationManager.authorizeAttendanceAccess(currentUser, attendance);
         if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
             if(!ride.getConsolidated()) {
-                throw new ForbiddenException();
+                throw new ForbiddenException("The user is not allowed to do this action");
             } else {
                 Availability a = availabilityRepository.getByUserAndRide(currentUser, ride);
                 if(a == null) {
-                    throw new ForbiddenException();
+                    throw new ForbiddenException("The user is not allowed to do this action");
                 }
 //                if(ride.getDirection().equals("O")  &&  stop.getOrder() < a.getStop().getOrder()){
 //                    throw new ForbiddenException();
@@ -83,7 +83,7 @@ public class AttendanceService {
 
         //Check if the stop belongs to the ride
         if(!ride.getLine().getStops().stream().anyMatch(s -> s.getId() == stop.getId())){
-            throw new BadRequestException();
+            throw new BadRequestException("The stop does not belong to the ride");
         }
 
         //Check if the pupil is already present somewhere the same day in the same direction
@@ -131,11 +131,11 @@ public class AttendanceService {
         //AuthorizationManager.authorizeAttendanceAccess(currentUser, attendance);
         if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
             if(!attendance.getRide().getConsolidated()) {
-                throw new ForbiddenException();
+                throw new ForbiddenException("The user is not allowed to do this action");
             } else {
                 Availability a = availabilityRepository.getByUserAndRide(currentUser, attendance.getRide());
                 if(a == null){
-                    throw new ForbiddenException();
+                    throw new ForbiddenException("The user is not allowed to do this action");
                 }
 //                if(ride.getDirection().equals("O")  &&  stop.getOrder() < a.getStop().getOrder()){
 //                    throw new ForbiddenException();

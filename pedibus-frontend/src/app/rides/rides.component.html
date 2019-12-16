@@ -1,0 +1,37 @@
+<app-simple-ride-selector
+    [lines]="lines" (lineSelect)="selectLine($event)" [line]="selectedLine"
+    [ride]="selectedRide" [currentDirection]="currentDirection" [currentDate]="currentDate"
+    (prevRideClick)="prevRide()" [prevRideDisabled]="false"
+    (nextRideClick)="nextRide()" [nextRideDisabled]="false">
+
+  <div class="button-div">
+    <button mat-raised-button class="button" color="primary" *ngIf="!selectedRide" (click)="createRide()">CREATE RIDE</button> 
+  </div>
+
+  <div *ngIf="selectedRide && stops">
+    <h2 class="top-header" *ngIf="selectedRide.consolidated">RIDE CONSOLIDATED</h2>
+    <mat-list>
+      <mat-list-item *ngFor="let stop of (selectedRide.direction == 'O' ? stops.outwardStops : stops.returnStops)"> 
+        <mat-icon matListIcon>fiber_manual_record</mat-icon>
+        <h4 mat-line><span class="hour">{{stop.time}}</span> <strong>{{stop.name}}</strong></h4>
+        <mat-chip-list mat-line>
+          <mat-chip *ngFor="let availability of availabilities?.get(stop.id)"
+              (click)="isChipDisabled(stop)? undefined : onAvailabilityClick(availability)"
+              [ngClass]="availability.status">
+                {{availability.userId}}
+          </mat-chip>
+        </mat-chip-list>
+      </mat-list-item>
+    </mat-list>
+
+    <div class="button-div">
+      <button mat-raised-button class="button" color="primary" 
+          *ngIf="!selectedRide.consolidated" (click)="changeRideStatus()">CONSOLIDATE RIDE</button>
+      <button mat-raised-button class="button" color="primary" 
+          *ngIf="selectedRide.consolidated" (click)="changeRideStatus()">RE-OPEN RIDE</button>
+      <button mat-raised-button class="button" color="warn" 
+          [disabled]="selectedRide.consolidated" (click)="deleteRide()">DELETE RIDE</button> 
+    </div>
+  </div>
+
+</app-simple-ride-selector>
