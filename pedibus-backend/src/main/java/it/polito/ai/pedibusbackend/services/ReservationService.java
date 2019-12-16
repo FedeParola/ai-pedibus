@@ -58,7 +58,7 @@ public class ReservationService implements InitializingBean {
         //Check if the logged user is the system admin
         if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
             //Check if the pupil belongs to the logged user
-            if(!currentUser.getPupils().contains(pupil.getId())){
+            if(!currentUser.getEmail().equals(pupil.getUser().getEmail())){
                 throw new ForbiddenException();
             }
         }
@@ -70,7 +70,9 @@ public class ReservationService implements InitializingBean {
         }
 
         //Check if the stop belongs to the ride
-        if(!ride.getLine().getStops().contains(stop.getId())){
+        if(!ride.getLine().getStops().stream()
+                                     .filter((s) -> s.getId() == stop.getId())
+                                     .findAny().isPresent()){
             throw new BadRequestException();
         }
 
@@ -116,7 +118,9 @@ public class ReservationService implements InitializingBean {
         }
 
         //Check that the new stop belongs to the same ride
-        if(!reservation.getRide().getLine().getStops().contains(stop.getId())){
+        if(!reservation.getRide().getLine().getStops().stream()
+                                                      .filter((s) -> s.getId() == stop.getId())
+                                                      .findAny().isPresent()){
             throw new BadRequestException();
         }
 

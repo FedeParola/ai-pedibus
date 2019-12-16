@@ -1,0 +1,10 @@
+<div style="padding: 0 50px;">
+    <h1 mat-dialog-title>Select a Pupil</h1>
+    <div mat-dialog-content>
+        <mat-action-list>
+            <button *ngFor="let pupil of pupils" mat-list-item [mat-dialog-close]="pupil">
+                {{pupil.name}}
+            </button>
+        </mat-action-list>
+    </div>
+</div>

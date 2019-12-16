@@ -47,6 +47,10 @@ export class AppComponent implements OnInit{
     this.router.navigateByUrl('/availability');
   }
 
+  reservations(){
+    this.router.navigateByUrl('/reservation');
+  }
+
   rides(){
     this.router.navigateByUrl('/rides');
   }

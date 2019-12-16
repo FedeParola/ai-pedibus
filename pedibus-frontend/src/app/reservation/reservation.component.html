@@ -1,0 +1,26 @@
+<div class="pupil-select">
+    <span>Pupil: <strong>{{selectedPupil?.name}}</strong></span>
+    <button (click)="changePupil()" mat-raised-button color="primary">Change</button>
+</div>
+<app-ride-selector
+    [lines]="lines" (lineSelect)="selectLine($event)"
+    [line]="selectedLine"
+    [rides]="rides"
+    [(selectedRide)]="selectedRideIndex">
+  <div class="content" *ngIf="selectedRide && stops && reservations">
+    <div class="radio-group-container">
+      <mat-radio-group
+          class="stops-radio-group"
+          [value]="selectedReservation ? selectedReservation.stopId : undefined"
+          [disabled]="cantUpdate()"
+          [matTooltip]="cantUpdateExplanation">
+        <mat-radio-button 
+            *ngFor="let stop of (selectedRide.direction == 'O' ? stops.outwardStops : stops.returnStops)"
+            [value]="stop.id"
+            (click)="cantUpdate() ? undefined : onStopClick(stop.id)">
+          <h4 mat-line><span class="hour">{{stop.time}}</span> {{stop.name}}</h4>
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+  </div>
+</app-ride-selector> 

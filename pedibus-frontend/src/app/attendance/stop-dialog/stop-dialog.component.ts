@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MAT_DIALOG_DATA } from '@angular/material';
 
 
 @Component({
@@ -9,10 +9,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 export class StopDialogComponent implements OnInit {
     selectedStop;
 
-    constructor(
-        public dialogRef: MatDialogRef<StopDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data
-    ) {}
+    constructor(@Inject(MAT_DIALOG_DATA) public data) {}
 
     ngOnInit(): void {
         this.selectedStop = this.data.stops[0];

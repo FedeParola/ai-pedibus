@@ -116,7 +116,9 @@ public class PupilService {
             reservationDTO.setId(r.getId());
             reservationDTO.setRideId(r.getRide().getId());
             reservationDTO.setStopId(r.getStop().getId());
-            reservationDTO.setAttendanceId(r.getAttendance().getId());
+            if (r.getAttendance() != null) {
+                reservationDTO.setAttendanceId(r.getAttendance().getId());
+            }
             reservationDTOs.add(reservationDTO);
         }
 

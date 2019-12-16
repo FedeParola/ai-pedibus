@@ -26,4 +26,8 @@ export class UsersService {
   addUserLine(username, lineId){
       return this.http.post(environment.apiUrl+'/users/'+username+'/lines', [lineId]);
   }
+
+  getPupils(username) {
+    return this.http.get(environment.apiUrl+'/users/'+username+'/pupils');
+  }
 }

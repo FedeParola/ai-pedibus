@@ -3,6 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { AttendanceComponent } from './attendance/attendance.component';
 import { AvailabilityComponent } from './availability/availability.component';
+import { ReservationComponent } from './reservation/reservation.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { UsersComponent } from './users/users.component';
@@ -13,7 +14,8 @@ const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'attendance', component: AttendanceComponent },
   { path: 'users', component: UsersComponent },
-  { path: 'availability', component: AvailabilityComponent }
+  { path: 'availability', component: AvailabilityComponent },
+  { path: 'reservation', component: ReservationComponent }
   // { path: 'rides', component: RidesComponent }
 ];
 

@@ -37,6 +37,8 @@ import { RideSelectorComponent } from './ride-selector/ride-selector.component';
 import { DialogUserLinesComponent } from './users/dialog-user-lines/dialog-user-lines.component';
 import { AvailabilityComponent } from './availability/availability.component';
 import { DeletionConfirmDialogComponent } from './availability/deletion-confirm-dialog/deletion-confirm-dialog.component';
+import { ReservationComponent } from './reservation/reservation.component';
+import { PupilsDialogComponent } from './reservation/pupils-dialog/pupils-dialog.component';
 // import { RidesComponent } from './rides/rides.component';
 
 
@@ -53,7 +55,9 @@ import { DeletionConfirmDialogComponent } from './availability/deletion-confirm-
     DialogNewUserComponent,
     DialogUserLinesComponent,
     AvailabilityComponent,
-    DeletionConfirmDialogComponent
+    DeletionConfirmDialogComponent,
+    ReservationComponent,
+    PupilsDialogComponent
     // RidesComponent
   ],
   imports: [
@@ -92,7 +96,8 @@ import { DeletionConfirmDialogComponent } from './availability/deletion-confirm-
     DialogNewUserComponent,
     DialogUserLinesComponent,
     StopDialogComponent,
-    DeletionConfirmDialogComponent
+    DeletionConfirmDialogComponent,
+    PupilsDialogComponent
   ]
 })
 export class AppModule { }
