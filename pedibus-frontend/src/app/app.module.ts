@@ -8,6 +8,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -34,7 +35,13 @@ import { UsersComponent, DialogNewUserComponent } from './users/users.component'
 import { SimpleRideSelectorComponent } from './simple-ride-selector/simple-ride-selector.component';
 import { RideSelectorComponent } from './ride-selector/ride-selector.component';
 import { DialogUserLinesComponent } from './users/dialog-user-lines/dialog-user-lines.component';
-import { RidesComponent } from './rides/rides.component';
+import { AvailabilityComponent } from './availability/availability.component';
+import { DeletionConfirmDialogComponent } from './availability/deletion-confirm-dialog/deletion-confirm-dialog.component';
+import { ReservationComponent } from './reservation/reservation.component';
+import { PupilsDialogComponent } from './reservation/pupils-dialog/pupils-dialog.component';
+import { PupilsComponent } from './pupils/pupils.component';
+import { DialogPupilComponent } from './pupils/dialog-pupil/dialog-pupil.component';
+// import { RidesComponent } from './rides/rides.component';
 
 
 @NgModule({
@@ -49,7 +56,13 @@ import { RidesComponent } from './rides/rides.component';
     RideSelectorComponent,
     DialogNewUserComponent,
     DialogUserLinesComponent,
-    RidesComponent
+    AvailabilityComponent,
+    DeletionConfirmDialogComponent,
+    ReservationComponent,
+    PupilsDialogComponent,
+    PupilsComponent,
+    DialogPupilComponent,
+    // RidesComponent
   ],
   imports: [
     BrowserModule,
@@ -61,6 +74,7 @@ import { RidesComponent } from './rides/rides.component';
     MatCardModule,
     MatListModule,
     MatPaginatorModule,
+    MatRadioModule,
     MatChipsModule,
     MatTabsModule,
     MatTooltipModule,
@@ -85,7 +99,10 @@ import { RidesComponent } from './rides/rides.component';
   entryComponents: [
     DialogNewUserComponent,
     DialogUserLinesComponent,
-    StopDialogComponent
+    StopDialogComponent,
+    DeletionConfirmDialogComponent,
+    PupilsDialogComponent,
+    DialogPupilComponent
   ]
 })
 export class AppModule { }

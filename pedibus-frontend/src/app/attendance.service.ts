@@ -29,7 +29,7 @@ export class AttendanceService {
       map(([attendances, reservations]: [any[], any[]]) => {
         let dataMap = new Map();
 
-        /* Scan all attendances and add them */
+        // Scan all attendances and add them
         for (let attendance of attendances) {
           if (!dataMap.has(attendance.stopId)) {
             dataMap.set(attendance.stopId, []);
@@ -45,7 +45,7 @@ export class AttendanceService {
           dataMap.get(attendance.stopId).push(data);
         }
 
-        /* Scan all reservations and add only the ones without attendance */
+        // Scan all reservations and add only the ones without attendance
         for (let reservation of reservations) {
           if (!reservation.hasAttendance) {
             if (!dataMap.has(reservation.stopId)) {

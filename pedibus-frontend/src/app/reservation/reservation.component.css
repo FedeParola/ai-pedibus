@@ -1,0 +1,50 @@
+h4 {
+  font-size: 16px;
+}
+
+.pupil-select {
+  min-width: 150px;
+  max-width: 500px;
+  margin: 10px auto 10px auto;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.pupil-select>button {
+  margin-left: 20px;
+}
+  
+.content {
+  text-align: center;
+}
+
+.radio-group-container {
+  display: inline-flex;
+}
+
+.stops-radio-group {
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+}
+
+.hour {
+  font-size: 0.93em;
+  margin-right: 0.5em;
+  margin-left: 0.5em;
+  font-weight: 400;
+}
+
+/* .status {
+text-align: center;
+font-size: 18px;
+font-weight: 500;
+color: rgba(0,0,0,.87);
+border-top: 1px solid rgba(0,0,0,.12);
+padding-top: 25px;
+} */
+
+/* .confirm-button {
+margin-left: 20px;
+} */

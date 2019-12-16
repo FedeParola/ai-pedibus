@@ -22,7 +22,7 @@ public interface AvailabilityRepository extends CrudRepository<Availability, Lon
     Iterable<Availability> findByUserAndLine(User user, Line line);
 
     @Query("SELECT a FROM Availability " +
-            "a JOIN a.ride r ON r.date = ?2 AND r.direction = ?3" +
+            "a JOIN a.ride r ON r.date = ?2 AND r.direction = ?3 " +
             "WHERE a.user = ?1")
     Optional<Availability> findByUserAndDateAndDirection(User user, Date date, Character direction);
 }

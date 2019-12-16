@@ -56,17 +56,20 @@ public class AvailabilityService {
 
         //Check if the ride is already consolidated
         if(ride.getConsolidated()){
-            throw new BadRequestException("The ride is already consolidated!");
+            throw new BadRequestException("The ride is already consolidated");
         }
 
         //Check if the stop belongs to the ride
-        if(!ride.getLine().getStops().contains(stop)  ||  !stop.getDirection().equals(ride.getDirection())) {
-            throw new BadRequestException("The stop with id " + stop.getId() + " does not belong to the ride with id " + ride.getId());
+        if(!ride.getLine().getStops().stream()
+                                     .filter((s) -> s.getId() == stop.getId())
+                                     .findAny().isPresent()  ||  !stop.getDirection().equals(ride.getDirection())){
+            throw new BadRequestException("Stop '" + newStop.getId() + "' doesn't belong to ride '" +
+            availability.getRide().getId() + "'");
         }
 
         //Check if current date and time is before the deadline (18:00 of the previous day)
         //(giusto?)
-        long millis = ride.getDate().getTime() - 8 * 60 * 60 * 1000;
+        long millis = ride.getDate().getTime() - 6 * 60 * 60 * 1000;
         Date dayBeforeRide = new Date(millis);
         Date currentDate = new Date();
         if(currentDate.after(dayBeforeRide)){
@@ -107,7 +110,8 @@ public class AvailabilityService {
         }
 
         //Check if current date and time is before the deadline (18:00 of the previous day)
-        long millis = availability.getRide().getDate().getTime() - 8 * 60 * 60 * 1000;
+        // (giusto?)
+        long millis = availability.getRide().getDate().getTime() - 6 * 60 * 60 * 1000;
         Date dayBeforeRide = new Date(millis);
         Date currentDate = new Date();
         if(currentDate.after(dayBeforeRide)){
@@ -120,15 +124,21 @@ public class AvailabilityService {
 
         //Update the stop from(on outward)/to(on return) which the user is available
         if(newStopId != null){
+            if (availability.getStatus().equals("CONFIRMED")){
+                throw new BadRequestException("Can not update the stop of a confirmed availability");
+            }
+
             Stop newStop = stopRepository.findById(newStopId).orElse(null);
             if(newStop == null){
                 throw new BadRequestException("Unknown stop with id " + newStopId);
             }
 
-            //Check if the stop belongs to the same ride of the old availability
-            if(!availability.getRide().getLine().getStops().contains(newStop)  ||  !availability.getRide().getDirection().
-                    equals(newStop.getDirection())){
-                throw new BadRequestException("The new stop does not belong to the same ride of the availability");
+            //Check if the stop belongs to the ride
+            if(!availability.getRide().getLine().getStops().stream()
+                                                           .filter((s) -> s.getId() == newStop.getId())
+                                                           .findAny().isPresent()  ||  !availability.getRide().getDirection().equals(newStop.getDirection())){
+                throw new BadRequestException("Stop '" + newStop.getId() + "' doesn't belong to ride '" +
+                                              availability.getRide().getId() + "'");
             }
 
             //Check if the user can update the availability's stop (sys admin for anyone, or any user only for himself)

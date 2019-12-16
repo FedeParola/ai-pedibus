@@ -32,8 +32,8 @@ public class LineController {
 
     @RequestMapping(value = "/lines/{lineId}/rides", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<RideDTO> getLineRides(@PathVariable Long lineId,
-                                      @RequestParam Date date,
-                                      @RequestParam Character direction)
+                                      @RequestParam(required = false) Date date,
+                                      @RequestParam(required = false) Character direction)
             throws NotFoundException, BadRequestException {
         return lineService.getLineRides(lineId, date, direction);
     }

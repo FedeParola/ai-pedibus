@@ -362,28 +362,48 @@ public class UserService implements InitializingBean, UserDetailsService {
         }
     }
 
-    public List<PupilDTO> getPupils(String userId, String loggedUserId)
+    public List<PupilDTO> getPupils(String userId, Optional<Integer> page, Optional<Integer> size, String loggedUserId)
             throws ForbiddenException, NotFoundException, BadRequestException {
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(userId) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
             throw new ForbiddenException();
         }
-
         /* Retrieve user */
         User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        List<PupilDTO> pupils = new ArrayList<>();
+        List<Pupil> requestedPupils = new ArrayList<>();
 
-        /* Build result structure */
-        List<PupilDTO> pupilDTOs = new ArrayList<>();
-        for (Pupil p : user.getPupils()) {
+        if(page.isPresent() && size.isPresent()){
+            requestedPupils = pupilRepository.findByUser(user, PageRequest.of(page.get(), size.get())).getContent()
+                    .stream()
+                    .collect(Collectors.toList());
+        }else if(!page.isPresent() && !size.isPresent()){
+            requestedPupils = user.getPupils();
+        }else{
+            throw new BadRequestException();
+        }
+
+        for (Pupil p : requestedPupils) {
             PupilDTO pupilDTO = new PupilDTO();
             pupilDTO.setId(p.getId());
             pupilDTO.setName(p.getName());
             pupilDTO.setLineId(p.getLine().getId());
-            pupilDTOs.add(pupilDTO);
+            pupilDTO.setLineName(p.getLine().getName());
+
+            pupils.add(pupilDTO);
         }
 
-        return pupilDTOs;
+        //set to the last pupil if is the last
+        if(page.isPresent() && requestedPupils.size()>0){
+            if(pupilRepository.findByUser(user,PageRequest.of(page.get() + 1, size.get())).isEmpty()){
+                pupils.get(requestedPupils.size() - 1).setHasNext(false);
+            }else{
+                pupils.get(requestedPupils.size() -1).setHasNext(true);
+            }
+        }
+
+        return pupils;
     }
 
     public List<RideDTO> getRides(String userId, Long lineId, String loggedUserId)
@@ -440,6 +460,10 @@ public class UserService implements InitializingBean, UserDetailsService {
         Pupil p1 = persistNewPupil("Andrea", line1, user);
         Pupil p2 = persistNewPupil("Federico", line1, user);
         Pupil p3 = persistNewPupil("Kamil", line1, user);
+        Pupil p4 = persistNewPupil("Mario", line2, user);
+        Pupil p5 = persistNewPupil("Marco", line2, user);
+        Pupil p6 = persistNewPupil("Luigi", line1, user);
+        Pupil p7 = persistNewPupil("Pietro", line2, user);
 
         /* Create some rides for yesterday */
         Ride r1 = persistNewRide(new java.sql.Date(System.currentTimeMillis()-24*60*60*1000), line1, 'O', true);
@@ -450,14 +474,14 @@ public class UserService implements InitializingBean, UserDetailsService {
 
         /* Create some rides for tomorrow */
         Ride r4 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'O', true);
-        Ride r5 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'R', true);
+        Ride r5 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'R', false);
 
         /* Create some availabilities */
         persistNewAvailability(user, r1, line1.getStops().get(0), "CONSOLIDATED");
-        persistNewAvailability(user, r2, line1.getStops().get(2), "CONSOLIDATED");
-        persistNewAvailability(user, r3, line1.getStops().get(0), "CONSOLIDATED");
-        persistNewAvailability(user, r4, line1.getStops().get(2), "CONSOLIDATED");
-        persistNewAvailability(user, r5, line1.getStops().get(0), "CONSOLIDATED");
+        persistNewAvailability(user, r2, line1.getStops().get(0), "CONSOLIDATED");
+        persistNewAvailability(user, r3, line1.getStops().get(3), "CONSOLIDATED");
+        persistNewAvailability(user, r4, line1.getStops().get(0), "CONSOLIDATED");
+        persistNewAvailability(user, r5, line1.getStops().get(3), "ASSIGEND");
 
         /* Create some reservations */
         Reservation r = persistNewReservation(p1, r4, line1.getStops().get(0));

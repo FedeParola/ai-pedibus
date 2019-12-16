@@ -14,7 +14,7 @@ public interface ReservationRepository extends CrudRepository<Reservation, Long>
     Optional<Reservation> findByPupilAndRideAndStop(Pupil pupil, Ride ride, Stop stop);
 
     @Query("SELECT r FROM Reservation " +
-            "r JOIN r.ride ride ON ride.date = ?2 AND ride.direction = ?3" +
+            "r JOIN r.ride ride ON ride.date = ?2 AND ride.direction = ?3 " +
             "WHERE r.pupil = ?1")
     Optional<Reservation> findByPupilAndDateAndDirection(Pupil pupil, Date date, Character direction);
 }
