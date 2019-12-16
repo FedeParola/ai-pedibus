@@ -88,29 +88,29 @@ public class RideService implements InitializingBean {
 
         Boolean proceed = false;
 
-        Ride ride = rideRepository.getById(rideId);
+        Ride ride = rideRepository.getById(rideId).orElse(null);
+        if(ride == null){
+            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+        }
+
         /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */
         AuthorizationManager.authorizeLineAccess(currentUser, ride.getLine().getId());
-
 
         // Check if the date is > then 18:00 of the previous day
         //create the day before at 18:00
         long millis = ride.getDate().getTime() - 8 * 60 * 60 * 1000;
         java.sql.Date dayBeforeRide = new java.sql.Date(millis);
-        //check if the date if after the day before at 18:00
-        //current date
         Date currentDate = new Date();
         if(currentDate.after(dayBeforeRide)){
             throw new BadRequestException("Ride consolidation time expired");
         }
-
 
         //take ride availabilities
         List<Availability> rideAvailabilities = ride.getAvailabilities();
         //list of CONFIRMED availabilities
         List<Availability> confirmedAvailabilities = new ArrayList<>();
 
-        // check if i want to consolidate or unconsoliate the ride
+        // check if i want to consolidate or unconsolidate the ride
         if(updateRideDTO.getConsolidated()){
             //check if already true
             if(ride.getConsolidated()){
@@ -118,7 +118,6 @@ public class RideService implements InitializingBean {
             }
 
             //check if the ride is covered and CONSOLIDATE the status of availabilities and the ride consolidated value to true
-
             //save the first stop of the ride
             Stop firstStop = null;
             for(Stop s : ride.getLine().getStops()){
@@ -174,7 +173,14 @@ public class RideService implements InitializingBean {
     public void deleteRide(Long rideId, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
 
-        Ride ride = rideRepository.getById(rideId);
+        Ride ride = rideRepository.getById(rideId).orElse(null);
+        if(ride == null){
+            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+        }
+
+        if(ride.getConsolidated() == true){
+            throw new ForbiddenException("The ride is already consolidated, you cannot cancel it");
+        }
 
         /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */
         AuthorizationManager.authorizeLineAccess(currentUser, ride.getLine().getId());
@@ -188,7 +194,10 @@ public class RideService implements InitializingBean {
         List<ReservationDTO> reservations = new ArrayList<>();
         ReservationDTO reservationDTO;
 
-        Ride ride = rideRepository.getById(rideId);
+        Ride ride = rideRepository.getById(rideId).orElse(null);
+        if(ride == null){
+            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+        }
 
         // Check if the user is SYSTEM-ADMIN or ADMIN of the line or conductor or the ride
         // Check if the currentUser has availability status 'CONSOLIDATED'
@@ -224,7 +233,10 @@ public class RideService implements InitializingBean {
         List<AttendanceDTO> attendances = new ArrayList<>();
         AttendanceDTO attendanceDTO;
 
-        Ride ride = rideRepository.getById(rideId);
+        Ride ride = rideRepository.getById(rideId).orElse(null);
+        if(ride == null){
+            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+        }
 
         // Check if the user is SYSTEM-ADMIN or ADMIN of the line or conductor or the ride
         // Check if the currentUser has availability status 'CONSOLIDATED'
@@ -259,7 +271,10 @@ public class RideService implements InitializingBean {
         List<AvailabilityDTO> availabilities = new ArrayList<>();
         AvailabilityDTO availabilityDTO;
 
-        Ride ride = rideRepository.getById(rideId);
+        Ride ride = rideRepository.getById(rideId).orElse(null);
+        if(ride == null){
+            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+        }
 
         /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */
         AuthorizationManager.authorizeLineAccess(currentUser, ride.getLine().getId());

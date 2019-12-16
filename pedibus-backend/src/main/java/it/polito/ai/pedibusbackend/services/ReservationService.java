@@ -59,21 +59,21 @@ public class ReservationService implements InitializingBean {
         if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
             //Check if the pupil belongs to the logged user
             if(!currentUser.getEmail().equals(pupil.getUser().getEmail())){
-                throw new ForbiddenException();
+                throw new ForbiddenException("The user is not allowed to do this action");
             }
         }
 
         //Check if current date and time is before than when the ride takes place
         Date utilDate = new Date();
         if(ride.getDate().compareTo(new java.sql.Date(utilDate.getTime())) < 0){
-            throw new BadRequestException();
+            throw new BadRequestException("The ride has already taken place");
         }
 
         //Check if the stop belongs to the ride
         if(!ride.getLine().getStops().stream()
                                      .filter((s) -> s.getId() == stop.getId())
-                                     .findAny().isPresent()){
-            throw new BadRequestException();
+                                     .findAny().isPresent()  ||  !ride.getDirection().equals(stop.getDirection())){
+            throw new BadRequestException("The stop does not belong to the ride");
         }
 
         //Check if the pupil is already reserved somewhere the same day in the same direction
@@ -107,7 +107,7 @@ public class ReservationService implements InitializingBean {
         //AuthorizationManager.authorizeReservationAccess(currentUser, reservation);
         if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
             if(!currentUser.getEmail().equals(reservation.getPupil().getUser().getEmail())){
-                throw new ForbiddenException();
+                throw new ForbiddenException("The user is not allowed to do this action");
             }
         }
 
@@ -120,8 +120,8 @@ public class ReservationService implements InitializingBean {
         //Check that the new stop belongs to the same ride
         if(!reservation.getRide().getLine().getStops().stream()
                                                       .filter((s) -> s.getId() == stop.getId())
-                                                      .findAny().isPresent()){
-            throw new BadRequestException();
+                                                      .findAny().isPresent()  ||  !reservation.getRide().getDirection().equals(stop.getDirection())){
+            throw new BadRequestException("The new stop does not belong to the same ride");
         }
 
         reservation.setStop(stop);
@@ -142,7 +142,7 @@ public class ReservationService implements InitializingBean {
         //AuthorizationManager.authorizeReservationAccess(currentUser, reservation);
         if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
             if(!currentUser.getEmail().equals(reservation.getPupil().getUser().getEmail())){
-                throw new ForbiddenException();
+                throw new ForbiddenException("The user is not allowed to do this action");
             }
         }
 

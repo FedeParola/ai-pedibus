@@ -6,8 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Properties;
 
@@ -37,7 +35,7 @@ public class PedibusBackendApplication {
         return mailSender;
     }
 
-    @Bean
+    /*@Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
@@ -45,5 +43,5 @@ public class PedibusBackendApplication {
                 registry.addMapping("/**").allowedMethods("GET", "HEAD", "POST", "DELETE", "PUT");
             }
         };
-    }
+    }*/
 }

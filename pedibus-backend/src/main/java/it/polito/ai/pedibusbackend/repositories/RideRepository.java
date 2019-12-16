@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RideRepository extends CrudRepository<Ride, Long> {
-    Ride getById(Long rideId);
+    Optional<Ride> getById(Long rideId);
     List<Ride> getByLine(Line line);
 
     @Query("SELECT r FROM Ride r JOIN r.availabilities a ON a.user = ?1 " +
