@@ -9,5 +9,7 @@ public class PupilDTO {
     private Long id;
     private String name;
     private Long lineId;
+    private String lineName;
     private String userId;
+    private Boolean hasNext;
 }

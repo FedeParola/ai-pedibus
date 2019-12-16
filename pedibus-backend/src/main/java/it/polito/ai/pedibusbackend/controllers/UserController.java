@@ -217,11 +217,13 @@ public class UserController {
     }
 
     @GetMapping(value = "/users/{userId}/pupils", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<PupilDTO> getPupils(@PathVariable String userId)
-            throws NotFoundException, ForbiddenException, BadRequestException {
+    public List<PupilDTO> getPupils(@PathVariable String userId,
+                                    @RequestParam("page") Optional<Integer> page,
+                                    @RequestParam("size") Optional<Integer> size)
+                                        throws NotFoundException, ForbiddenException, BadRequestException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        return userService.getPupils(userId, loggedUser.getUsername());
+        return userService.getPupils(userId, page, size, loggedUser.getUsername());
     }
 
     @GetMapping(value = "/users/{userId}/rides", produces = MediaType.APPLICATION_JSON_VALUE)

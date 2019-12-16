@@ -7,6 +7,7 @@ import { ReservationComponent } from './reservation/reservation.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { UsersComponent } from './users/users.component';
+import { PupilsComponent } from './pupils/pupils.component';
 // import { RidesComponent } from './rides/rides.component';
 
 const routes: Routes = [
@@ -15,7 +16,8 @@ const routes: Routes = [
   { path: 'attendance', component: AttendanceComponent },
   { path: 'users', component: UsersComponent },
   { path: 'availability', component: AvailabilityComponent },
-  { path: 'reservation', component: ReservationComponent }
+  { path: 'reservation', component: ReservationComponent },
+  { path: 'pupils', component: PupilsComponent }
   // { path: 'rides', component: RidesComponent }
 ];
 

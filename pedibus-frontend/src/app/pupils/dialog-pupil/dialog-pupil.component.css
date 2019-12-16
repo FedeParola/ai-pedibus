@@ -1,0 +1,17 @@
+.spacer {
+    flex: 1 1 auto;
+}
+
+.dialog-content{
+    text-align: center;
+}
+
+.matInput{
+    margin-bottom: 5%;
+}
+
+.action-button{
+    margin-top: 30px;
+    margin-bottom: 10px;
+    width: 45%;
+}

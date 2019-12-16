@@ -30,4 +30,20 @@ export class UsersService {
   getPupils(username) {
     return this.http.get(environment.apiUrl+'/users/'+username+'/pupils');
   }
+  
+  getUserPupils(page: number, size: number){
+    return this.http.get(environment.apiUrl+'/users/'+this.authenticationService.getUsername()+'/pupils?page='+page+'&size='+size);
+  }
+
+  removeUserPupil(pupilId){
+      return this.http.delete(environment.apiUrl+'/pupils/'+pupilId);
+  }
+
+  addUserPupil(name: string, userId, lineId){
+      return this.http.post(environment.apiUrl+'/pupils', {name, userId, lineId});
+  }
+
+  updateUserPupil(name:string, lineId, pupilId){
+      return this.http.put(environment.apiUrl+'/pupils/'+pupilId, {name, lineId});
+  }
 }

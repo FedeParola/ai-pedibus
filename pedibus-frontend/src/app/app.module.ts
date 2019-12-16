@@ -39,6 +39,8 @@ import { AvailabilityComponent } from './availability/availability.component';
 import { DeletionConfirmDialogComponent } from './availability/deletion-confirm-dialog/deletion-confirm-dialog.component';
 import { ReservationComponent } from './reservation/reservation.component';
 import { PupilsDialogComponent } from './reservation/pupils-dialog/pupils-dialog.component';
+import { PupilsComponent } from './pupils/pupils.component';
+import { DialogPupilComponent } from './pupils/dialog-pupil/dialog-pupil.component';
 // import { RidesComponent } from './rides/rides.component';
 
 
@@ -57,7 +59,9 @@ import { PupilsDialogComponent } from './reservation/pupils-dialog/pupils-dialog
     AvailabilityComponent,
     DeletionConfirmDialogComponent,
     ReservationComponent,
-    PupilsDialogComponent
+    PupilsDialogComponent,
+    PupilsComponent,
+    DialogPupilComponent,
     // RidesComponent
   ],
   imports: [
@@ -97,7 +101,8 @@ import { PupilsDialogComponent } from './reservation/pupils-dialog/pupils-dialog
     DialogUserLinesComponent,
     StopDialogComponent,
     DeletionConfirmDialogComponent,
-    PupilsDialogComponent
+    PupilsDialogComponent,
+    DialogPupilComponent
   ]
 })
 export class AppModule { }
