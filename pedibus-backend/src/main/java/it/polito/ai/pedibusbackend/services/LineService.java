@@ -2,6 +2,9 @@ package it.polito.ai.pedibusbackend.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.PrecisionModel;
 import it.polito.ai.pedibusbackend.entities.Line;
 import it.polito.ai.pedibusbackend.entities.Pupil;
 import it.polito.ai.pedibusbackend.entities.Ride;
@@ -250,6 +253,7 @@ public class LineService implements InitializingBean {
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     protected Line addLine(LineDTO lineDTO) throws ParseException {
+        GeometryFactory geoFactory = new GeometryFactory(new PrecisionModel(), 4326);
         SimpleDateFormat sdf = new SimpleDateFormat("H:m");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 
@@ -266,6 +270,7 @@ public class LineService implements InitializingBean {
                 stop.setOrder(stopDTO.getOrder());
                 stop.setDirection('O');
                 stop.setTime(new Time(sdf.parse(stopDTO.getTime()).getTime()));
+                stop.setLocation(geoFactory.createPoint(new Coordinate(stopDTO.getLng(), stopDTO.getLat())));
                 stop.setLine(line);
 
                 stopRepository.save(stop);
@@ -280,6 +285,8 @@ public class LineService implements InitializingBean {
                 stop.setOrder(stopDTO.getOrder());
                 stop.setDirection('R');
                 stop.setTime(new Time(sdf.parse(stopDTO.getTime()).getTime()));
+                stop.setLocation(geoFactory.createPoint(new Coordinate(stopDTO.getLng(), stopDTO.getLat())));
+                stop.setLocation(geoFactory.createPoint(new Coordinate(stopDTO.getLng(), stopDTO.getLat())));
                 stop.setLine(line);
 
                 stopRepository.save(stop);

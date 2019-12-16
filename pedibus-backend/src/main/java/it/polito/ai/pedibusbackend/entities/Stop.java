@@ -1,10 +1,10 @@
 package it.polito.ai.pedibusbackend.entities;
 
+import com.vividsolutions.jts.geom.Point;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.sql.Time;
-import java.util.List;
 
 @Entity
 @Data
@@ -24,6 +24,9 @@ public class Stop {
 
     @Column(nullable = false)
     private Time time;
+
+    // @Column(nullable = false)
+    private Point location;
 
     @ManyToOne
     @JoinColumn(nullable = false)
