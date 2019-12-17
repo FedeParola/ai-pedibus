@@ -17,3 +17,23 @@
   font-size: 0.93em;
   margin-right: 0.5em;
 }
+
+.buttons{
+  margin-top: 5px;
+  border-top: 1px solid rgba(0,0,0,.12);
+  text-align: center;
+}
+
+#separator{
+  text-align: left;
+  margin-left: 16px;
+}
+
+.list{
+  margin-bottom: 15px;
+}
+
+.download{
+  margin-left: 10px;
+  margin-right: 10px;
+}

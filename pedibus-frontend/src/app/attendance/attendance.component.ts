@@ -1,13 +1,14 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatSnackBar, MatDialog } from '@angular/material';
+import { MatSnackBar, MatDialog, throwToolbarMixedModesError } from '@angular/material';
 import * as moment from 'moment';
 
 import { AttendanceService } from '../attendance.service';
 import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
 import { StopDialogComponent } from './stop-dialog/stop-dialog.component';
+import { CdkObserveContent } from '@angular/cdk/observers';
 
 
 @Component({
@@ -24,6 +25,13 @@ export class AttendanceComponent implements OnInit {
   selectedRideIndex = -1;
   rideData;
   missingPupils;
+
+
+  private setting = {
+    element: {
+      dynamicDownload: null as HTMLElement
+    }
+  }
 
   constructor(private attendanceService: AttendanceService,
               private authenticationService: AuthenticationService,
@@ -44,6 +52,20 @@ export class AttendanceComponent implements OnInit {
         this.handleError(error)
       }
     );
+  }
+
+  downloadJSON(){
+    this.dyanmicDownloadByHtmlTag({
+      fileName: 'ride'+this.selectedRide.date+this.selectedRide.direction+'.json',
+      text: this.exportoJSON()
+    });
+  }
+
+  downloadCSV(){
+    this.dyanmicDownloadByHtmlTag({
+      fileName: 'ride'+this.selectedRide.date+this.selectedRide.direction+'.csv',
+      text: this.exportToCsv()
+    });
   }
 
   get selectedRide() {
@@ -232,6 +254,131 @@ export class AttendanceComponent implements OnInit {
         );
       }
     });
+  }
+
+  private dyanmicDownloadByHtmlTag(arg: {
+    fileName: string,
+    text: string
+  }) {
+    if (!this.setting.element.dynamicDownload) {
+      this.setting.element.dynamicDownload = document.createElement('a');
+    }
+    const element = this.setting.element.dynamicDownload;
+    const fileType = arg.fileName.indexOf('.json') > -1 ? 'text/json' : 'text/csv';
+    element.setAttribute('href', `data:${fileType};charset=utf-8,${encodeURIComponent(arg.text)}`);
+    element.setAttribute('download', arg.fileName);
+
+    var event = new MouseEvent("click");
+    element.dispatchEvent(event);
+  }
+
+  private exportoJSON(){
+    var o = {};
+    o["line"] = this.selectedLine.name;
+    o["date"] = this.selectedRide.date;
+    if(this.selectedRide.direction == 'O'){
+      o["direction"] = "Outbound";
+    }else{
+      o["direction"] = "Return";
+    }
+    o["stops"] = []; 
+
+    for(let stop of (this.selectedRide.direction == 'O' ? this.stops.outwardStops : this.stops.returnStops)){
+      var s = {};
+      s["time"] = stop.time;
+      s["name"] = stop.name;
+
+      var stopPupils = this.rideData.get(stop.id);
+      if(stopPupils != undefined){
+        s["pupils"] = [];
+        for(let data of stopPupils){
+          if(data.type == "both" || data.type == "attendance"){
+            var p = {};
+            p["name"] = data.pupil.name;
+            p["userId"] = data.pupil.userId;
+            s["pupils"].push(p);
+          }
+        }
+        
+      }
+      o["stops"].push(s);
+    }
+
+    var stringJSON = JSON.stringify(o);
+    return stringJSON;
+  }
+
+  private exportToCsv() {
+    var firstStop: boolean = true;
+    var firstPupil: boolean = true;
+    var csvContent;
+    var stringStops;
+    var stringPupils;
+
+    //create the first row + line, date and direction of the second
+    csvContent = 'line' + ',' + 'date' + ',' + 'direction' + ',' + 'stops_time' + ',' + 'stops_name' + ',' + 'stops_pupils_name' + ',' + 'stops_pupils_uderId' + '\n'
+    + '"' + this.selectedLine.name + '"' + ',' + '"' +  this.selectedRide.date + '"' + ',' + '"' + this.selectedRide.direction + '"';
+    //concatenate stops
+    for(let stop of (this.selectedRide.direction == 'O' ? this.stops.outwardStops : this.stops.returnStops)){
+        if(firstStop){
+          stringStops = ',' + '"' + stop.time + '"' + ',' + '"' + stop.name + '"';
+          csvContent += stringStops;
+          firstStop = false;
+          //add users to the stop
+          var stopPupils = this.rideData.get(stop.id);
+          if(stopPupils != undefined){
+            for(let data of stopPupils){
+              if(data.type == "both" || data.type == "attendance"){
+                if(firstPupil){
+                  stringPupils = ',' + '"' + data.pupil.name + '"' + ',' + '"' + data.pupil.userId + '"' + '\n';
+                  csvContent += stringPupils;
+                  firstPupil = false;
+                }else{
+                  stringPupils = '""' + ',' + '""' + ',' + '""' + ',' + '""' + ',' + '""' + ',' + '"' + data.pupil.name + '"' + ',' + '"' + data.pupil.userId + '"' + '\n';
+                  csvContent += stringPupils; 
+                }
+              }else{
+                stringPupils = ',' + '""' + ',' + '""' + '\n';
+                csvContent += stringPupils;
+              }
+            }
+          }else{
+            stringPupils = ',' + '""' + ',' + '""' + '\n';
+            csvContent += stringPupils;
+          }
+          firstPupil = true;
+          //
+        }else{
+          stringStops = '""' + ',' + '""' + ',' + '""' + ',' + '"' + stop.time + '"' + ',' + '"' + stop.name + '"';
+          csvContent += stringStops;
+          //add uders to the stop
+          var stopPupils = this.rideData.get(stop.id);
+          if(stopPupils != undefined && stopPupils.length != 0){
+            for(let data of stopPupils){
+              if(data.type == "both" || data.type == "attendance"){
+                if(firstPupil){
+                  stringPupils = + ',' + '"' + data.pupil.name + '"' + ',' + '"' + data.pupil.userId + '"' + '\n';
+                  csvContent += stringPupils;
+                  firstPupil = false;
+                }else{
+                  stringPupils = '""' + ',' + '""' + ',' + '""' + ',' + '""' + ',' + '""' + ',' + '"' + data.pupil.name + '"' + ',' + '"' + data.pupil.userId + '"' + '\n';
+                  csvContent += stringPupils; 
+                }
+              }else{
+                stringPupils = ',' + '""' + ',' + '""' + '\n';
+                csvContent += stringPupils;
+              }
+            }
+          }else{
+            stringPupils = ',' + '""' + ',' + '""' + '\n';
+            csvContent += stringPupils;
+          }
+          firstPupil = true;
+          //
+        }
+    }
+
+    return csvContent;
   }
 
   private handleError(error: HttpErrorResponse) {

@@ -3,7 +3,7 @@
   [line]="selectedLine"
   [rides]="rides"
   [selectedRide]="selectedRideIndex" (selectedRideChange)="onSelectedRideChange($event)"> 
-  <mat-list *ngIf="selectedRide && stops">
+  <mat-list class="list" *ngIf="selectedRide && stops">
     <mat-list-item *ngFor="let stop of (selectedRide.direction == 'O' ? stops.outwardStops : stops.returnStops)"> 
       <mat-icon matListIcon>fiber_manual_record</mat-icon>
       <h4 mat-line><span class="hour">{{stop.time}}</span> <strong>{{stop.name}}</strong></h4>
@@ -32,4 +32,9 @@
       </mat-chip-list>
     </mat-list-item>
   </mat-list>
+  <div class="buttons">
+    <h4 mat-line id="separator"><strong>Export ride</strong></h4>
+    <button mat-raised-button class="download" (click)="downloadJSON()">download JSON</button>
+    <button mat-raised-button class="download " (click)="downloadCSV()">download CSV</button>
+  </div>
 </app-ride-selector> 
