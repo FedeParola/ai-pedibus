@@ -304,7 +304,7 @@ export class AttendanceComponent implements OnInit {
       o["stops"].push(s);
     }
 
-    var stringJSON = JSON.stringify(o);
+    var stringJSON = JSON.stringify(o, null, "\t");
     return stringJSON;
   }
 
