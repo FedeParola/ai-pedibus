@@ -202,7 +202,7 @@ export class ReservationComponent implements OnInit {
       if (this.cantUpdateExplanation != '') {
         this.cantUpdateExplanation += '\n';
       }
-      this.cantUpdateExplanation += "The pupil was already marked as present";
+      this.cantUpdateExplanation += "Pupil already marked as present";
     }
     
     return cantUpdate;

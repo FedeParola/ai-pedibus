@@ -35,16 +35,19 @@ h4 {
   margin-left: 0.5em;
   font-weight: 400;
 }
+.mat-radio-label {
+  cursor: default;
+}
 
-/* .status {
+.school>label {
+  cursor: default;
+}
+
+.present-msg {
 text-align: center;
 font-size: 18px;
-font-weight: 500;
-color: rgba(0,0,0,.87);
+font-weight: 700;
+color: rgba(6, 193, 0, 1);;
 border-top: 1px solid rgba(0,0,0,.12);
 padding-top: 25px;
-} */
-
-/* .confirm-button {
-margin-left: 20px;
-} */
+}

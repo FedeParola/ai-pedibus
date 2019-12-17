@@ -43,3 +43,11 @@ button:disabled {
 .mat-tooltip {
   white-space: pre-line;
 }
+
+.school>label {
+  cursor: default;
+}
+
+.school .mat-radio-container {
+  visibility: hidden;
+}

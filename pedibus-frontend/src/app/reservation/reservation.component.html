@@ -17,10 +17,14 @@
         <mat-radio-button 
             *ngFor="let stop of (selectedRide.direction == 'O' ? stops.outwardStops : stops.returnStops)"
             [value]="stop.id"
-            (click)="cantUpdate() ? undefined : onStopClick(stop.id)">
+            (click)="stop.name.toLowerCase() == 'school' || cantUpdate() ? false : onStopClick(stop.id)"
+            [ngClass]="stop.name.toLowerCase() == 'school' ? 'school' : ''">
           <h4 mat-line><span class="hour">{{stop.time}}</span> {{stop.name}}</h4>
         </mat-radio-button>
       </mat-radio-group>
+    </div>
+    <div *ngIf="selectedReservation && selectedReservation.attendanceId !== undefined" class="present-msg">
+      PRESENT
     </div>
   </div>
 </app-ride-selector> 
