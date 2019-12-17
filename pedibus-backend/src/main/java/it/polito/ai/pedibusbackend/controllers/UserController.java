@@ -25,6 +25,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -232,6 +233,14 @@ public class UserController {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return userService.getRides(userId, lineId, loggedUser.getUsername());
+    }
+
+    @GetMapping(value = "/users/{userId}/notifications", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<NotificationDTO> getNotifications(@RequestParam("page") Optional<Integer> page,
+                                                  @RequestParam("size") Optional<Integer> size,
+                                                  @PathVariable String userId, Principal principal)
+            throws BadRequestException, ForbiddenException, NotFoundException {
+        return userService.getNotifications(page, size, userId, principal.getName());
     }
 
 //

@@ -59,6 +59,8 @@ public class UserService implements InitializingBean, UserDetailsService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private NotificationRepository notificationRepository;
 
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
@@ -604,5 +606,48 @@ public class UserService implements InitializingBean, UserDetailsService {
 
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), user.isEnabled(),
                 true, true, true, authList);
+    }
+
+    public List<NotificationDTO> getNotifications(Optional<Integer> page, Optional<Integer> size, String userId, String name) throws
+            BadRequestException, ForbiddenException, NotFoundException {
+        List<NotificationDTO> notifications = new ArrayList<>();
+        List<Notification> requestedNotifications = new ArrayList<>();
+
+        /* Authorize access */
+        User loggedUser = userRepository.findById(name).orElseThrow(BadRequestException::new);
+        if (!(name.equals(userId) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
+            throw new ForbiddenException();
+        }
+
+        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+
+        if(page.isPresent() && size.isPresent()){
+            requestedNotifications = notificationRepository.findByUser(user, PageRequest.of(page.get(), size.get())).getContent()
+                    .stream()
+                    .collect(Collectors.toList());
+        }else if(!page.isPresent() && !size.isPresent()){
+            requestedNotifications = user.getNotifications();
+        }else{
+            throw new BadRequestException();
+        }
+
+        for (Notification n : requestedNotifications) {
+            NotificationDTO notificationDTO = new NotificationDTO();
+            notificationDTO.setId(n.getId());
+            notificationDTO.setMessage(n.getMessage());
+            notificationDTO.setRead(n.getRead());
+            notifications.add(notificationDTO);
+        }
+
+        //set to the last user if is the last
+        if(page.isPresent()){
+            if(notificationRepository.findByUser(user, PageRequest.of(page.get() + 1, size.get())).isEmpty()){
+                notifications.get(requestedNotifications.size() - 1).setHasNext(false);
+            }else{
+                notifications.get(requestedNotifications.size() -1).setHasNext(true);
+            }
+        }
+
+        return notifications;
     }
 }

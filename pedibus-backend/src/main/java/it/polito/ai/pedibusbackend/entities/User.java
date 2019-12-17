@@ -29,4 +29,7 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Pupil> pupils = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Notification> notifications = new ArrayList<>();
 }
