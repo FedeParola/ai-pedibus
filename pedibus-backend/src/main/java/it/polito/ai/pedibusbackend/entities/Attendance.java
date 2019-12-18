@@ -12,7 +12,7 @@ public class Attendance {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(nullable = false)
     private Pupil pupil;
 
@@ -24,7 +24,7 @@ public class Attendance {
     @JoinColumn(nullable = false)
     private Stop stop;
 
-    @OneToOne
+    @OneToOne()
     @JoinColumn(nullable = true)
     private Reservation reservation;
 

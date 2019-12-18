@@ -8,6 +8,7 @@ import { MatSnackBar, MatDialog } from '@angular/material';
 import { HttpErrorResponse } from '@angular/common/http';
 import * as moment from 'moment';
 import { PupilsDialogComponent } from './pupils-dialog/pupils-dialog.component';
+import { AppComponent } from '../app.component';
 
 @Component({
   selector: 'app-reservation',
@@ -31,7 +32,10 @@ export class ReservationComponent implements OnInit {
               private usersService: UsersService,
               private router: Router,
               private _snackBar: MatSnackBar,
-              private dialog: MatDialog) { }
+              private dialog: MatDialog,
+              private appComponent: AppComponent) { 
+                this.appComponent.selectedView="Reservations"
+              }
 
   ngOnInit() {
     this.usersService.getPupils(this.authenticationService.getUsername()).subscribe(

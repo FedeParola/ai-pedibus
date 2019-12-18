@@ -19,3 +19,8 @@ mat-card {
   position: absolute; 
   right: 5px;
 }
+
+.title{
+  text-align: center;
+  margin-bottom: 10px;
+}

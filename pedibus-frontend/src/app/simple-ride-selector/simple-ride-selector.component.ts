@@ -1,4 +1,5 @@
 import { Component, EventEmitter, OnInit, Input, Output } from '@angular/core';
+import { AppComponent } from '../app.component';
 
 @Component({
   selector: 'app-simple-ride-selector',
@@ -19,8 +20,12 @@ export class SimpleRideSelectorComponent {
   
   @Input() currentDate;
   @Input() currentDirection;
+
+  title;
   
-  constructor() { }
+  constructor(private appComponent: AppComponent) { 
+    this.title=appComponent.selectedView;
+  }
 
   selectLine(line) {
     this.lineSelect.emit(line);

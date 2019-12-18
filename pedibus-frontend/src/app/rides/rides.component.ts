@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { LineService } from '../line.service';
 import * as moment from 'moment';
+import { AppComponent } from '../app.component';
 
 @Component({
   selector: 'app-rides',
@@ -25,7 +26,10 @@ export class RidesComponent implements OnInit {
               private authenticationService: AuthenticationService,
               private lineService: LineService,
               private router: Router,
-              private _snackBar: MatSnackBar) {}
+              private _snackBar: MatSnackBar,
+              private appComponent: AppComponent) {
+                this.appComponent.selectedView="Rides";
+              }
 
   ngOnInit() {
     this.rideService.getMyLines(this.authenticationService.getUsername()).subscribe(

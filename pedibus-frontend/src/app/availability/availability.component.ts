@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { MatSnackBar, MatDialog } from '@angular/material';
 import { HttpErrorResponse } from '@angular/common/http';
 import * as moment from 'moment';
+import { AppComponent } from '../app.component';
 
 import { DeletionConfirmDialogComponent } from './deletion-confirm-dialog/deletion-confirm-dialog.component';
 
@@ -28,7 +29,10 @@ export class AvailabilityComponent implements OnInit {
               private lineService: LineService,
               private router: Router,
               private _snackBar: MatSnackBar,
-              private dialog: MatDialog) { }
+              private dialog: MatDialog,
+              private appComponent: AppComponent) {
+                this.appComponent.selectedView="Availabilities";
+               }
 
   ngOnInit() {
     this.lineService.getLines().subscribe(

@@ -1,8 +1,8 @@
 <div mat-dialog-content class="dialog-content">
     <form [formGroup]="form">
         <mat-form-field class="form-field">
-            <input matInput cdkFocusInitial *ngIf="!addPupil" type="text" formControlName="pupilName" placeholder="Pupil_name" [(ngModel)]="inputValue">
-            <input matInput cdkFocusInitial *ngIf="addPupil" type="text" formControlName="pupilName" placeholder="Pupil_name">
+            <input matInput cdkFocusInitial *ngIf="!addPupil" type="text" formControlName="pupilName" placeholder="Pupil name" [(ngModel)]="inputValue">
+            <input matInput cdkFocusInitial *ngIf="addPupil" type="text" formControlName="pupilName" placeholder="Pupil name">
             <mat-error *ngIf="form.controls.pupilName.hasError('required')">
                 Pupil name is <strong>required</strong>
             </mat-error>
@@ -11,7 +11,7 @@
             </mat-error>
         </mat-form-field>
         <mat-form-field>
-            <mat-select [(value)]="selected">
+            <mat-select [(value)]="selected" placeholder="Select line">
                 <mat-option *ngFor="let line of lines" [value]="line">
                     {{line.name}}
                 </mat-option>

@@ -23,6 +23,6 @@ public class Pupil {
     @JoinColumn(nullable = false)
     private Line line;
 
-    @OneToMany(mappedBy = "pupil")
+    @OneToMany(mappedBy = "pupil", cascade = CascadeType.REMOVE)
     private List<Reservation> reservations;
 }

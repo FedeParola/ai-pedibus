@@ -9,6 +9,7 @@ import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
 import { StopDialogComponent } from './stop-dialog/stop-dialog.component';
 import { CdkObserveContent } from '@angular/cdk/observers';
+import { AppComponent } from '../app.component';
 
 
 @Component({
@@ -38,7 +39,10 @@ export class AttendanceComponent implements OnInit {
               private lineService: LineService,
               private router: Router,
               private _snackBar: MatSnackBar,
-              private dialog: MatDialog) {}
+              private dialog: MatDialog,
+              private appComponent: AppComponent) {
+                this.appComponent.selectedView="Attendances";
+              }
 
   ngOnInit() {
     this.lineService.getLines().subscribe(
