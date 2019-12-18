@@ -493,7 +493,7 @@ public class UserService implements InitializingBean, UserDetailsService {
         persistNewAvailability(user, r2, line1.getStops().get(0), "CONSOLIDATED");
         persistNewAvailability(user, r3, line1.getStops().get(3), "CONSOLIDATED");
         persistNewAvailability(user, r4, line1.getStops().get(0), "CONSOLIDATED");
-        persistNewAvailability(user, r5, line1.getStops().get(3), "ASSIGEND");
+        persistNewAvailability(user, r5, line1.getStops().get(3), "ASSIGNED");
 
         /* Create some reservations */
         Reservation r = persistNewReservation(p1, r4, line1.getStops().get(0));
