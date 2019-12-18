@@ -3,7 +3,7 @@ package it.polito.ai.pedibusbackend.entities;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.sql.Date;
+import java.sql.Timestamp;
 
 @Entity
 @Data
@@ -26,5 +26,5 @@ public class Notification {
     private Boolean read;
 
     @Column(nullable = false)
-    private Date date;
+    private Timestamp timestamp;
 }

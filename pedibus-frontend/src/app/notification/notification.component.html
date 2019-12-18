@@ -14,8 +14,8 @@
                 <p *ngIf="notification.read == false">{{notification.title}}</p>
                 <p *ngIf="notification.read == true" class="read">{{notification.title}}</p>
                 <span class="spacer"></span>
-                <p *ngIf="notification.read == false">{{notification.date}}</p>
-                <p *ngIf="notification.read == true" class="read">{{notification.date}}</p>
+                <p *ngIf="notification.read == false">{{notification.date | date:'dd/M/yy, H:mm'}}</p>
+                <p *ngIf="notification.read == true" class="read">{{notification.date | date:'dd/M/yy, H:mm'}}</p>
                 <span class="spacer"></span>
                 <button mat-raised-button class="show-button" (click)="openDialogShowNotification(notification)">Show</button>
                 <button mat-raised-button class="remove-button" (click)="removeNotification(notification)">Remove</button>
