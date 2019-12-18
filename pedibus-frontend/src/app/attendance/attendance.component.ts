@@ -1,14 +1,15 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatSnackBar, MatDialog, throwToolbarMixedModesError } from '@angular/material';
+import { RxStompService } from '@stomp/ng2-stompjs';
+import { Message } from '@stomp/stompjs';
 import * as moment from 'moment';
 
 import { AttendanceService } from '../attendance.service';
 import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
 import { StopDialogComponent } from './stop-dialog/stop-dialog.component';
-import { CdkObserveContent } from '@angular/cdk/observers';
 
 
 @Component({
@@ -16,15 +17,19 @@ import { CdkObserveContent } from '@angular/cdk/observers';
   templateUrl: './attendance.component.html',
   styleUrls: ['./attendance.component.css']
 })
-export class AttendanceComponent implements OnInit {
+export class AttendanceComponent implements OnInit, OnDestroy {
   lines;
   selectedLine;
   stops;
   pupils;
+  pupilsSub;
   rides;
   selectedRideIndex = -1;
   rideData;
   missingPupils;
+  ridesUpdate$;
+  rideDataUpdate$;
+  update$;
 
 
   private setting = {
@@ -38,7 +43,8 @@ export class AttendanceComponent implements OnInit {
               private lineService: LineService,
               private router: Router,
               private _snackBar: MatSnackBar,
-              private dialog: MatDialog) {}
+              private dialog: MatDialog,
+              private rxStompService: RxStompService) {}
 
   ngOnInit() {
     this.lineService.getLines().subscribe(
@@ -52,6 +58,24 @@ export class AttendanceComponent implements OnInit {
         this.handleError(error)
       }
     );
+
+    // Register callbacks for update events
+    this.update$ = this.rxStompService.watch('/topic/demo?lineId=1').subscribe((message: Message) => {
+      console.log('Received update: ' + message.body);
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe from all events
+    if (this.pupilsSub) {
+      this.pupilsSub.unsubscribe();
+    }
+    if (this.ridesSub) {
+      this.ridesSub.unsubscribe();
+    }
+    if (this.rideDataSub) {
+      this.rideDataSub.unsubscribe();
+    }
   }
 
   downloadJSON(){
@@ -97,9 +121,15 @@ export class AttendanceComponent implements OnInit {
       }
     );
 
-    this.lineService.getPupils(this.selectedLine.id).subscribe(
+    if (this.pupilsSub) {
+      this.pupilsSub.unsubscribe();
+    }
+    this.pupilsSub = this.lineService.getPupils(this.selectedLine.id).subscribe(
       (res) => {
         this.pupils = res;
+        if (this.rideData) {
+          this.computeMissingPupils();
+        }
       },
       (error) => {
         this.handleError(error)
@@ -137,13 +167,7 @@ export class AttendanceComponent implements OnInit {
     this.attendanceService.getRideData(this.selectedRide.id).subscribe(
       (res) => {
         this.rideData = res;
-        // Compute missing pupils
-        this.missingPupils = [];
-        for (let pupil of this.pupils) {
-          if (!this.findPupil(pupil)) {
-            this.missingPupils.push(pupil);
-          }
-        }
+        this.computeMissingPupils();
       },
       (error) => {
         this.handleError(error);
@@ -160,6 +184,15 @@ export class AttendanceComponent implements OnInit {
     } else {
       let treshold = moment(this.selectedRide.date);
       return moment().isAfter(treshold, 'day');
+    }
+  }
+
+  private computeMissingPupils() {
+    this.missingPupils = [];
+    for (let pupil of this.pupils) {
+      if (!this.findPupil(pupil)) {
+        this.missingPupils.push(pupil);
+      }
     }
   }
 

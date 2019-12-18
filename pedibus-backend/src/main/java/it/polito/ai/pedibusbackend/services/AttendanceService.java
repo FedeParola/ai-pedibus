@@ -7,6 +7,7 @@ import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.repositories.*;
 import it.polito.ai.pedibusbackend.viewmodels.NewAttendanceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -33,6 +34,8 @@ public class AttendanceService {
     private ReservationRepository reservationRepository;
     @Autowired
     private AvailabilityRepository availabilityRepository;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Long addAttendance(@Valid NewAttendanceDTO attendanceDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
@@ -106,6 +109,8 @@ public class AttendanceService {
         }
 
         attendance = attendanceRepository.save(attendance);
+
+        msgTemplate.convertAndSend("/topic/demo?lineId=1", "Attendance created");
 
         return attendance.getId();
     }

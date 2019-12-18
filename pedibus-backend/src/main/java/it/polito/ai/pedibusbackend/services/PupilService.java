@@ -14,6 +14,7 @@ import it.polito.ai.pedibusbackend.viewmodels.NewPupilDTO;
 import it.polito.ai.pedibusbackend.viewmodels.PupilUpdateDTO;
 import it.polito.ai.pedibusbackend.viewmodels.ReservationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,8 @@ public class PupilService {
     private LineRepository lineRepository;
     @Autowired
     private PupilRepository pupilRepository;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
@@ -55,6 +58,9 @@ public class PupilService {
         pupil.setUser(user);
         pupil.setLine(line);
         pupil = pupilRepository.save(pupil);
+
+        /* Notify pupil creation */
+        notifyPupilOperation(pupil);
 
         return pupil.getId();
     }
@@ -83,6 +89,9 @@ public class PupilService {
             Line line = lineRepository.findById(pupilUpdate.getLineId()).orElseThrow(BadRequestException::new);
             pupil.setLine(line);
         }
+
+        /* Notify pupil update */
+        notifyPupilOperation(pupil);
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
@@ -97,6 +106,9 @@ public class PupilService {
         }
 
         pupilRepository.delete(pupil);
+
+        /* Notify pupil deletion */
+        notifyPupilOperation(pupil);
     }
 
     public List<ReservationDTO> getReservations(Long pupilId, String loggedUserId)
@@ -123,5 +135,10 @@ public class PupilService {
         }
 
         return reservationDTOs;
+    }
+
+    private void notifyPupilOperation(Pupil pupil) {
+        msgTemplate.convertAndSend("/topic/lines/" + pupil.getLine().getId() + "/pupils", "");
+        msgTemplate.convertAndSend("/topic/users/" + pupil.getUser().getEmail() + "/pupils", "");
     }
 }
