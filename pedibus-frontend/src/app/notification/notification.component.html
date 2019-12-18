@@ -1,0 +1,30 @@
+<mat-card class="notifications-card">
+    <mat-card-header>
+        <mat-card-title>Comunications</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="card-content">
+        <mat-list>
+            <mat-list-item *ngIf="noNotifications">
+                <span class="spacer"></span> 
+                <p>There are no notifications</p>
+                <span class="spacer"></span> 
+            </mat-list-item>
+            <mat-list-item *ngFor="let notification of notifications">
+                <span class="spacer"></span> 
+                <p *ngIf="notification.read == false">{{notification.title}}</p>
+                <p *ngIf="notification.read == true" class="read">{{notification.title}}</p>
+                <span class="spacer"></span>
+                <p *ngIf="notification.read == false">{{notification.date}}</p>
+                <p *ngIf="notification.read == true" class="read">{{notification.date}}</p>
+                <span class="spacer"></span>
+                <button mat-raised-button class="show-button" (click)="openDialogShowNotification(notification)">Show</button>
+                <button mat-raised-button class="remove-button" (click)="removeNotification(notification)">Remove</button>
+                <mat-divider></mat-divider>
+            </mat-list-item>
+        </mat-list>
+        <span class="nav-buttons">
+            <button mat-icon-button (click)="prevPage()" [disabled]="!prevEnabled"><mat-icon>chevron_left</mat-icon></button>
+            <button mat-icon-button (click)="nextPage()" [disabled]="!nextEnabled"><mat-icon>chevron_right</mat-icon></button>
+        </span>
+    </mat-card-content>
+</mat-card>

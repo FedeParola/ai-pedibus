@@ -42,6 +42,8 @@ import { PupilsDialogComponent } from './reservation/pupils-dialog/pupils-dialog
 import { PupilsComponent } from './pupils/pupils.component';
 import { DialogPupilComponent } from './pupils/dialog-pupil/dialog-pupil.component';
 import { RidesComponent } from './rides/rides.component';
+import { NotificationComponent } from './notification/notification.component';
+import { DialogShowNotificationComponent } from './notification/notification.component';
 
 
 @NgModule({
@@ -62,7 +64,9 @@ import { RidesComponent } from './rides/rides.component';
     PupilsDialogComponent,
     PupilsComponent,
     DialogPupilComponent,
-    RidesComponent
+    RidesComponent,
+    NotificationComponent,
+    DialogShowNotificationComponent
   ],
   imports: [
     BrowserModule,
@@ -102,7 +106,8 @@ import { RidesComponent } from './rides/rides.component';
     StopDialogComponent,
     DeletionConfirmDialogComponent,
     PupilsDialogComponent,
-    DialogPupilComponent
+    DialogPupilComponent,
+    DialogShowNotificationComponent
   ]
 })
 export class AppModule { }

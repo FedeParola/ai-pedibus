@@ -467,6 +467,15 @@ public class UserService implements InitializingBean, UserDetailsService {
         Pupil p6 = persistNewPupil("Luigi", line1, user);
         Pupil p7 = persistNewPupil("Pietro", line2, user);
 
+        // Create some notifications for User0
+        persistNewNotification(user, "Notification1", "This is the message of notification1!", false, new java.sql.Date(System.currentTimeMillis()));
+        persistNewNotification(user, "Notification2", "This is the message of notification2!", false, new java.sql.Date(System.currentTimeMillis()));
+        persistNewNotification(user, "Notification3", "This is the message of notification3!", false, new java.sql.Date(System.currentTimeMillis()));
+        persistNewNotification(user, "Notification4", "This is the message of notification4!", true, new java.sql.Date(System.currentTimeMillis()));
+        persistNewNotification(user, "Notification5", "This is the message of notification5!", false, new java.sql.Date(System.currentTimeMillis()));
+        persistNewNotification(user, "Notification6", "This is the message of notification6!", false, new java.sql.Date(System.currentTimeMillis()));
+        persistNewNotification(user, "Notification7", "This is the message of notification7!", false, new java.sql.Date(System.currentTimeMillis()));
+
         /* Create some rides for yesterday */
         Ride r1 = persistNewRide(new java.sql.Date(System.currentTimeMillis()-24*60*60*1000), line1, 'O', true);
 
@@ -595,6 +604,16 @@ public class UserService implements InitializingBean, UserDetailsService {
         return attendanceRepository.save(a);
     }
 
+    private void persistNewNotification(User user, String title, String message, Boolean read, Date date) {
+        Notification n = new Notification();
+        n.setUser(user);
+        n.setTitle(title);
+        n.setMessage(message);
+        n.setRead(read);
+        n.setDate(date);
+        notificationRepository.save(n);
+    }
+
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         User user = userRepository.findById(s).orElseThrow(() -> new UsernameNotFoundException("Email " + s + " not found"));
@@ -636,11 +655,13 @@ public class UserService implements InitializingBean, UserDetailsService {
             notificationDTO.setId(n.getId());
             notificationDTO.setMessage(n.getMessage());
             notificationDTO.setRead(n.getRead());
+            notificationDTO.setDate(n.getDate());
+            notificationDTO.setTitle(n.getTitle());
             notifications.add(notificationDTO);
         }
 
         //set to the last user if is the last
-        if(page.isPresent()){
+        if(page.isPresent() && requestedNotifications.size()>0){
             if(notificationRepository.findByUser(user, PageRequest.of(page.get() + 1, size.get())).isEmpty()){
                 notifications.get(requestedNotifications.size() - 1).setHasNext(false);
             }else{

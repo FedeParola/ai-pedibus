@@ -9,6 +9,7 @@ import { RegisterComponent } from './register/register.component';
 import { UsersComponent } from './users/users.component';
 import { PupilsComponent } from './pupils/pupils.component';
 import { RidesComponent } from './rides/rides.component';
+import { NotificationComponent } from './notification/notification.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -18,7 +19,8 @@ const routes: Routes = [
   { path: 'availability', component: AvailabilityComponent },
   { path: 'reservation', component: ReservationComponent },
   { path: 'pupils', component: PupilsComponent },
-  { path: 'rides', component: RidesComponent }
+  { path: 'rides', component: RidesComponent },
+  { path: 'notifications', component: NotificationComponent }
 ];
 
 @NgModule({
