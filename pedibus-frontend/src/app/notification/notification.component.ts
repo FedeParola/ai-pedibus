@@ -118,8 +118,17 @@ export class NotificationComponent implements OnInit {
     const dialogRef = this.dialog.open(DialogShowNotificationComponent, dialogConfig);
 
     dialogRef.afterClosed().subscribe(result => {
-      notification.read = true;
-      //put on notifications endpoint to update the status 
+      this.usersService.updateUserNotification(notification.id, true)
+      .subscribe(
+        () => {
+          notification.read = true;
+          console.log("Notification read");
+        },
+        () => {
+          this._snackBar.open("Error in the communication with the server!", "",
+              { panelClass: 'error-snackbar', duration: 5000 });
+        }
+      );
     });
   }
 

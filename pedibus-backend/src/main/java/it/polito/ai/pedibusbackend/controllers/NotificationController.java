@@ -4,11 +4,10 @@ import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.services.NotificationService;
+import it.polito.ai.pedibusbackend.viewmodels.NotificationUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
@@ -21,5 +20,11 @@ public class NotificationController {
     public void deleteNotification(@PathVariable Long notificationId, Principal principal) throws NotFoundException,
             BadRequestException, ForbiddenException {
         notificationService.deleteNotification(notificationId, principal.getName());
+    }
+
+    @PutMapping(value = "/notifications/{notificationId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void updatePupil(@PathVariable Long notificationId, @RequestBody NotificationUpdateDTO notificationUpdate, Principal principal)
+            throws BadRequestException, NotFoundException, ForbiddenException {
+        notificationService.updateNotification(notificationId, notificationUpdate, principal.getName());
     }
 }

@@ -55,4 +55,8 @@ export class UsersService {
     return this.http.delete(environment.apiUrl+'/notifications/'+notificationId);
   }
 
+  updateUserNotification(notificationId, read: boolean){
+    return this.http.put(environment.apiUrl+'/notifications/'+notificationId, {read});
+}
+
 }
