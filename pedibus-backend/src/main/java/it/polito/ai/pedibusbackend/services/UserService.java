@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -61,6 +62,8 @@ public class UserService implements InitializingBean, UserDetailsService {
     private EntityManager entityManager;
     @Autowired
     private NotificationRepository notificationRepository;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
@@ -82,6 +85,8 @@ public class UserService implements InitializingBean, UserDetailsService {
         user.setSurname(registrationDTO.getSurname());
         user.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
         user.setEnabled(true);
+
+        msgTemplate.convertAndSend("/topic/users", "");
 
         /* Delete the token */
         registrationTokenRepository.delete(token);
@@ -199,6 +204,9 @@ public class UserService implements InitializingBean, UserDetailsService {
         user.setEnabled(false);
         user.getRoles().add("ROLE_USER");
         userRepository.save(user);
+
+        //
+        msgTemplate.convertAndSend("/topic/users", "");
 
         /* Necessary, otherwise the system tries to persist the token before the user and returns an error */
         entityManager.flush();
@@ -345,6 +353,9 @@ public class UserService implements InitializingBean, UserDetailsService {
         }
 
         user.getLines().addAll(lines);
+
+        msgTemplate.convertAndSend("/topic/users", "");
+
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
@@ -362,6 +373,8 @@ public class UserService implements InitializingBean, UserDetailsService {
         if(user.getLines().size() == 0) {
             user.getRoles().remove("ROLE_ADMIN");
         }
+
+        msgTemplate.convertAndSend("/topic/users", "");
     }
 
     public List<PupilDTO> getPupils(String userId, Optional<Integer> page, Optional<Integer> size, String loggedUserId)
