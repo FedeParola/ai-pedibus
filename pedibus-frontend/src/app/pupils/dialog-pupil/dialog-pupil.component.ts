@@ -37,7 +37,7 @@ export class DialogPupilComponent implements OnInit {
               private _snackBar: MatSnackBar,
               private fb: FormBuilder, 
               public dialogRef: MatDialogRef<DialogPupilComponent>, @Inject(MAT_DIALOG_DATA) data) { 
-    
+
     this.form = this.fb.group({
       pupilName: ['', [Validators.required, Validators.pattern('[A-Za-z]*')]]
     });
@@ -54,6 +54,8 @@ export class DialogPupilComponent implements OnInit {
   }
 
   ngOnInit() {
+    
+
     this.lineService.getLines().subscribe((res) => {
       this.lines = res;
       if(this.command == 'add'){

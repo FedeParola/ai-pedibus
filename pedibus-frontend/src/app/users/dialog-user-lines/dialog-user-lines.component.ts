@@ -44,9 +44,11 @@ export class DialogUserLinesComponent implements OnInit {
   }
 
   checkDisabled(line): Boolean{
-    for(let l of this.currentUserLines){
-      if(l.name == line.name){
-        return false;
+    if(this.currentUserLines != undefined){
+      for(let l of this.currentUserLines){
+        if(l.name == line.name){
+          return false;
+        }
       }
     }
     return true;
