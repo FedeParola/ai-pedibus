@@ -13,8 +13,8 @@
     <h3 mat-subheader>Menu</h3>
     <span class="spacer"></span>
   </mat-list-item>
-  <mat-list-item>
-    <button mat-button (click)="users()" [hidden]="usersDisabled">Users</button>
+  <mat-list-item *ngIf="!usersDisabled">
+    <button mat-button (click)="users()">Users</button>
   </mat-list-item>
   <mat-list-item>
     <button mat-button (click)="pupils()">Pupils</button>
@@ -31,8 +31,8 @@
   <mat-list-item>
     <button mat-button (click)="notifications()">Comunications</button>
   </mat-list-item>
-  <mat-list-item>
-    <button mat-button (click)="rides()" [hidden]="ridesDisabled">Rides</button>
+  <mat-list-item *ngIf="!ridesDisabled">
+    <button mat-button (click)="rides()">Rides</button>
   </mat-list-item>
 </mat-list>
 

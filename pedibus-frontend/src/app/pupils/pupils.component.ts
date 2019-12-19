@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { UsersService } from '../users.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { AuthenticationService } from '../authentication.service';
 import {MatDialog, MatDialogRef, MatDialogConfig} from '@angular/material/dialog';
+import {MAT_DIALOG_DATA} from '@angular/material/dialog';
 import { DialogPupilComponent } from './dialog-pupil/dialog-pupil.component';
 
 @Component({
@@ -121,29 +122,35 @@ export class PupilsComponent implements OnInit {
   }
 
   removePupil(pupil){
-    this.usersService.removeUserPupil(pupil.id).subscribe((res) => {
-      //dovrebbe funzionare con questo al posto della remove
-      const index = this.pupils.indexOf(pupil, 0);
-      if (index > -1) {
-        this.pupils.splice(index, 1);
-      }
-      //se la dimensione scende a 5 elementi
-      if(this.pupils.length==5){
-        this.ngOnInit();
-      }else if(this.pupils.length==0){
-        if(this.pageNumber>0){
-          this.pageNumber--;
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.disableClose = true;
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = '220px';
+
+    dialogConfig.data = {
+      pupil: pupil
+    };
+
+    const dialogRef = this.dialog.open(DialogRemovePupilComponent, dialogConfig);
+
+    dialogRef.afterClosed().subscribe(result => {
+      if(result.removed){
+        const index = this.pupils.indexOf(pupil, 0);
+        if (index > -1) {
+          this.pupils.splice(index, 1);
+        }
+        //se la dimensione scende a 5 elementi
+        if(this.pupils.length==5){
           this.ngOnInit();
-        }else{
-          this.ngOnInit();
+        }else if(this.pupils.length==0){
+          if(this.pageNumber>0){
+            this.pageNumber--;
+            this.ngOnInit();
+          }else{
+            this.ngOnInit();
+          }
         }
       }
-      this._snackBar.open("Pupil removed", "",
-                    { panelClass: 'success-snackbar', duration: 5000 });
-    },
-    (error) => {
-      this._snackBar.open("Cannot remove yuor pupil! Check if you have some active reservations fot it, then try again!", "",
-                    { panelClass: 'error-snackbar', duration: 7000 });
     });
   }
 
@@ -159,4 +166,37 @@ export class PupilsComponent implements OnInit {
     }
   };
 
+}
+
+@Component({
+  selector: 'dialog-remove-pupil',
+  templateUrl: 'dialog-remove-pupil.component.html',
+})
+export class DialogRemovePupilComponent {
+  currentPupil;
+
+  constructor(private usersService: UsersService,
+              public dialogRef: MatDialogRef<DialogRemovePupilComponent>,
+              private authService: AuthenticationService,
+              private _snackBar: MatSnackBar, @Inject(MAT_DIALOG_DATA) data) {
+
+      this.currentPupil = data.pupil;
+    }
+
+    onCancelClick(): void {
+      this.dialogRef.close({removed:false});
+    }
+
+    onAcceptClick(): void {
+      this.usersService.removeUserPupil(this.currentPupil.id).subscribe((res) => {
+        this._snackBar.open("Pupil removed", "",
+                      { panelClass: 'success-snackbar', duration: 5000 });
+        this.dialogRef.close({removed:true});
+      },
+      (error) => {
+        this._snackBar.open("Cannot remove yuor pupil!", "",
+                      { panelClass: 'error-snackbar', duration: 7000 });
+      });
+    }
+  
 }
