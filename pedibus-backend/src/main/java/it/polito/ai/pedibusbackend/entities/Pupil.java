@@ -25,4 +25,7 @@ public class Pupil {
 
     @OneToMany(mappedBy = "pupil", cascade = CascadeType.REMOVE)
     private List<Reservation> reservations;
+
+    @OneToMany(mappedBy = "pupil", cascade = CascadeType.REMOVE)
+    private List<Attendance> attendances;
 }
