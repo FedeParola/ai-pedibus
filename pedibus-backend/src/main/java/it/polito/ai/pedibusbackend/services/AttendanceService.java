@@ -106,11 +106,15 @@ public class AttendanceService {
         Reservation r = reservationRepository.findByPupilAndRideAndStop(pupil, ride, stop).orElse(null);
         if(r != null){
             attendance.setReservation(r);
+
+            // Notify reservation update
+            msgTemplate.convertAndSend("/topic/pupils/" + pupil.getId() + "/reservations", "");
         }
 
         attendance = attendanceRepository.save(attendance);
 
-        msgTemplate.convertAndSend("/topic/demo?lineId=1", "Attendance created");
+        // Notify attendance creation
+        msgTemplate.convertAndSend("/topic/rides/" + attendance.getRide().getId() + "/attendances", "");
 
         return attendance.getId();
     }
@@ -152,5 +156,13 @@ public class AttendanceService {
         }
 
         attendanceRepository.delete(attendance);
+
+        if (attendance.getReservation() != null) {
+            // Notify reservation update
+            msgTemplate.convertAndSend("/topic/pupils/" + attendance.getPupil().getId() + "/reservations", "");
+        }
+
+        // Notify attendance deletion
+        msgTemplate.convertAndSend("/topic/rides/" + attendance.getRide().getId() + "/attendances", "");
     }
 }

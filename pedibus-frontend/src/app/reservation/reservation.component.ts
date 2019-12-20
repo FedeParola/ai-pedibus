@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ReservationService } from '../reservation.service';
 import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
@@ -14,15 +14,18 @@ import { PupilsDialogComponent } from './pupils-dialog/pupils-dialog.component';
   templateUrl: './reservation.component.html',
   styleUrls: ['./reservation.component.css']
 })
-export class ReservationComponent implements OnInit {
+export class ReservationComponent implements OnInit, OnDestroy {
   pupils;
+  pupilsSub;
   selectedPupil;
   lines;
   selectedLine;
   stops;
   rides;
+  ridesSub;
   selectedRideIndex = -1;
   reservations: Map<number, any>;  // K: rideId, V: reservation, contains reservations for all lines
+  reservationsSub;
   cantUpdateExplanation: string;
 
   constructor(private reservationService: ReservationService,
@@ -34,9 +37,20 @@ export class ReservationComponent implements OnInit {
               private dialog: MatDialog) { }
 
   ngOnInit() {
-    this.usersService.getPupils(this.authenticationService.getUsername()).subscribe(
+    this.pupilsSub = this.usersService.getPupils(this.authenticationService.getUsername()).subscribe(
       (res) => {
         this.pupils = res;
+
+        if (this.selectedPupil) {
+          // Select the old pupil if still present
+          for (let p of this.pupils) {
+            if (p.id === this.selectedPupil.id) {
+              this.selectedPupil = p;
+              return;
+            }
+          }
+        }
+        
         this.selectedPupil = this.pupils[0];
         this.loadPupil();
         
@@ -57,6 +71,18 @@ export class ReservationComponent implements OnInit {
         this.handleError(error)
       }
     );
+  }
+
+  ngOnDestroy(): void {
+    if (this.pupilsSub) {
+      this.pupilsSub.unsubscribe();
+    }
+    if (this.ridesSub) {
+      this.ridesSub.unsubscribe();
+    }
+    if (this.reservationsSub) {
+      this.reservationsSub.unsubscribe();
+    }
   }
 
   get selectedRide() {
@@ -86,29 +112,54 @@ export class ReservationComponent implements OnInit {
       }
     );
 
-    this.lineService.getRides(this.selectedLine.id).subscribe(
+    if (this.ridesSub) {
+      this.ridesSub.unsubscribe();
+    }
+    this.ridesSub = this.lineService.getRides(this.selectedLine.id).subscribe(
       (res) => {
+        let selRide = this.selectedRide;
+
+        this.selectedRideIndex = -1;
         this.rides = res;
 
         if (this.rides.length > 0) {
-          // Pick the closest ride with date >= current date
-          let curDate = moment().format('YYYY-MM-DD');
-          let closestRide = this.rides.length-1;
-
-          while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
-            closestRide--;
+          if (selRide) {
+            // Check if current ride is present in the new list,
+            // if it is stay on that ride
+            this.selectedRideIndex = this.findRide(selRide);
           }
 
-          if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
-            closestRide++;
+          // If prevoius current ride was removed or this is the first time displaying a ride
+          // pick the closest ride with date >= current date
+          if (this.selectedRideIndex == -1) {
+            let curDate = moment().format('YYYY-MM-DD');
+            let closestRide = this.rides.length-1;
+
+            while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
+              closestRide--;
+            }
+
+            if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
+              closestRide++;
+            }
+            this.selectedRideIndex = closestRide;
           }
-          this.selectedRideIndex = closestRide;
         }
       },
       (error) => {
         this.handleError(error)
       }
     );
+  }
+
+  private findRide(ride): number {
+    for (let [i, r] of this.rides.entries()) {
+      if (ride.id == r.id) {
+        return i;
+      }
+    }
+
+    return -1;
   }
 
   changePupil() {
@@ -126,7 +177,10 @@ export class ReservationComponent implements OnInit {
   loadPupil() {
     this.reservations = null;
 
-    this.reservationService.getReservations(this.selectedPupil.id).subscribe(
+    if (this.reservationsSub) {
+      this.reservationsSub.unsubscribe();
+    }
+    this.reservationsSub = this.reservationService.getReservations(this.selectedPupil.id).subscribe(
       (res) => {
         this.reservations = res;
       },

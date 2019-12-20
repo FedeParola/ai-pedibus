@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -34,6 +35,8 @@ public class ReservationService implements InitializingBean {
     private RideRepository rideRepository;
     @Autowired
     private StopRepository stopRepository;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Long addReservation(@Valid NewReservationDTO reservationDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
@@ -90,6 +93,9 @@ public class ReservationService implements InitializingBean {
         reservation.setStop(stop);
         reservation = reservationRepository.save(reservation);
 
+        // Notify reservation creation
+        notifyReservationOperation(reservation);
+
         return reservation.getId();
     }
 
@@ -126,6 +132,9 @@ public class ReservationService implements InitializingBean {
 
         reservation.setStop(stop);
         reservationRepository.save(reservation);
+
+        // Notify reservation update
+        notifyReservationOperation(reservation);
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
@@ -147,7 +156,16 @@ public class ReservationService implements InitializingBean {
         }
 
         reservationRepository.delete(reservation);
+
+        // Notify reservation deletion
+        notifyReservationOperation(reservation);
     }
+
+    private void notifyReservationOperation(Reservation reservation) {
+        msgTemplate.convertAndSend("/topic/rides/" + reservation.getRide().getId() + "/reservations", "");
+        msgTemplate.convertAndSend("/topic/pupils/" + reservation.getPupil().getId() + "/reservations", "");
+    }
+
 
     @Override
     public void afterPropertiesSet() throws Exception {

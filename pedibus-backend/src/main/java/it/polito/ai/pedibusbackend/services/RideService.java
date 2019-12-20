@@ -12,6 +12,7 @@ import it.polito.ai.pedibusbackend.security.AuthorizationManager;
 import it.polito.ai.pedibusbackend.viewmodels.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -32,6 +33,8 @@ public class RideService implements InitializingBean {
     private LineRepository lineRepository;
     @Autowired
     private AvailabilityRepository availabilityRepository;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
     public List<RideDTO> getRides() {
         List<RideDTO> rides = new ArrayList<>();
@@ -80,7 +83,12 @@ public class RideService implements InitializingBean {
         ride.setDirection(newRideDTO.getDirection());
         ride.setConsolidated(false);
 
-        return rideRepository.save(ride).getId();
+        ride = rideRepository.save(ride);
+
+        // Notify ride creation
+        msgTemplate.convertAndSend("/topic/lines/" + line.getId() + "/rides", "");
+
+        return ride.getId();
     }
 
     public void consolidateRide(Long rideId, UpdateRideDTO updateRideDTO, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
@@ -141,6 +149,16 @@ public class RideService implements InitializingBean {
                 for(Availability a : confirmedAvailabilities){
                     a.setStatus("CONSOLIDATED");
                     availabilityRepository.save(a);
+
+                    // Notify new assigned line to the user
+                    msgTemplate.convertAndSend(
+                            "/topic/users/" + a.getUser().getEmail() + "/rides?lineId=" + ride.getLine().getId(),
+                            "");
+
+                    // Notify availability update
+                    msgTemplate.convertAndSend(
+                            "/topic/users/" + a.getUser().getEmail() + "/availabilities?lineId=" + ride.getLine().getId(),
+                            "");
                 }
                 //update ride consolidated value
                 ride.setConsolidated(true);
@@ -160,12 +178,25 @@ public class RideService implements InitializingBean {
                 if(a.getStatus().equals("CONSOLIDATED")){
                     a.setStatus("CONFIRMED");
                     availabilityRepository.save(a);
+
+                    // Notify line removal to those assigned to the user
+                    msgTemplate.convertAndSend(
+                            "/topic/users/" + a.getUser().getEmail() + "/rides?lineId=" + ride.getLine().getId(),
+                            "");
+
+                    // Notify availability update
+                    msgTemplate.convertAndSend(
+                            "/topic/users/" + a.getUser().getEmail() + "/availabilities?lineId=" + ride.getLine().getId(),
+                            "");
                 }
             }
             //update ride consolidated value
             ride.setConsolidated(false);
             rideRepository.save(ride);
         }
+
+        // Notify ride status update
+        msgTemplate.convertAndSend("/topic/lines/" + ride.getLine().getId() + "/rides", "");
 
         return;
     }
@@ -186,6 +217,10 @@ public class RideService implements InitializingBean {
         AuthorizationManager.authorizeLineAccess(currentUser, ride.getLine().getId());
 
         rideRepository.delete(ride);
+
+        // Notify ride deletion
+        msgTemplate.convertAndSend("/topic/lines/" + ride.getLine().getId() + "/rides", "");
+
         return;
     }
 

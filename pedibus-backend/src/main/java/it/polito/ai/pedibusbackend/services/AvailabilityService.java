@@ -12,6 +12,7 @@ import it.polito.ai.pedibusbackend.security.AuthorizationManager;
 import it.polito.ai.pedibusbackend.viewmodels.AvailabilityUpdateDTO;
 import it.polito.ai.pedibusbackend.viewmodels.NewAvailabilityDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -31,6 +32,8 @@ public class AvailabilityService {
     private RideRepository rideRepository;
     @Autowired
     private StopRepository stopRepository;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
@@ -90,6 +93,11 @@ public class AvailabilityService {
         availability.setStop(stop);
         availability.setStatus("NEW");
         availability = availabilityRepository.save(availability);
+
+        // Notify availability creation
+        msgTemplate.convertAndSend(
+                "/topic/users/" + user.getEmail() + "/availabilities?lineId=" + ride.getLine().getId(),
+                "");
 
         return availability.getId();
     }
@@ -199,6 +207,12 @@ public class AvailabilityService {
         }
 
         availabilityRepository.save(availability);
+
+        // Notify availability update
+        msgTemplate.convertAndSend(
+                "/topic/users/" + availability.getUser().getEmail() + "/availabilities?lineId=" +
+                        availability.getRide().getLine().getId(),
+                "");
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
@@ -225,5 +239,11 @@ public class AvailabilityService {
         }
 
         availabilityRepository.delete(availability);
+
+        // Notify availability deletion
+        msgTemplate.convertAndSend(
+                "/topic/users/" + availability.getUser().getEmail() + "/availabilities?lineId=" +
+                        availability.getRide().getLine().getId(),
+                "");
     }
 }

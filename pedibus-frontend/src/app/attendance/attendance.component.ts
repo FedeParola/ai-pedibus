@@ -3,7 +3,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatSnackBar, MatDialog, throwToolbarMixedModesError } from '@angular/material';
 import { RxStompService } from '@stomp/ng2-stompjs';
-import { Message } from '@stomp/stompjs';
 import * as moment from 'moment';
 
 import { AttendanceService } from '../attendance.service';
@@ -24,12 +23,11 @@ export class AttendanceComponent implements OnInit, OnDestroy {
   pupils;
   pupilsSub;
   rides;
+  ridesSub;
   selectedRideIndex = -1;
   rideData;
+  rideDataSub;
   missingPupils;
-  ridesUpdate$;
-  rideDataUpdate$;
-  update$;
 
 
   private setting = {
@@ -58,11 +56,6 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         this.handleError(error)
       }
     );
-
-    // Register callbacks for update events
-    this.update$ = this.rxStompService.watch('/topic/demo?lineId=1').subscribe((message: Message) => {
-      console.log('Received update: ' + message.body);
-    });
   }
 
   ngOnDestroy(): void {
@@ -136,25 +129,43 @@ export class AttendanceComponent implements OnInit, OnDestroy {
       }
     );
 
-    this.attendanceService.getRides(this.authenticationService.getUsername(), this.selectedLine.id).subscribe(
+    if (this.ridesSub) {
+      this.ridesSub.unsubscribe();
+    }
+    this.ridesSub = this.attendanceService.getRides(
+      this.authenticationService.getUsername(),
+      this.selectedLine.id
+    ).subscribe(
       (res) => {
+        let selRide = this.selectedRide;
+
+        this.selectedRideIndex = -1;
         this.rides = res;
 
         if (this.rides.length > 0) {
-          // Pick the closest ride with date >= current date
-          let curDate = moment().format('YYYY-MM-DD');
-          let closestRide = this.rides.length-1;
-
-          while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
-            closestRide--;
+          if (selRide) {
+            // Check if current ride is present in the new list,
+            // if it is stay on that ride
+            this.selectedRideIndex = this.findRide(selRide);
           }
 
-          if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
-            closestRide++;
-          }
-          this.selectedRideIndex = closestRide;
+          // If prevoius current ride was removed or this is the first time displaying a ride
+          // pick the closest ride with date >= current date
+          if (this.selectedRideIndex == -1) {
+            let curDate = moment().format('YYYY-MM-DD');
+            let closestRide = this.rides.length-1;
 
-          this.loadRideData();
+            while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
+              closestRide--;
+            }
+
+            if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
+              closestRide++;
+            }
+            this.selectedRideIndex = closestRide;
+
+            this.loadRideData();
+          }
         }
       },
       (error) => {
@@ -163,11 +174,26 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     );
   }
 
+  private findRide(ride): number {
+    for (let [i, r] of this.rides.entries()) {
+      if (ride.id == r.id) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
   loadRideData() {
-    this.attendanceService.getRideData(this.selectedRide.id).subscribe(
+    if (this.rideDataSub) {
+      this.rideDataSub.unsubscribe();
+    }
+    this.rideDataSub = this.attendanceService.getRideData(this.selectedRide.id).subscribe(
       (res) => {
         this.rideData = res;
-        this.computeMissingPupils();
+        if (this.pupils) {
+          this.computeMissingPupils();
+        }
       },
       (error) => {
         this.handleError(error);
@@ -194,6 +220,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         this.missingPupils.push(pupil);
       }
     }
+    this.missingPupils.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   private findPupil(pupil) {
