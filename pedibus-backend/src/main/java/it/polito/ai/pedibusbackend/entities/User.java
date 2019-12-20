@@ -24,7 +24,7 @@ public class User {
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles = new ArrayList<>();
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "users")
     private List<Line> lines = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")

@@ -23,4 +23,7 @@ public class Line {
 
     @OneToMany(mappedBy = "line")
     private List<Pupil> pupils;
+
+    @ManyToMany
+    private List<User> users;
 }

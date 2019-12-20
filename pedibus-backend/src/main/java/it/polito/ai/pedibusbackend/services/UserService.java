@@ -62,7 +62,8 @@ public class UserService implements InitializingBean, UserDetailsService {
     private EntityManager entityManager;
     @Autowired
     private NotificationRepository notificationRepository;
-
+    @Autowired
+    private NotificationService notificationService;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void register(String uuid, RegistrationDTO registrationDTO) throws NotFoundException {
@@ -346,6 +347,8 @@ public class UserService implements InitializingBean, UserDetailsService {
         }
 
         user.getLines().addAll(lines);
+        notificationService.createNotification(user, "Admin of a new line", "You are now admin of the following" +
+                "line: '" + lines.get(0).getName() + "'");
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
@@ -353,6 +356,7 @@ public class UserService implements InitializingBean, UserDetailsService {
             throws BadRequestException, NotFoundException, ForbiddenException {
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        Line line = lineRepository.findById(lineId).orElseThrow(NotFoundException::new);
 
         AuthorizationManager.authorizeLineAccess(loggedUser, lineId);
 
@@ -363,6 +367,9 @@ public class UserService implements InitializingBean, UserDetailsService {
         if(user.getLines().size() == 0) {
             user.getRoles().remove("ROLE_ADMIN");
         }
+
+        notificationService.createNotification(user, "", "You are no longer admin of the following" +
+                "line: '" + line.getName() + "'");
     }
 
     public List<PupilDTO> getPupils(String userId, Optional<Integer> page, Optional<Integer> size, String loggedUserId)

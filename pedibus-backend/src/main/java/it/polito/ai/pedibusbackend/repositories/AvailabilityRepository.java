@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.sql.Date;
+import java.util.List;
 import java.util.Optional;
 
 public interface AvailabilityRepository extends CrudRepository<Availability, Long> {
@@ -25,4 +26,6 @@ public interface AvailabilityRepository extends CrudRepository<Availability, Lon
             "a JOIN a.ride r ON r.date = ?2 AND r.direction = ?3 " +
             "WHERE a.user = ?1")
     Optional<Availability> findByUserAndDateAndDirection(User user, Date date, Character direction);
+
+    List<Availability> findByRideAndStatus(Ride ride, String consolidated);
 }

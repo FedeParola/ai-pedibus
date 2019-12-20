@@ -34,6 +34,10 @@ public class ReservationService implements InitializingBean {
     private RideRepository rideRepository;
     @Autowired
     private StopRepository stopRepository;
+    @Autowired
+    private AvailabilityRepository availabilityRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Long addReservation(@Valid NewReservationDTO reservationDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
@@ -90,6 +94,15 @@ public class ReservationService implements InitializingBean {
         reservation.setStop(stop);
         reservation = reservationRepository.save(reservation);
 
+        //Warn each escort of the ride
+        for (Availability a : availabilityRepository.findByRideAndStatus(ride, "CONSOLIDATED")){
+            ride = a.getRide();
+            String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+            notificationService.createNotification(a.getUser(), "New reservation", "New reservation for " +
+                    pupil.getName() + " of user '" + a.getUser().getEmail() + " on stop '" + stop.getName() + "' of line '" +
+                    ride.getLine().getName() + "' for the " + direction + " direction on " + ride.getDate());
+        }
+
         return reservation.getId();
     }
 
@@ -125,7 +138,18 @@ public class ReservationService implements InitializingBean {
         }
 
         reservation.setStop(stop);
+
         reservationRepository.save(reservation);
+
+        //Warn each escort of the ride
+        Ride ride;
+        for (Availability a : availabilityRepository.findByRideAndStatus(reservation.getRide(), "CONSOLIDATED")) {
+            ride = a.getRide();
+            String direction = reservation.getRide().getDirection().equals("O") ? "outbound" : "return";
+            notificationService.createNotification(a.getUser(), "Reservation updated", "Reservation for " +
+                    reservation.getPupil().getName() + " of user '" + currentUser.getEmail() + " for the " + direction +
+                    " direction of line '" + reservation.getRide().getLine().getName() + " on " + reservation.getRide().getDate());
+        }
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
@@ -147,6 +171,17 @@ public class ReservationService implements InitializingBean {
         }
 
         reservationRepository.delete(reservation);
+
+        //Warn each escort of the ride
+        Ride ride;
+        for (Availability a : availabilityRepository.findByRideAndStatus(reservation.getRide(), "CONSOLIDATED")) {
+            ride = a.getRide();
+            String direction = reservation.getRide().getDirection().equals("O") ? "outbound" : "return";
+            notificationService.createNotification(a.getUser(), "A reservation was cancelled", "Reservation for " +
+                    reservation.getPupil().getName() + " of user '" + currentUser.getEmail() +
+                    " on stop '" + reservation.getStop().getName() + "' of line '" + reservation.getRide().getLine().getName() +
+                    "' for the " + direction + " direction on " + reservation.getRide().getDate() + " has been cancelled");
+        }
     }
 
     @Override
@@ -155,7 +190,7 @@ public class ReservationService implements InitializingBean {
 //
 //        /* Create some random reservations for yesterday, today and tomorrow */
 //        Random rnd = new Random(); // Adding a seed we can replicate the same reservations!
-//
+//-
 //        /* Scan all pupils */
 //        for (Pupil p: pupilRepository.findAll()) {
 //            /* Split stops by direction */

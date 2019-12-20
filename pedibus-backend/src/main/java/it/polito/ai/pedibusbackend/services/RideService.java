@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RideService implements InitializingBean {
@@ -32,6 +33,8 @@ public class RideService implements InitializingBean {
     private LineRepository lineRepository;
     @Autowired
     private AvailabilityRepository availabilityRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     public List<RideDTO> getRides() {
         List<RideDTO> rides = new ArrayList<>();
@@ -80,6 +83,15 @@ public class RideService implements InitializingBean {
         ride.setDirection(newRideDTO.getDirection());
         ride.setConsolidated(false);
 
+        //Warn each admin of the line of the ride
+        for(User u : ride.getLine().getUsers()){
+            if(!u.getEmail().equals(currentUser.getEmail())){
+                String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+                notificationService.createNotification(u, "Ride cancelled", "The ride of line '" +
+                        ride.getLine().getName() + "' (that you are admin of) for the " + direction + " direction " + "on " +
+                        ride.getDate() + " has been cancelled");
+            }
+        }
         return rideRepository.save(ride).getId();
     }
 
@@ -186,7 +198,27 @@ public class RideService implements InitializingBean {
         AuthorizationManager.authorizeLineAccess(currentUser, ride.getLine().getId());
 
         rideRepository.delete(ride);
-        return;
+
+        //Warn each admin of the line of the ride and each parent of the pupils reserved for the ride
+        for(User u : ride.getLine().getUsers()){
+            if(!u.getEmail().equals(currentUser.getEmail())){
+                String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+                notificationService.createNotification(u, "Ride cancelled", "The ride of line '" +
+                        ride.getLine().getName() + "' (that you are admin of) for the " + direction + " direction " + "on " +
+                        ride.getDate() + " has been cancelled");
+            }
+        }
+        List<User> parents = ride.getReservations().stream()
+                                                    .map(r -> r.getPupil().getUser())
+                                                    .distinct()
+                                                    .collect(Collectors.toList());
+        for(User u : parents){
+            String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+            notificationService.createNotification(u, "Ride cancelled", "The ride of line '" +
+                    ride.getLine().getName() + "' for the " + direction + " direction " + "on " +
+                    ride.getDate() + " for which one (or more) of your pupils were reserved has been cancelled");
+        }
+        //o indicare il nome dei pupils che erano prenotati? o ancora, inviare una notifica per bambino prenotato?
     }
 
     public List<ReservationDTO> getRideReservations(Long rideId, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {

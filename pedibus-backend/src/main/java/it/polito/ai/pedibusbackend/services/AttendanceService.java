@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Valid;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 @Service
 public class AttendanceService {
@@ -33,6 +32,8 @@ public class AttendanceService {
     private ReservationRepository reservationRepository;
     @Autowired
     private AvailabilityRepository availabilityRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Long addAttendance(@Valid NewAttendanceDTO attendanceDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
@@ -54,7 +55,7 @@ public class AttendanceService {
             throw new BadRequestException("Unknown stop with id " + attendanceDTO.getStopId());
         }
 
-        //Check if the user can add the attendance (system admin or 'accompagnatore' of that ride)
+        //Check if the user can add the attendance (system admin or escort of that ride)
         //AuthorizationManager.authorizeAttendanceAccess(currentUser, attendance);
         if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
             if(!ride.getConsolidated()) {
@@ -107,6 +108,11 @@ public class AttendanceService {
 
         attendance = attendanceRepository.save(attendance);
 
+        String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+        notificationService.createNotification(pupil.getUser(), "Pupil marked as present", pupil.getName() +
+                " was marked as present on stop '" + stop.getName() + "' of line '" +
+                ride.getLine().getName() + "' for the " + direction + " direction on " + ride.getDate());
+
         return attendance.getId();
     }
 
@@ -127,7 +133,7 @@ public class AttendanceService {
             throw new BadRequestException("TIME_EXCEEDED");
         }
 
-        //Check if the user can add the attendance (system admin or 'accompagnatore' of that ride)
+        //Check if the user can delete the attendance (system admin or escort of that ride)
         //AuthorizationManager.authorizeAttendanceAccess(currentUser, attendance);
         if(!currentUser.getRoles().contains("ROLE_SYSTEM-ADMIN")){
             if(!attendance.getRide().getConsolidated()) {
@@ -147,5 +153,11 @@ public class AttendanceService {
         }
 
         attendanceRepository.delete(attendance);
+
+        String direction = attendance.getRide().getDirection().equals("O") ? "outbound" : "return";
+        notificationService.createNotification(attendance.getPupil().getUser(), "Pupil unmarked as present",
+                attendance.getPupil().getName() + " that was marked as present on stop '" +
+                attendance.getStop().getName() + "' of line '" + attendance.getRide().getLine().getName() +
+                "' for the " + direction + " direction on " + attendance.getRide().getDate() + " has been unmarked");
     }
 }
