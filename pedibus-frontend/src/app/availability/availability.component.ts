@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AvailabilityService } from '../availability.service';
 import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
@@ -15,13 +15,15 @@ import { DeletionConfirmDialogComponent } from './deletion-confirm-dialog/deleti
   templateUrl: './availability.component.html',
   styleUrls: ['./availability.component.css']
 })
-export class AvailabilityComponent implements OnInit {
+export class AvailabilityComponent implements OnInit, OnDestroy {
   lines;
   selectedLine;
   stops;
   rides;
+  ridesSub;
   selectedRideIndex = -1;
   availabilities: Map<number, any>;  // K: rideId, V: availability
+  availabilitiesSub;
   cantUpdateExplanation: string;
 
   constructor(private availabilityService: AvailabilityService,
@@ -46,6 +48,16 @@ export class AvailabilityComponent implements OnInit {
         this.handleError(error)
       }
     );
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe from all events
+    if (this.ridesSub) {
+      this.ridesSub.unsubscribe();
+    }
+    if (this.availabilitiesSub) {
+      this.availabilitiesSub.unsubscribe();
+    }
   }
 
   get selectedRide() {
@@ -76,23 +88,38 @@ export class AvailabilityComponent implements OnInit {
       }
     );
 
-    this.lineService.getRides(this.selectedLine.id).subscribe(
+    if (this.ridesSub) {
+      this.ridesSub.unsubscribe();
+    }
+    this.ridesSub = this.lineService.getRides(this.selectedLine.id).subscribe(
       (res) => {
+        let selRide = this.selectedRide;
+
+        this.selectedRideIndex = -1;
         this.rides = res;
 
         if (this.rides.length > 0) {
-          // Pick the closest ride with date >= current date
-          let curDate = moment().format('YYYY-MM-DD');
-          let closestRide = this.rides.length-1;
-
-          while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
-            closestRide--;
+          if (selRide) {
+            // Check if current ride is present in the new list,
+            // if it is stay on that ride
+            this.selectedRideIndex = this.findRide(selRide);
           }
 
-          if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
-            closestRide++;
+          // If prevoius current ride was removed or this is the first time displaying a ride
+          // pick the closest ride with date >= current date
+          if (this.selectedRideIndex == -1) {
+            let curDate = moment().format('YYYY-MM-DD');
+            let closestRide = this.rides.length-1;
+
+            while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
+              closestRide--;
+            }
+
+            if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
+              closestRide++;
+            }
+            this.selectedRideIndex = closestRide;
           }
-          this.selectedRideIndex = closestRide;
         }
       },
       (error) => {
@@ -100,7 +127,13 @@ export class AvailabilityComponent implements OnInit {
       }
     );
 
-    this.availabilityService.getAvailabilities(this.authenticationService.getUsername(), this.selectedLine.id).subscribe(
+    if (this.availabilitiesSub) {
+      this.availabilitiesSub.unsubscribe();
+    }
+    this.availabilitiesSub = this.availabilityService.getAvailabilities(
+      this.authenticationService.getUsername(),
+      this.selectedLine.id
+    ).subscribe(
       (res) => {
         this.availabilities = res;
       },
@@ -108,6 +141,16 @@ export class AvailabilityComponent implements OnInit {
         this.handleError(error);
       }
     );
+  }
+
+  private findRide(ride): number {
+    for (let [i, r] of this.rides.entries()) {
+      if (ride.id == r.id) {
+        return i;
+      }
+    }
+
+    return -1;
   }
 
   onStopClick(stopId: number) {

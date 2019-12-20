@@ -1,27 +1,66 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin } from 'rxjs/index';
-import { map } from 'rxjs/operators';
+import { concat, forkJoin, merge } from 'rxjs';
+import { map, concatAll } from 'rxjs/operators';
 
 import { environment } from '../environments/environment';
+import { RxStompService } from '@stomp/ng2-stompjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AttendanceService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient,
+              private rxStompService: RxStompService) { }
 
+  /**
+   * Returns an observable the emits the list of rides of the given line for which the given user
+   * is escort. The observable emits the first time on subscription and every time there is 
+   * a change in the data.
+   * @param username 
+   * @param lineId 
+   */
   getRides(username: string, lineId: number) {
-    return this.http.get(environment.apiUrl+'/users/'+username+'/rides?lineId='+lineId);
+    let path = '/users/'+username+'/rides?lineId='+lineId;
+    let url = environment.apiUrl + path;
+
+    return concat(
+      // Retrieve data for the first time
+      this.http.get(url),
+
+      // On every event retrieve data again
+      this.rxStompService.watch('/topic' + path).pipe(
+        map(() => this.http.get(url)),
+        concatAll()
+      )
+    );
   }
 
   /**
-   * Get attendances and reservations for the given ride and returns a data structure that combines
-   * the information
+   * Returns an observable that emits a map containing, for each stop, data that combines
+   * information of attendances and reservations for the given ride. 
+   * The observable emits the first time on subscription and every time there is a change
+   * in the data.
    * @param rideId
    */
   getRideData(rideId: number) {
+    return concat(
+      // Retrieve data for the first time
+      this.doGetRideData(rideId),
+
+      // On every event retrieve data again
+      merge(
+        this.rxStompService.watch('/topic/rides/' + rideId + '/attendances'),
+        this.rxStompService.watch('/topic/rides/' + rideId + '/reservations'),
+      ).pipe(
+        map(() => this.doGetRideData(rideId)),
+        concatAll()
+      )
+    );
+  }
+
+  doGetRideData(rideId: number) {
     let attendances$ = this.http.get(environment.apiUrl+'/rides/'+rideId+'/attendances');
     let reservations$ = this.http.get(environment.apiUrl+'/rides/'+rideId+'/reservations');
 
@@ -61,6 +100,9 @@ export class AttendanceService {
             dataMap.get(reservation.stopId).push(data);
           }
         }
+
+        // Sort pupils for each stop
+        dataMap.forEach((data) => data.sort((a, b) => a.pupil.name.localeCompare(b.pupil.name)));
 
         return dataMap;
       })

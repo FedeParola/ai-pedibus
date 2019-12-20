@@ -46,7 +46,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .headers().frameOptions().disable() // Remove before submit (allows h2-console access)
             .and()
                 .authorizeRequests()
-                .antMatchers("/login", "/register/*", "/recover", "/recover/*").permitAll()
+                .antMatchers("/stomp-websocket", "/login", "/register/*", "/recover", "/recover/*").permitAll()
                 .antMatchers("/users").hasAnyRole("SYSTEM-ADMIN", "ADMIN")
                 .antMatchers("/users/*/lines", "/users/*/lines/*").hasAnyRole("SYSTEM-ADMIN", "ADMIN")
                 .antMatchers(HttpMethod.POST,"/rides").hasAnyRole("SYSTEM-ADMIN", "ADMIN")

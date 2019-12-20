@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -38,6 +39,8 @@ public class ReservationService implements InitializingBean {
     private AvailabilityRepository availabilityRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Long addReservation(@Valid NewReservationDTO reservationDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
@@ -96,12 +99,13 @@ public class ReservationService implements InitializingBean {
 
         //Warn each escort of the ride
         for (Availability a : availabilityRepository.findByRideAndStatus(ride, "CONSOLIDATED")){
-            ride = a.getRide();
             String direction = ride.getDirection().equals("O") ? "outbound" : "return";
             notificationService.createNotification(a.getUser(), "New reservation", "New reservation for " +
-                    pupil.getName() + " of user '" + a.getUser().getEmail() + " on stop '" + stop.getName() + "' of line '" +
+                    pupil.getName() + " of user '" + currentUser + " on stop '" + stop.getName() + "' of line '" +
                     ride.getLine().getName() + "' for the " + direction + " direction on " + ride.getDate());
         }
+        // Notify reservation creation
+        notifyReservationOperation(reservation);
 
         return reservation.getId();
     }
@@ -142,14 +146,15 @@ public class ReservationService implements InitializingBean {
         reservationRepository.save(reservation);
 
         //Warn each escort of the ride
-        Ride ride;
         for (Availability a : availabilityRepository.findByRideAndStatus(reservation.getRide(), "CONSOLIDATED")) {
-            ride = a.getRide();
             String direction = reservation.getRide().getDirection().equals("O") ? "outbound" : "return";
             notificationService.createNotification(a.getUser(), "Reservation updated", "Reservation for " +
                     reservation.getPupil().getName() + " of user '" + currentUser.getEmail() + " for the " + direction +
                     " direction of line '" + reservation.getRide().getLine().getName() + " on " + reservation.getRide().getDate());
         }
+
+        // Notify reservation update
+        notifyReservationOperation(reservation);
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
@@ -173,16 +178,23 @@ public class ReservationService implements InitializingBean {
         reservationRepository.delete(reservation);
 
         //Warn each escort of the ride
-        Ride ride;
         for (Availability a : availabilityRepository.findByRideAndStatus(reservation.getRide(), "CONSOLIDATED")) {
-            ride = a.getRide();
             String direction = reservation.getRide().getDirection().equals("O") ? "outbound" : "return";
             notificationService.createNotification(a.getUser(), "A reservation was cancelled", "Reservation for " +
                     reservation.getPupil().getName() + " of user '" + currentUser.getEmail() +
                     " on stop '" + reservation.getStop().getName() + "' of line '" + reservation.getRide().getLine().getName() +
                     "' for the " + direction + " direction on " + reservation.getRide().getDate() + " has been cancelled");
         }
+
+        // Notify reservation deletion
+        notifyReservationOperation(reservation);
     }
+
+    private void notifyReservationOperation(Reservation reservation) {
+        msgTemplate.convertAndSend("/topic/rides/" + reservation.getRide().getId() + "/reservations", "");
+        msgTemplate.convertAndSend("/topic/pupils/" + reservation.getPupil().getId() + "/reservations", "");
+    }
+
 
     @Override
     public void afterPropertiesSet() throws Exception {

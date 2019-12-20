@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -64,6 +64,8 @@ public class UserService implements InitializingBean, UserDetailsService {
     private NotificationRepository notificationRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void register(String uuid, RegistrationDTO registrationDTO) throws NotFoundException {
@@ -84,6 +86,8 @@ public class UserService implements InitializingBean, UserDetailsService {
         user.setSurname(registrationDTO.getSurname());
         user.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
         user.setEnabled(true);
+
+        msgTemplate.convertAndSend("/topic/users", "");
 
         /* Delete the token */
         registrationTokenRepository.delete(token);
@@ -201,6 +205,9 @@ public class UserService implements InitializingBean, UserDetailsService {
         user.setEnabled(false);
         user.getRoles().add("ROLE_USER");
         userRepository.save(user);
+
+        //
+        msgTemplate.convertAndSend("/topic/users", "");
 
         /* Necessary, otherwise the system tries to persist the token before the user and returns an error */
         entityManager.flush();
@@ -347,8 +354,10 @@ public class UserService implements InitializingBean, UserDetailsService {
         }
 
         user.getLines().addAll(lines);
+
         notificationService.createNotification(user, "Admin of a new line", "You are now admin of the following" +
                 "line: '" + lines.get(0).getName() + "'");
+        msgTemplate.convertAndSend("/topic/users", "");
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
@@ -370,6 +379,7 @@ public class UserService implements InitializingBean, UserDetailsService {
 
         notificationService.createNotification(user, "", "You are no longer admin of the following" +
                 "line: '" + line.getName() + "'");
+        msgTemplate.convertAndSend("/topic/users", "");
     }
 
     public List<PupilDTO> getPupils(String userId, Optional<Integer> page, Optional<Integer> size, String loggedUserId)

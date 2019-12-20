@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import { UsersService } from '../users.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -7,24 +7,27 @@ import { AuthenticationService } from '../authentication.service';
 import {MatDialog, MatDialogRef, MatDialogConfig} from '@angular/material/dialog';
 import {MAT_DIALOG_DATA} from '@angular/material/dialog';
 import { DialogPupilComponent } from './dialog-pupil/dialog-pupil.component';
+import { RxStompService } from '@stomp/ng2-stompjs';
 
 @Component({
   selector: 'app-pupils',
   templateUrl: './pupils.component.html',
   styleUrls: ['./pupils.component.css']
 })
-export class PupilsComponent implements OnInit {
+export class PupilsComponent implements OnInit, OnDestroy {
   pupils;
   pageNumber: number;
   pageSize: number;
   nextEnabled;
   prevEnabled;
   noPupils;
+  pupilsSub;
 
   constructor(private usersService: UsersService,
               private authService: AuthenticationService,
               private router: Router,
               public dialog: MatDialog,
+              private rxStompService: RxStompService,
               private _snackBar: MatSnackBar) { 
                 this.pageNumber = 0;
                 this.pageSize = 6;
@@ -33,7 +36,7 @@ export class PupilsComponent implements OnInit {
 
   ngOnInit() {
     
-    this.usersService.getUserPupils(this.pageNumber, this.pageSize).subscribe((res) => {
+    this.pupilsSub=this.usersService.getUserPupils(this.pageNumber, this.pageSize).subscribe((res) => {
       this.pupils = res;
       this.prevEnabled = false;
       if(this.pupils.length==0){
@@ -51,9 +54,17 @@ export class PupilsComponent implements OnInit {
     
   }
 
+  ngOnDestroy(): void {
+    // Unsubscribe from all events
+    if (this.pupilsSub) {
+      this.pupilsSub.unsubscribe();
+    }
+  }
+
   nextPage(){
     this.pageNumber++;
-    this.usersService.getUserPupils(this.pageNumber, this.pageSize).subscribe((res) => {
+    this.pupilsSub.unsubscribe();
+    this.pupilsSub=this.usersService.getUserPupils(this.pageNumber, this.pageSize).subscribe((res) => {
       this.pupils = res;
       this.prevEnabled = true;
       if(this.pupils[this.pupils.length - 1].hasNext){
@@ -69,7 +80,8 @@ export class PupilsComponent implements OnInit {
 
   prevPage(){
     this.pageNumber--;
-    this.usersService.getUserPupils(this.pageNumber, this.pageSize).subscribe((res) => {
+    this.pupilsSub.unsubscribe();
+    this.pupilsSub=this.usersService.getUserPupils(this.pageNumber, this.pageSize).subscribe((res) => {
       this.pupils = res;
       if(this.pageNumber == 0){
         this.prevEnabled = false;
@@ -102,7 +114,8 @@ export class PupilsComponent implements OnInit {
     const dialogRef = this.dialog.open(DialogPupilComponent, dialogConfig);
 
     dialogRef.afterClosed().subscribe(result => {
-      this.usersService.getUserPupils(this.pageNumber, this.pageSize).subscribe((res) => {
+      this.pupilsSub.unsubscribe();
+      this.pupilsSub=this.usersService.getUserPupils(this.pageNumber, this.pageSize).subscribe((res) => {
         this.pupils = res;
         if(this.pageNumber > 0){
           this.prevEnabled = true;

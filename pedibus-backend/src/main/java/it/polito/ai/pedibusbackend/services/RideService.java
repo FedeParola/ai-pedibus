@@ -12,6 +12,7 @@ import it.polito.ai.pedibusbackend.security.AuthorizationManager;
 import it.polito.ai.pedibusbackend.viewmodels.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -35,6 +36,8 @@ public class RideService implements InitializingBean {
     private AvailabilityRepository availabilityRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
     public List<RideDTO> getRides() {
         List<RideDTO> rides = new ArrayList<>();
@@ -83,6 +86,7 @@ public class RideService implements InitializingBean {
         ride.setDirection(newRideDTO.getDirection());
         ride.setConsolidated(false);
 
+        ride = rideRepository.save(ride);
         //Warn each admin of the line of the ride
         for(User u : ride.getLine().getUsers()){
             if(!u.getEmail().equals(currentUser.getEmail())){
@@ -92,13 +96,20 @@ public class RideService implements InitializingBean {
                         ride.getDate() + " has been cancelled");
             }
         }
-        return rideRepository.save(ride).getId();
+
+        // Notify ride creation
+        msgTemplate.convertAndSend("/topic/lines/" + line.getId() + "/rides", "");
+        msgTemplate.convertAndSend("/topic/lines/"+line.getId()+"/rides?date="+ride.getDate()+
+                "&direction="+newRideDTO.getDirection(), "Ride created");
+
+        return ride.getId();
     }
 
     public void consolidateRide(Long rideId, UpdateRideDTO updateRideDTO, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
 
         Boolean proceed = false;
+        Boolean updated = false;
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
@@ -153,10 +164,21 @@ public class RideService implements InitializingBean {
                 for(Availability a : confirmedAvailabilities){
                     a.setStatus("CONSOLIDATED");
                     availabilityRepository.save(a);
+
+                    // Notify new assigned line to the user
+                    msgTemplate.convertAndSend(
+                            "/topic/users/" + a.getUser().getEmail() + "/rides?lineId=" + ride.getLine().getId(),
+                            "");
+
+                    // Notify availability update
+                    msgTemplate.convertAndSend(
+                            "/topic/users/" + a.getUser().getEmail() + "/availabilities?lineId=" + ride.getLine().getId(),
+                            "");
                 }
                 //update ride consolidated value
                 ride.setConsolidated(true);
                 rideRepository.save(ride);
+                updated = true;
             }else{
                 throw new BadRequestException("Ride is not completely covered");
             }
@@ -172,12 +194,31 @@ public class RideService implements InitializingBean {
                 if(a.getStatus().equals("CONSOLIDATED")){
                     a.setStatus("CONFIRMED");
                     availabilityRepository.save(a);
+
+                    // Notify line removal to those assigned to the user
+                    msgTemplate.convertAndSend(
+                            "/topic/users/" + a.getUser().getEmail() + "/rides?lineId=" + ride.getLine().getId(),
+                            "");
+
+                    // Notify availability update
+                    msgTemplate.convertAndSend(
+                            "/topic/users/" + a.getUser().getEmail() + "/availabilities?lineId=" + ride.getLine().getId(),
+                            "");
                 }
             }
             //update ride consolidated value
             ride.setConsolidated(false);
             rideRepository.save(ride);
+            updated = true;
         }
+
+        if(updated){
+            msgTemplate.convertAndSend("/topic/lines/"+ride.getLine().getId()+"/rides?date="+ride.getDate()+
+                            "&direction="+ride.getDirection(), "Ride updated");
+        }
+
+        // Notify ride status update
+        msgTemplate.convertAndSend("/topic/lines/" + ride.getLine().getId() + "/rides", "");
 
         return;
     }
@@ -199,6 +240,7 @@ public class RideService implements InitializingBean {
 
         rideRepository.delete(ride);
 
+
         //Warn each admin of the line of the ride and each parent of the pupils reserved for the ride
         for(User u : ride.getLine().getUsers()){
             if(!u.getEmail().equals(currentUser.getEmail())){
@@ -208,6 +250,7 @@ public class RideService implements InitializingBean {
                         ride.getDate() + " has been cancelled");
             }
         }
+        //DA MODIFICARE
         List<User> parents = ride.getReservations().stream()
                                                     .map(r -> r.getPupil().getUser())
                                                     .distinct()
@@ -219,6 +262,13 @@ public class RideService implements InitializingBean {
                     ride.getDate() + " for which one (or more) of your pupils were reserved has been cancelled");
         }
         //o indicare il nome dei pupils che erano prenotati? o ancora, inviare una notifica per bambino prenotato?
+
+        // Notify ride deletion
+        msgTemplate.convertAndSend("/topic/lines/" + ride.getLine().getId() + "/rides", "");
+        msgTemplate.convertAndSend("/topic/lines/"+ride.getLine().getId()+"/rides?date="+ride.getDate()+
+                "&direction="+ride.getDirection(), "Ride deleted");
+
+        return;
     }
 
     public List<ReservationDTO> getRideReservations(Long rideId, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {

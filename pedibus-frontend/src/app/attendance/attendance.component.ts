@@ -1,14 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatSnackBar, MatDialog, throwToolbarMixedModesError } from '@angular/material';
+import { MatSnackBar, MatDialog } from '@angular/material';
 import * as moment from 'moment';
 
 import { AttendanceService } from '../attendance.service';
 import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
 import { StopDialogComponent } from './stop-dialog/stop-dialog.component';
-import { CdkObserveContent } from '@angular/cdk/observers';
 import { AppComponent } from '../app.component';
 
 
@@ -17,14 +16,17 @@ import { AppComponent } from '../app.component';
   templateUrl: './attendance.component.html',
   styleUrls: ['./attendance.component.css']
 })
-export class AttendanceComponent implements OnInit {
+export class AttendanceComponent implements OnInit, OnDestroy {
   lines;
   selectedLine;
   stops;
   pupils;
+  pupilsSub;
   rides;
+  ridesSub;
   selectedRideIndex = -1;
   rideData;
+  rideDataSub;
   missingPupils;
 
 
@@ -56,6 +58,19 @@ export class AttendanceComponent implements OnInit {
         this.handleError(error)
       }
     );
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe from all events
+    if (this.pupilsSub) {
+      this.pupilsSub.unsubscribe();
+    }
+    if (this.ridesSub) {
+      this.ridesSub.unsubscribe();
+    }
+    if (this.rideDataSub) {
+      this.rideDataSub.unsubscribe();
+    }
   }
 
   downloadJSON(){
@@ -101,34 +116,58 @@ export class AttendanceComponent implements OnInit {
       }
     );
 
-    this.lineService.getPupils(this.selectedLine.id).subscribe(
+    if (this.pupilsSub) {
+      this.pupilsSub.unsubscribe();
+    }
+    this.pupilsSub = this.lineService.getPupils(this.selectedLine.id).subscribe(
       (res) => {
         this.pupils = res;
+        if (this.rideData) {
+          this.computeMissingPupils();
+        }
       },
       (error) => {
         this.handleError(error)
       }
     );
 
-    this.attendanceService.getRides(this.authenticationService.getUsername(), this.selectedLine.id).subscribe(
+    if (this.ridesSub) {
+      this.ridesSub.unsubscribe();
+    }
+    this.ridesSub = this.attendanceService.getRides(
+      this.authenticationService.getUsername(),
+      this.selectedLine.id
+    ).subscribe(
       (res) => {
+        let selRide = this.selectedRide;
+
+        this.selectedRideIndex = -1;
         this.rides = res;
 
         if (this.rides.length > 0) {
-          // Pick the closest ride with date >= current date
-          let curDate = moment().format('YYYY-MM-DD');
-          let closestRide = this.rides.length-1;
-
-          while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
-            closestRide--;
+          if (selRide) {
+            // Check if current ride is present in the new list,
+            // if it is stay on that ride
+            this.selectedRideIndex = this.findRide(selRide);
           }
 
-          if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
-            closestRide++;
-          }
-          this.selectedRideIndex = closestRide;
+          // If prevoius current ride was removed or this is the first time displaying a ride
+          // pick the closest ride with date >= current date
+          if (this.selectedRideIndex == -1) {
+            let curDate = moment().format('YYYY-MM-DD');
+            let closestRide = this.rides.length-1;
 
-          this.loadRideData();
+            while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
+              closestRide--;
+            }
+
+            if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
+              closestRide++;
+            }
+            this.selectedRideIndex = closestRide;
+
+            this.loadRideData();
+          }
         }
       },
       (error) => {
@@ -137,16 +176,25 @@ export class AttendanceComponent implements OnInit {
     );
   }
 
+  private findRide(ride): number {
+    for (let [i, r] of this.rides.entries()) {
+      if (ride.id == r.id) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
   loadRideData() {
-    this.attendanceService.getRideData(this.selectedRide.id).subscribe(
+    if (this.rideDataSub) {
+      this.rideDataSub.unsubscribe();
+    }
+    this.rideDataSub = this.attendanceService.getRideData(this.selectedRide.id).subscribe(
       (res) => {
         this.rideData = res;
-        // Compute missing pupils
-        this.missingPupils = [];
-        for (let pupil of this.pupils) {
-          if (!this.findPupil(pupil)) {
-            this.missingPupils.push(pupil);
-          }
+        if (this.pupils) {
+          this.computeMissingPupils();
         }
       },
       (error) => {
@@ -165,6 +213,16 @@ export class AttendanceComponent implements OnInit {
       let treshold = moment(this.selectedRide.date);
       return moment().isAfter(treshold, 'day');
     }
+  }
+
+  private computeMissingPupils() {
+    this.missingPupils = [];
+    for (let pupil of this.pupils) {
+      if (!this.findPupil(pupil)) {
+        this.missingPupils.push(pupil);
+      }
+    }
+    this.missingPupils.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   private findPupil(pupil) {

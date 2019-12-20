@@ -7,6 +7,7 @@ import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.repositories.*;
 import it.polito.ai.pedibusbackend.viewmodels.NewAttendanceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -34,6 +35,8 @@ public class AttendanceService {
     private AvailabilityRepository availabilityRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Long addAttendance(@Valid NewAttendanceDTO attendanceDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
@@ -104,6 +107,9 @@ public class AttendanceService {
         Reservation r = reservationRepository.findByPupilAndRideAndStop(pupil, ride, stop).orElse(null);
         if(r != null){
             attendance.setReservation(r);
+
+            // Notify reservation update
+            msgTemplate.convertAndSend("/topic/pupils/" + pupil.getId() + "/reservations", "");
         }
 
         attendance = attendanceRepository.save(attendance);
@@ -112,6 +118,9 @@ public class AttendanceService {
         notificationService.createNotification(pupil.getUser(), "Pupil marked as present", pupil.getName() +
                 " was marked as present on stop '" + stop.getName() + "' of line '" +
                 ride.getLine().getName() + "' for the " + direction + " direction on " + ride.getDate());
+
+        // Notify attendance creation
+        msgTemplate.convertAndSend("/topic/rides/" + attendance.getRide().getId() + "/attendances", "");
 
         return attendance.getId();
     }
@@ -159,5 +168,13 @@ public class AttendanceService {
                 attendance.getPupil().getName() + " that was marked as present on stop '" +
                 attendance.getStop().getName() + "' of line '" + attendance.getRide().getLine().getName() +
                 "' for the " + direction + " direction on " + attendance.getRide().getDate() + " has been unmarked");
+
+        if (attendance.getReservation() != null) {
+            // Notify reservation update
+            msgTemplate.convertAndSend("/topic/pupils/" + attendance.getPupil().getId() + "/reservations", "");
+        }
+
+        // Notify attendance deletion
+        msgTemplate.convertAndSend("/topic/rides/" + attendance.getRide().getId() + "/attendances", "");
     }
 }

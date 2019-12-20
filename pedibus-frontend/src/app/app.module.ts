@@ -22,6 +22,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 
+import { InjectableRxStompConfig, RxStompService, rxStompServiceFactory } from '@stomp/ng2-stompjs';
+
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AttendanceComponent } from './attendance/attendance.component';
@@ -45,6 +47,7 @@ import { RidesComponent } from './rides/rides.component';
 import { NotificationComponent } from './notification/notification.component';
 import { DialogShowNotificationComponent } from './notification/notification.component';
 import { DialogRemovePupilComponent } from './pupils/pupils.component';
+import { rxStompConfig } from './rx-stomp.config';
 
 
 @NgModule({
@@ -97,9 +100,20 @@ import { DialogRemovePupilComponent } from './pupils/pupils.component';
   providers: [
     AttendanceService,
     AuthenticationService,
-    { provide: HTTP_INTERCEPTORS,
+    { 
+      provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
-      multi: true }
+      multi: true 
+    },
+    {
+      provide: InjectableRxStompConfig,
+      useValue: rxStompConfig
+    },
+    {
+      provide: RxStompService,
+      useFactory: rxStompServiceFactory,
+      deps: [InjectableRxStompConfig]
+    }
   ],
   bootstrap: [AppComponent],
   entryComponents: [

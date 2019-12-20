@@ -22,7 +22,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     //Register STOMP endpoints mapping each to a specific URL and (optionally) enabling and configuring SockJS fallback options
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/stomp-websocket")
-                .withSockJS();
+                .setAllowedOrigins("*");
     }
 
 }
