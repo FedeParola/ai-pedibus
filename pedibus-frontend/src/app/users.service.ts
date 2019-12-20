@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { RxStompService } from '@stomp/ng2-stompjs';
 import { concat } from 'rxjs';
+import { map, concatAll } from 'rxjs/operators';
 
 import { environment } from '../environments/environment'
 import { AuthenticationService } from './authentication.service';
-import { map, concatAll } from 'rxjs/operators';
 
 
 @Injectable({
@@ -18,7 +18,20 @@ export class UsersService {
               private rxStompService: RxStompService) { }
 
   getUsers(page: number, size: number) {
-    return this.http.get(environment.apiUrl+'/users?page='+page+'&size='+size);
+    //return this.http.get(environment.apiUrl+'/users?page='+page+'&size='+size);
+    let path = '/users?page=' + page + '&size=' + size;
+    let url = environment.apiUrl + path;
+
+    return concat(
+      // Retrieve data for the first time
+      this.http.get(url),
+
+      // On every event retrieve data again
+      this.rxStompService.watch("/topic/users").pipe(
+        map(() => this.http.get(url)),
+        concatAll()
+      )
+    );
   }
 
   getCurrentUserLines(){
@@ -56,7 +69,21 @@ export class UsersService {
   }
   
   getUserPupils(page: number, size: number){
-    return this.http.get(environment.apiUrl+'/users/'+this.authenticationService.getUsername()+'/pupils?page='+page+'&size='+size);
+    //return this.http.get(environment.apiUrl+'/users/'+this.authenticationService.getUsername()+'/pupils?page='+page+'&size='+size);
+    let path = '/users/'+this.authenticationService.getUsername()+'/pupils?page='+page+'&size='+size;
+    let url = environment.apiUrl + path;
+
+    return concat(
+      // Retrieve data for the first time
+      this.http.get(url),
+
+      // On every event retrieve data again
+      this.rxStompService.watch("/topic/users/"+this.authenticationService.getUsername()+'/pupils').pipe(
+        map(() => this.http.get(url)),
+        concatAll()
+      )
+    );
+  
   }
 
   removeUserPupil(pupilId){

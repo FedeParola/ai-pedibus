@@ -59,16 +59,18 @@ export class AttendanceComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Unsubscribe from all events
+   /*  // Unsubscribe from all events
     if (this.pupilsSub) {
-      this.pupilsSub.unsubscribe();
+      //this.pupilsSub.unsubscribe();
     }
+    /*
     if (this.ridesSub) {
-      this.ridesSub.unsubscribe();
+      //this.ridesSub.unsubscribe();
     }
     if (this.rideDataSub) {
       this.rideDataSub.unsubscribe();
     }
+    */
   }
 
   downloadJSON(){

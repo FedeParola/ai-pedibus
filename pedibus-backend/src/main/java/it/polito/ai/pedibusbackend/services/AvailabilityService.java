@@ -94,10 +94,12 @@ public class AvailabilityService {
         availability.setStatus("NEW");
         availability = availabilityRepository.save(availability);
 
+
         // Notify availability creation
         msgTemplate.convertAndSend(
                 "/topic/users/" + user.getEmail() + "/availabilities?lineId=" + ride.getLine().getId(),
                 "");
+        msgTemplate.convertAndSend("/topic/rides/"+ride.getId()+"/availabilities", "Availability created");
 
         return availability.getId();
     }
@@ -106,6 +108,7 @@ public class AvailabilityService {
     public void updateAvailability(Long availabilityId, AvailabilityUpdateDTO newAvailability, UserDetails loggedUser)
             throws NotFoundException, BadRequestException, ForbiddenException {
         User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+        Boolean updated = false;
 
         Availability availability = availabilityRepository.findById(availabilityId).orElse(null);
         if(availability == null) {
@@ -157,6 +160,7 @@ public class AvailabilityService {
             }
 
             availability.setStop(newStop);
+            updated = true;
         }
 
         //Update the status
@@ -204,15 +208,20 @@ public class AvailabilityService {
             }
 
             availability.setStatus(newStatus);
+            updated = true;
         }
 
         availabilityRepository.save(availability);
 
-        // Notify availability update
-        msgTemplate.convertAndSend(
-                "/topic/users/" + availability.getUser().getEmail() + "/availabilities?lineId=" +
-                        availability.getRide().getLine().getId(),
-                "");
+        if(updated){
+            // Notify availability update
+            msgTemplate.convertAndSend(
+                    "/topic/users/" + availability.getUser().getEmail() + "/availabilities?lineId=" +
+                            availability.getRide().getLine().getId(),
+                    "");
+            msgTemplate.convertAndSend("/topic/rides/"+availability.getRide().getId()+"/availabilities",
+                    "Availability updated");
+        }
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
@@ -245,5 +254,7 @@ public class AvailabilityService {
                 "/topic/users/" + availability.getUser().getEmail() + "/availabilities?lineId=" +
                         availability.getRide().getLine().getId(),
                 "");
+        msgTemplate.convertAndSend("/topic/rides/"+availability.getRide().getId()+"/availabilities",
+                "Availability deleted");
     }
 }

@@ -87,6 +87,8 @@ public class RideService implements InitializingBean {
 
         // Notify ride creation
         msgTemplate.convertAndSend("/topic/lines/" + line.getId() + "/rides", "");
+        msgTemplate.convertAndSend("/topic/lines/"+line.getId()+"/rides?date="+ride.getDate()+
+                "&direction="+newRideDTO.getDirection(), "Ride created");
 
         return ride.getId();
     }
@@ -95,6 +97,7 @@ public class RideService implements InitializingBean {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
 
         Boolean proceed = false;
+        Boolean updated = false;
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
@@ -163,6 +166,7 @@ public class RideService implements InitializingBean {
                 //update ride consolidated value
                 ride.setConsolidated(true);
                 rideRepository.save(ride);
+                updated = true;
             }else{
                 throw new BadRequestException("Ride is not completely covered");
             }
@@ -193,6 +197,12 @@ public class RideService implements InitializingBean {
             //update ride consolidated value
             ride.setConsolidated(false);
             rideRepository.save(ride);
+            updated = true;
+        }
+
+        if(updated){
+            msgTemplate.convertAndSend("/topic/lines/"+ride.getLine().getId()+"/rides?date="+ride.getDate()+
+                            "&direction="+ride.getDirection(), "Ride updated");
         }
 
         // Notify ride status update
@@ -220,6 +230,8 @@ public class RideService implements InitializingBean {
 
         // Notify ride deletion
         msgTemplate.convertAndSend("/topic/lines/" + ride.getLine().getId() + "/rides", "");
+        msgTemplate.convertAndSend("/topic/lines/"+ride.getLine().getId()+"/rides?date="+ride.getDate()+
+                "&direction="+ride.getDirection(), "Ride deleted");
 
         return;
     }
