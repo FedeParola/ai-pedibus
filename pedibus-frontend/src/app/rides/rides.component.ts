@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { LineService } from '../line.service';
 import * as moment from 'moment';
+import { RxStompService } from '@stomp/ng2-stompjs';
 
 @Component({
   selector: 'app-rides',
@@ -20,12 +21,15 @@ export class RidesComponent implements OnInit {
   stops = null;
   selectedRide = null;
   availabilities = null;
+  currRideSub;
+  availabilitiesSub;
 
   constructor(private rideService: RidesService,
               private authenticationService: AuthenticationService,
               private lineService: LineService,
               private router: Router,
-              private _snackBar: MatSnackBar) {}
+              private _snackBar: MatSnackBar,
+              private rxStompService: RxStompService) {}
 
   ngOnInit() {
     this.rideService.getMyLines(this.authenticationService.getUsername()).subscribe(
@@ -65,7 +69,10 @@ export class RidesComponent implements OnInit {
     else
       this.currentDirection = 'R';
     let date = this.currentDate.getFullYear()+'-'+(this.currentDate.getMonth()+1)+'-'+this.currentDate.getDate();
-    this.rideService.getRide(this.selectedLine.id, date, direction).subscribe(
+    if (this.currRideSub) {
+      this.currRideSub.unsubscribe();
+    }
+    this.currRideSub = this.rideService.getRide(this.selectedLine.id, date, direction).subscribe(
       (res) => {
         this.selectedRide = res[0];
         if(this.selectedRide != undefined){
@@ -80,7 +87,10 @@ export class RidesComponent implements OnInit {
   
   loadRideAvailabilities() {
     this.availabilities = null;
-    this.rideService.getRideAvailabilities(this.selectedRide.id).subscribe(
+    if (this.availabilitiesSub) {
+      this.availabilitiesSub.unsubscribe();
+    }
+    this.availabilitiesSub = this.rideService.getRideAvailabilities(this.selectedRide.id).subscribe(
       (res) => {
         this.availabilities = res;
       },

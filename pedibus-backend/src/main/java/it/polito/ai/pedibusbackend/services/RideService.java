@@ -12,6 +12,7 @@ import it.polito.ai.pedibusbackend.security.AuthorizationManager;
 import it.polito.ai.pedibusbackend.viewmodels.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -32,6 +33,8 @@ public class RideService implements InitializingBean {
     private LineRepository lineRepository;
     @Autowired
     private AvailabilityRepository availabilityRepository;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
     public List<RideDTO> getRides() {
         List<RideDTO> rides = new ArrayList<>();
@@ -80,6 +83,8 @@ public class RideService implements InitializingBean {
         ride.setDirection(newRideDTO.getDirection());
         ride.setConsolidated(false);
 
+        msgTemplate.convertAndSend("/topic/lines/"+line.getId()+"/rides?date="+ride.getDate()+
+                "&direction="+newRideDTO.getDirection(), "Ride created");
         return rideRepository.save(ride).getId();
     }
 
@@ -87,6 +92,7 @@ public class RideService implements InitializingBean {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
 
         Boolean proceed = false;
+        Boolean updated = false;
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
@@ -145,6 +151,7 @@ public class RideService implements InitializingBean {
                 //update ride consolidated value
                 ride.setConsolidated(true);
                 rideRepository.save(ride);
+                updated = true;
             }else{
                 throw new BadRequestException("Ride is not completely covered");
             }
@@ -165,6 +172,12 @@ public class RideService implements InitializingBean {
             //update ride consolidated value
             ride.setConsolidated(false);
             rideRepository.save(ride);
+            updated = true;
+        }
+
+        if(updated){
+            msgTemplate.convertAndSend("/topic/lines/"+ride.getLine().getId()+"/rides?date="+ride.getDate()+
+                            "&direction="+ride.getDirection(), "Ride updated");
         }
 
         return;
@@ -186,6 +199,8 @@ public class RideService implements InitializingBean {
         AuthorizationManager.authorizeLineAccess(currentUser, ride.getLine().getId());
 
         rideRepository.delete(ride);
+        msgTemplate.convertAndSend("/topic/lines/"+ride.getLine().getId()+"/rides?date="+ride.getDate()+
+                "&direction="+ride.getDirection(), "Ride deleted");
         return;
     }
 
