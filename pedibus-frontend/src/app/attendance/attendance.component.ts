@@ -70,12 +70,14 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     if (this.pupilsSub) {
       //this.pupilsSub.unsubscribe();
     }
+    /*
     if (this.ridesSub) {
       //this.ridesSub.unsubscribe();
     }
     if (this.rideDataSub) {
-      //this.rideDataSub.unsubscribe();
-    } */
+      this.rideDataSub.unsubscribe();
+    }
+    */
   }
 
   downloadJSON(){

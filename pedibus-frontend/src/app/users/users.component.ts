@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {MatDialog, MatDialogRef, MatDialogConfig} from '@angular/material/dialog';
 import { DialogUserLinesComponent } from './dialog-user-lines/dialog-user-lines.component';
 import { UsersService } from '../users.service';
@@ -7,30 +7,34 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { AuthenticationService } from '../authentication.service';
+import { RxStompService } from '@stomp/ng2-stompjs';
+import { Message } from '@stomp/stompjs';
 
 @Component({
   selector: 'app-users',
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.css']
 })
-export class UsersComponent implements OnInit {
+export class UsersComponent implements OnInit, OnDestroy {
   users;
   pageNumber: number;
   pageSize: number;
   nextEnabled;
   prevEnabled;
+  usersSub;
 
   constructor(private usersService: UsersService,
               private authService: AuthenticationService,
               public dialog: MatDialog,
               private router: Router,
-              private _snackBar: MatSnackBar) { 
+              private _snackBar: MatSnackBar,
+              private rxStompService: RxStompService) { 
                 this.pageNumber = 0;
                 this.pageSize = 6;
               }
 
   ngOnInit() {
-    this.usersService.getUsers(this.pageNumber, this.pageSize).subscribe((res) => {
+    this.usersSub=this.usersService.getUsers(this.pageNumber, this.pageSize).subscribe((res) => {
       this.users = res;
       this.prevEnabled = false;
       if(this.users[this.users.length - 1].hasNext){
@@ -42,6 +46,13 @@ export class UsersComponent implements OnInit {
     (error) => {
       this.handleError(error)
     });
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe from all events
+    if (this.usersSub) {
+      this.usersSub.unsubscribe();
+    }
   }
 
   checkCurrent(username: string): Boolean{
@@ -61,7 +72,8 @@ export class UsersComponent implements OnInit {
 
   nextPage(){
     this.pageNumber++;
-    this.usersService.getUsers(this.pageNumber, this.pageSize).subscribe((res) => {
+    this.usersSub.unsubscribe();
+    this.usersSub=this.usersService.getUsers(this.pageNumber, this.pageSize).subscribe((res) => {
       this.users = res;
       this.prevEnabled = true;
       if(this.users[this.users.length - 1].hasNext){
@@ -77,7 +89,8 @@ export class UsersComponent implements OnInit {
 
   prevPage(){
     this.pageNumber--;
-    this.usersService.getUsers(this.pageNumber, this.pageSize).subscribe((res) => {
+    this.usersSub.unsubscribe();
+    this.usersSub=this.usersService.getUsers(this.pageNumber, this.pageSize).subscribe((res) => {
       this.users = res;
       if(this.pageNumber == 0){
         this.prevEnabled = false;
@@ -102,7 +115,8 @@ export class UsersComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      this.usersService.getUsers(this.pageNumber, this.pageSize).subscribe((res) => {
+      this.usersSub.unsubscribe();
+      this.usersSub=this.usersService.getUsers(this.pageNumber, this.pageSize).subscribe((res) => {
         this.users = res;
         if(this.pageNumber > 0){
           this.prevEnabled = true;
