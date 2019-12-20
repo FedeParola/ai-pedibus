@@ -1,25 +1,55 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { map, concatAll } from 'rxjs/operators';
+import { concat, Observable } from 'rxjs';
+import { RxStompService } from '@stomp/ng2-stompjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RidesService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient,
+              private rxStompService: RxStompService) { }
 
   getMyLines(username: string){
     return this.http.get(environment.apiUrl+'/users/'+username+'/lines');
   }
 
   getRide(lineId: number, date: string, direction: string){
-    return this.http.get(environment.apiUrl+'/lines/'+lineId+'/rides?date='+date+'&direction='+direction);
+    let path = '/lines/'+lineId+'/rides?date='+date+'&direction='+direction;
+    let url = environment.apiUrl + path;
+
+    return concat(
+      // Retrieve data for the first time
+      this.http.get(url),
+      
+      // On every event retrieve data again
+      this.rxStompService.watch("/topic" + path).pipe(
+        map(() => this.http.get(url)),
+        concatAll()
+      )
+    );
   }
 
   getRideAvailabilities(rideId: number) {
-    return this.http.get(environment.apiUrl+'/rides/'+rideId+'/availabilities').pipe(
+    let path = '/rides/'+rideId+'/availabilities';
+    let url = environment.apiUrl + path;
+
+    return concat(
+      // Retrieve data for the first time
+      this.retrieveAvailabilities(url),
+
+      this.rxStompService.watch("/topic" + path).pipe(
+        map(() =>  this.retrieveAvailabilities(url)),
+        concatAll()
+      )
+    );
+  }
+
+  private retrieveAvailabilities(url: string){
+    return this.http.get(url).pipe(
       map((availabilities: any[]) => {
         let dataMap = new Map();
 
@@ -41,7 +71,7 @@ export class RidesService {
 
         return dataMap;
       })
-    );
+    )
   }
 
   createRide(date: string, lineId: number, direction: string){

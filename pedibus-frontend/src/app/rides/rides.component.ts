@@ -21,6 +21,8 @@ export class RidesComponent implements OnInit {
   stops = null;
   selectedRide = null;
   availabilities = null;
+  currRideSub;
+  availabilitiesSub;
 
   constructor(private rideService: RidesService,
               private authenticationService: AuthenticationService,
@@ -69,7 +71,10 @@ export class RidesComponent implements OnInit {
     else
       this.currentDirection = 'R';
     let date = this.currentDate.getFullYear()+'-'+(this.currentDate.getMonth()+1)+'-'+this.currentDate.getDate();
-    this.rideService.getRide(this.selectedLine.id, date, direction).subscribe(
+    if (this.currRideSub) {
+      this.currRideSub.unsubscribe();
+    }
+    this.currRideSub = this.rideService.getRide(this.selectedLine.id, date, direction).subscribe(
       (res) => {
         this.selectedRide = res[0];
         if(this.selectedRide != undefined){
@@ -84,7 +89,10 @@ export class RidesComponent implements OnInit {
   
   loadRideAvailabilities() {
     this.availabilities = null;
-    this.rideService.getRideAvailabilities(this.selectedRide.id).subscribe(
+    if (this.availabilitiesSub) {
+      this.availabilitiesSub.unsubscribe();
+    }
+    this.availabilitiesSub = this.rideService.getRideAvailabilities(this.selectedRide.id).subscribe(
       (res) => {
         this.availabilities = res;
       },

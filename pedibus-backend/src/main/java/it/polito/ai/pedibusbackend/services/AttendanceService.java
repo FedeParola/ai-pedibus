@@ -7,6 +7,7 @@ import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.repositories.*;
 import it.polito.ai.pedibusbackend.viewmodels.NewAttendanceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -33,6 +34,8 @@ public class AttendanceService {
     private ReservationRepository reservationRepository;
     @Autowired
     private AvailabilityRepository availabilityRepository;
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Long addAttendance(@Valid NewAttendanceDTO attendanceDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
@@ -103,9 +106,15 @@ public class AttendanceService {
         Reservation r = reservationRepository.findByPupilAndRideAndStop(pupil, ride, stop).orElse(null);
         if(r != null){
             attendance.setReservation(r);
+
+            // Notify reservation update
+            msgTemplate.convertAndSend("/topic/pupils/" + pupil.getId() + "/reservations", "");
         }
 
         attendance = attendanceRepository.save(attendance);
+
+        // Notify attendance creation
+        msgTemplate.convertAndSend("/topic/rides/" + attendance.getRide().getId() + "/attendances", "");
 
         return attendance.getId();
     }
@@ -147,5 +156,13 @@ public class AttendanceService {
         }
 
         attendanceRepository.delete(attendance);
+
+        if (attendance.getReservation() != null) {
+            // Notify reservation update
+            msgTemplate.convertAndSend("/topic/pupils/" + attendance.getPupil().getId() + "/reservations", "");
+        }
+
+        // Notify attendance deletion
+        msgTemplate.convertAndSend("/topic/rides/" + attendance.getRide().getId() + "/attendances", "");
     }
 }
