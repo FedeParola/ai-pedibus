@@ -34,7 +34,8 @@ public class AvailabilityService {
     private StopRepository stopRepository;
     @Autowired
     private SimpMessagingTemplate msgTemplate;
-
+    @Autowired
+    private NotificationService notificationService;
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Long addAvailability(@Valid NewAvailabilityDTO availabilityDTO, UserDetails loggedUser)
@@ -94,6 +95,13 @@ public class AvailabilityService {
         availability.setStatus("NEW");
         availability = availabilityRepository.save(availability);
 
+        //Warn each admin of the line of the ride
+        for(User u : ride.getLine().getUsers()){
+            String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+            notificationService.createNotification(u, "New availability", "User '" + user.getEmail() +
+                    "' is available for ride of line '" + ride.getLine().getName() + "' " + "for the " + direction +
+                    " direction " + "on " + ride.getDate() + " starting from the stop '" + stop.getName() + "'");
+        }
 
         // Notify availability creation
         msgTemplate.convertAndSend(
@@ -171,6 +179,13 @@ public class AvailabilityService {
                 if(oldStatus.equals("ASSIGNED")){
                     //only admin of that line or sys admin
                     AuthorizationManager.authorizeLineAccess(currentUser, availability.getRide().getLine());
+
+                    Ride ride = availability.getRide();
+                    //Warn the escort who provided the availability for the ride
+                    String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+                    notificationService.createNotification(availability.getUser(), "Ride no longer assigned",
+                            "Your assignment to ride of line '" + ride.getLine().getName() + "' " +
+                            "for the " + direction + " direction " + "on " + ride.getDate() + " has been cancelled");
                 } else if (oldStatus.equals("CONFIRMED")) {
                     //only admin of that line or sys admin
                     AuthorizationManager.authorizeLineAccess(currentUser, availability.getRide().getLine());
@@ -181,6 +196,13 @@ public class AvailabilityService {
                 if(oldStatus.equals("NEW")){
                     //only admin of that line or sys admin
                     AuthorizationManager.authorizeLineAccess(currentUser, availability.getRide().getLine());
+
+                    Ride ride = availability.getRide();
+                    //Warn the escort who provided the availability for the ride
+                    String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+                    notificationService.createNotification(availability.getUser(), "Ride assigned", "You have been " +
+                            "assigned for the " + direction + " direction of line '" + ride.getLine().getName() + "' " +
+                             "on " + ride.getDate());
                 } else {
                     throw new BadRequestException("This transition of status of the availability is not a valid one");
                 }
@@ -199,6 +221,15 @@ public class AvailabilityService {
                     if(a != null  &&  a.getStatus().equals("CONFIRMED")){
                         throw new BadRequestException("The user has already confirmed his availability somewhere " +
                                 "the same day in the same direction");
+                    }
+
+                    Ride ride = availability.getRide();
+                    //Warn each admin of the line of the ride
+                    for(User u : ride.getLine().getUsers()){
+                        String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+                        notificationService.createNotification(u, "Availability confirmed", "User '" + availability.getUser().getEmail() +
+                                "' has confirmed his availability for ride of line '" + ride.getLine().getName() + "' " +
+                                "for the " + direction + " direction " + "on " + ride.getDate());
                     }
                 } else {
                     throw new BadRequestException("This transition of status of the availability is not a valid one");
@@ -248,6 +279,15 @@ public class AvailabilityService {
         }
 
         availabilityRepository.delete(availability);
+
+        Ride ride = availability.getRide();
+        //Warn each admin of the line of the ride
+        for(User u : ride.getLine().getUsers()){
+            String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+            notificationService.createNotification(u, "Availability cancelled", "User '" + availability.getUser().getEmail() +
+                    "' is no longer available for ride of line '" + ride.getLine().getName() + "' " +
+                    "for the " + direction + " direction " + "on " + ride.getDate());
+        }
 
         // Notify availability deletion
         msgTemplate.convertAndSend(

@@ -355,7 +355,7 @@ public class UserService implements InitializingBean, UserDetailsService {
 
         user.getLines().addAll(lines);
 
-        notificationService.createNotification(user, "Admin of a new line", "You are now admin of the following" +
+        notificationService.createNotification(user, "Admin of a new line", "You are now admin of the following " +
                 "line: '" + lines.get(0).getName() + "'");
         msgTemplate.convertAndSend("/topic/users", "");
     }
@@ -377,7 +377,7 @@ public class UserService implements InitializingBean, UserDetailsService {
             user.getRoles().remove("ROLE_ADMIN");
         }
 
-        notificationService.createNotification(user, "", "You are no longer admin of the following" +
+        notificationService.createNotification(user, "Removed as admin of a line", "You are no longer admin of the following " +
                 "line: '" + line.getName() + "'");
         msgTemplate.convertAndSend("/topic/users", "");
     }

@@ -116,8 +116,8 @@ public class AttendanceService {
 
         String direction = ride.getDirection().equals("O") ? "outbound" : "return";
         notificationService.createNotification(pupil.getUser(), "Pupil marked as present", pupil.getName() +
-                " was marked as present on stop '" + stop.getName() + "' of line '" +
-                ride.getLine().getName() + "' for the " + direction + " direction on " + ride.getDate());
+                " was marked as present on stop '" + stop.getName() + "' for the " + direction + " direction of line '" +
+                ride.getLine().getName() + "'  on " + ride.getDate());
 
         // Notify attendance creation
         msgTemplate.convertAndSend("/topic/rides/" + attendance.getRide().getId() + "/attendances", "");
@@ -165,9 +165,9 @@ public class AttendanceService {
 
         String direction = attendance.getRide().getDirection().equals("O") ? "outbound" : "return";
         notificationService.createNotification(attendance.getPupil().getUser(), "Pupil unmarked as present",
-                attendance.getPupil().getName() + " that was marked as present on stop '" +
-                attendance.getStop().getName() + "' of line '" + attendance.getRide().getLine().getName() +
-                "' for the " + direction + " direction on " + attendance.getRide().getDate() + " has been unmarked");
+                "Your pupil " + attendance.getPupil().getName() + " that was marked as present on stop '" +
+                attendance.getStop().getName() + "' for the " + direction + " direction of line '" +
+                attendance.getRide().getLine().getName() + "'  on " + attendance.getRide().getDate() + " has been unmarked");
 
         if (attendance.getReservation() != null) {
             // Notify reservation update

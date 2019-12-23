@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name="\"user\"")
+@Table(name = "\"user\"")
 @Data
 public class User {
     @Id
@@ -32,4 +32,15 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Notification> notifications = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object object) {
+        if(!(object instanceof User))
+            return false;
+        User user = (User)object;
+        if(!(user.getEmail().equals(this.email)))
+            return false;
+
+        return true;
+    }
 }

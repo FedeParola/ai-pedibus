@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { map, concatAll } from 'rxjs/operators';
-import { concat, Observable } from 'rxjs';
+import { concat } from 'rxjs';
 import { RxStompService } from '@stomp/ng2-stompjs';
 
 @Injectable({

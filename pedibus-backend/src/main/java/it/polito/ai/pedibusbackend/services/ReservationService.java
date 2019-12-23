@@ -101,8 +101,8 @@ public class ReservationService implements InitializingBean {
         for (Availability a : availabilityRepository.findByRideAndStatus(ride, "CONSOLIDATED")){
             String direction = ride.getDirection().equals("O") ? "outbound" : "return";
             notificationService.createNotification(a.getUser(), "New reservation", "New reservation for " +
-                    pupil.getName() + " of user '" + pupil.getUser().getEmail() + " on stop '" + stop.getName() +
-                    "' of line '" + ride.getLine().getName() + "' for the " + direction + " direction on " + ride.getDate());
+                    pupil.getName() + " of user '" + pupil.getUser().getEmail() + "' on stop '" + stop.getName() +
+                    "' for the " + direction + " direction of line '" + ride.getLine().getName() + "' on " + ride.getDate());
         }
         // Notify reservation creation
         notifyReservationOperation(reservation);
@@ -149,8 +149,9 @@ public class ReservationService implements InitializingBean {
         for (Availability a : availabilityRepository.findByRideAndStatus(reservation.getRide(), "CONSOLIDATED")) {
             String direction = reservation.getRide().getDirection().equals("O") ? "outbound" : "return";
             notificationService.createNotification(a.getUser(), "Reservation updated", "Reservation for " +
-                    reservation.getPupil().getName() + " of user '" + currentUser.getEmail() + " for the " + direction +
-                    " direction of line '" + reservation.getRide().getLine().getName() + " on " + reservation.getRide().getDate());
+                    reservation.getPupil().getName() + " of user '" + currentUser.getEmail() + "' for the " + direction +
+                    " direction of line '" + reservation.getRide().getLine().getName() + "' on " + reservation.getRide().getDate() +
+                    " has been updated");
         }
 
         // Notify reservation update
@@ -182,8 +183,8 @@ public class ReservationService implements InitializingBean {
             String direction = reservation.getRide().getDirection().equals("O") ? "outbound" : "return";
             notificationService.createNotification(a.getUser(), "A reservation was cancelled", "Reservation for " +
                     reservation.getPupil().getName() + " of user '" + currentUser.getEmail() +
-                    " on stop '" + reservation.getStop().getName() + "' of line '" + reservation.getRide().getLine().getName() +
-                    "' for the " + direction + " direction on " + reservation.getRide().getDate() + " has been cancelled");
+                    "' on stop '" + reservation.getStop().getName() + "' for the " + direction + " direction of line '" +
+                    reservation.getRide().getLine().getName() + "' on " + reservation.getRide().getDate() + " has been cancelled");
         }
 
         // Notify reservation deletion

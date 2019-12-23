@@ -92,7 +92,7 @@ public class RideService implements InitializingBean {
             if(!u.getEmail().equals(currentUser.getEmail())){
                 String direction = ride.getDirection().equals("O") ? "outbound" : "return";
                 notificationService.createNotification(u, "Ride cancelled", "The ride of line '" +
-                        ride.getLine().getName() + "' (that you are admin of) for the " + direction + " direction " + "on " +
+                        ride.getLine().getName() + "' for the " + direction + " direction " + "on " +
                         ride.getDate() + " has been cancelled");
             }
         }
@@ -165,6 +165,12 @@ public class RideService implements InitializingBean {
                     a.setStatus("CONSOLIDATED");
                     availabilityRepository.save(a);
 
+                    //Warn each escort of the ride
+                    String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+                    notificationService.createNotification(a.getUser(), "Ride consolidated", "The ride for the " +
+                            direction + " direction of line '" + ride.getLine().getName() + " on " + ride.getDate() + " has " +
+                            "been consolidated");
+
                     // Notify new assigned line to the user
                     msgTemplate.convertAndSend(
                             "/topic/users/" + a.getUser().getEmail() + "/rides?lineId=" + ride.getLine().getId(),
@@ -194,6 +200,12 @@ public class RideService implements InitializingBean {
                 if(a.getStatus().equals("CONSOLIDATED")){
                     a.setStatus("CONFIRMED");
                     availabilityRepository.save(a);
+
+                    //Warn each escort of the ride
+                    String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+                    notificationService.createNotification(a.getUser(), "Ride re-opened", "The ride for the " +
+                            direction + " direction of line '" + ride.getLine().getName() + " on " + ride.getDate() + " has " +
+                            "been re-opened");
 
                     // Notify line removal to those assigned to the user
                     msgTemplate.convertAndSend(
@@ -240,14 +252,12 @@ public class RideService implements InitializingBean {
 
         rideRepository.delete(ride);
 
-
         //Warn each admin of the line of the ride and each parent of the pupils reserved for the ride
         for(User u : ride.getLine().getUsers()){
             if(!u.getEmail().equals(currentUser.getEmail())){
                 String direction = ride.getDirection().equals("O") ? "outbound" : "return";
-                notificationService.createNotification(u, "Ride cancelled", "The ride of line '" +
-                        ride.getLine().getName() + "' (that you are admin of) for the " + direction + " direction " + "on " +
-                        ride.getDate() + " has been cancelled");
+                notificationService.createNotification(u, "Ride cancelled", "The ride for the " + direction + " direction " +
+                        "of line '" + ride.getLine().getName() + "'  " + "on " + ride.getDate() + " has been cancelled");
             }
         }
         //DA MODIFICARE

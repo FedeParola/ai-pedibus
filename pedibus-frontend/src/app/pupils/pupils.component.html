@@ -1,13 +1,12 @@
 <mat-card class="pupils-card">
-    <mat-card-header>
-        <mat-card-title>Pupils</mat-card-title>
-    </mat-card-header>
+    <mat-card-title class="title">Pupils</mat-card-title>
     <mat-card-content class="card-content">
+        <mat-divider></mat-divider>
         <mat-list>
             <mat-list-item *ngIf="noPupils">
                 <span class="spacer"></span> 
                 <p>No pupils registered yet</p>
-                <span class="spacer"></span> 
+                <span class="spacer"></span>
             </mat-list-item>
             <mat-list-item *ngFor="let pupil of pupils">
                 <span class="spacer"></span> 
@@ -15,12 +14,12 @@
                 <span class="spacer"></span>
                 <p>{{pupil.lineName}}</p>
                 <span class="spacer"></span>
-                <button mat-raised-button (click)="openDialog(pupil)">Edit</button>
-                <button mat-raised-button class="remove-button" (click)="removePupil(pupil)">Remove</button>
+                <button mat-raised-button (click)="openDialog(pupil)" color="primary">Edit</button>
+                <button mat-raised-button class="remove-button" (click)="removePupil(pupil)" color="warn">Remove<mat-icon>delete</mat-icon></button>
                 <mat-divider></mat-divider>
             </mat-list-item>
         </mat-list>
-        <button mat-raised-button class="add-button" (click)="openDialog(null)">Add</button>
+        <button mat-raised-button class="add-button" (click)="openDialog(null)">ADD</button>
         <span class="nav-buttons">
             <button mat-icon-button (click)="prevPage()" [disabled]="!prevEnabled"><mat-icon>chevron_left</mat-icon></button>
             <button mat-icon-button (click)="nextPage()" [disabled]="!nextEnabled"><mat-icon>chevron_right</mat-icon></button>
