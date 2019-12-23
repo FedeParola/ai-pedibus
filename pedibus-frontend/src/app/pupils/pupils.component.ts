@@ -28,7 +28,8 @@ export class PupilsComponent implements OnInit, OnDestroy {
               private router: Router,
               public dialog: MatDialog,
               private rxStompService: RxStompService,
-              private _snackBar: MatSnackBar) { 
+              private _snackBar: MatSnackBar,
+              private authenticationService: AuthenticationService) { 
                 this.pageNumber = 0;
                 this.pageSize = 6;
                 this.noPupils = false;
@@ -170,7 +171,7 @@ export class PupilsComponent implements OnInit, OnDestroy {
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {
       /* Not authenticated or auth expired */
-      this.router.navigateByUrl('/login');
+      this.authenticationService.logout();
     
     } else {
       /* All other errors*/

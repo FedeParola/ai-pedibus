@@ -28,7 +28,9 @@ export class DialogUserLinesComponent implements OnInit {
               private usersService: UsersService,
               private router: Router,
               private _snackBar: MatSnackBar,
-              public dialogRef: MatDialogRef<DialogUserLinesComponent>, @Inject(MAT_DIALOG_DATA) data) {
+              public dialogRef: MatDialogRef<DialogUserLinesComponent>,
+              private authenticationService: AuthenticationService,
+              @Inject(MAT_DIALOG_DATA) data) {
       this.selectedUsername = data.username;
       this.selectedUserLines = data.userLines;
     }
@@ -97,7 +99,7 @@ export class DialogUserLinesComponent implements OnInit {
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {
       /* Not authenticated or auth expired */
-      this.router.navigateByUrl('/login');
+      this.authenticationService.logout();
     
     } else {
       /* All other errors*/

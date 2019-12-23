@@ -22,7 +22,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 
-import { InjectableRxStompConfig, RxStompService, rxStompServiceFactory } from '@stomp/ng2-stompjs';
+import { InjectableRxStompConfig, RxStompService } from '@stomp/ng2-stompjs';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -48,6 +48,7 @@ import { NotificationComponent } from './notification/notification.component';
 import { DialogShowNotificationComponent } from './notification/notification.component';
 import { DialogRemovePupilComponent } from './pupils/pupils.component';
 import { rxStompConfig } from './rx-stomp.config';
+import { myRxStompServiceFactory } from './my-rx-stomp-service-factory';
 
 
 @NgModule({
@@ -111,7 +112,7 @@ import { rxStompConfig } from './rx-stomp.config';
     },
     {
       provide: RxStompService,
-      useFactory: rxStompServiceFactory,
+      useFactory: myRxStompServiceFactory,
       deps: [InjectableRxStompConfig]
     }
   ],

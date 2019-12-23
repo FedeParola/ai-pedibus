@@ -4,13 +4,6 @@ export const rxStompConfig: InjectableRxStompConfig = {
   // Which server?
   brokerURL: 'ws://127.0.0.1:8080/stomp-websocket',
 
-  // Headers
-  // Typical keys: login, passcode, host
-  connectHeaders: {
-    login: 'guest',
-    passcode: 'guest'
-  },
-
   // How often to heartbeat?
   // Interval in milliseconds, set to 0 to disable
   heartbeatIncoming: 0, // Typical value 0 - disabled

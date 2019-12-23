@@ -199,7 +199,7 @@ export class RidesComponent implements OnInit {
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {
       // Not authenticated or auth expired
-      this.router.navigateByUrl('/login');
+      this.authenticationService.logout();
     
     } else {
       // All other errors

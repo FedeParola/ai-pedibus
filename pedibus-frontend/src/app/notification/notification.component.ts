@@ -24,7 +24,8 @@ export class NotificationComponent implements OnInit {
               private authService: AuthenticationService,
               public dialog: MatDialog,
               private router: Router,
-              private _snackBar: MatSnackBar) { 
+              private _snackBar: MatSnackBar,
+              private authenticationService: AuthenticationService) { 
                 this.pageNumber = 0;
                 this.pageSize = 6;
                 this.noNotifications = false;
@@ -135,7 +136,7 @@ export class NotificationComponent implements OnInit {
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {
       /* Not authenticated or auth expired */
-      this.router.navigateByUrl('/login');
+      this.authenticationService.logout();
     
     } else {
       /* All other errors*/

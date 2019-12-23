@@ -39,25 +39,11 @@ export class LoginComponent implements OnInit {
         this.authService.login(val.email, val.password)
             .subscribe(
                 () => {
-                  console.log("User is logged in");
                   this.router.navigateByUrl('/reservation');
-                  this.appComponent.selectedView="Reservations"
-                  this.appComponent.logoutDisabled=false;
-                  this.appComponent.menuVisible=true;
-                  const roles = this.authService.getRoles();
-                  if(roles.indexOf('ROLE_ADMIN') > -1){
-                    this.appComponent.usersDisabled = false;
-                    this.appComponent.ridesDisabled = false;
-                  }else{
-                    this.appComponent.usersDisabled = true;
-                    this.appComponent.ridesDisabled = true;
-                  }
-                  this.appComponent.ngOnInit();
+                  this.appComponent.selectedView="Reservations";
                 },
                 (error) => {
                   this.loginButtonDisabled = false;
-                  this.appComponent.usersDisabled = false;
-                  this.appComponent.ridesDisabled = false;
                   this.handleError(error);
                 }
             );

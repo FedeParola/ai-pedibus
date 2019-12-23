@@ -36,7 +36,9 @@ export class DialogPupilComponent implements OnInit {
               private router: Router,
               private _snackBar: MatSnackBar,
               private fb: FormBuilder, 
-              public dialogRef: MatDialogRef<DialogPupilComponent>, @Inject(MAT_DIALOG_DATA) data) { 
+              public dialogRef: MatDialogRef<DialogPupilComponent>,
+              private authenticationService: AuthenticationService,
+              @Inject(MAT_DIALOG_DATA) data) { 
 
     this.form = this.fb.group({
       pupilName: ['', [Validators.required, Validators.pattern('[A-Za-z]*')]]
@@ -126,7 +128,7 @@ export class DialogPupilComponent implements OnInit {
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {
       // Not authenticated or auth expired
-      this.router.navigateByUrl('/login');
+      this.authenticationService.logout();
     
     } else {
       // All other errors

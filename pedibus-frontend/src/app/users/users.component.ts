@@ -28,7 +28,8 @@ export class UsersComponent implements OnInit, OnDestroy {
               public dialog: MatDialog,
               private router: Router,
               private _snackBar: MatSnackBar,
-              private rxStompService: RxStompService) { 
+              private rxStompService: RxStompService,
+              private authenticationService: AuthenticationService) { 
                 this.pageNumber = 0;
                 this.pageSize = 6;
               }
@@ -155,7 +156,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {
       /* Not authenticated or auth expired */
-      this.router.navigateByUrl('/login');
+      this.authenticationService.logout();
     
     } else {
       /* All other errors*/

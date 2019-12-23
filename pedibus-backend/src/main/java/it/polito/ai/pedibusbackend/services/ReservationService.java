@@ -101,8 +101,8 @@ public class ReservationService implements InitializingBean {
         for (Availability a : availabilityRepository.findByRideAndStatus(ride, "CONSOLIDATED")){
             String direction = ride.getDirection().equals("O") ? "outbound" : "return";
             notificationService.createNotification(a.getUser(), "New reservation", "New reservation for " +
-                    pupil.getName() + " of user '" + currentUser + " on stop '" + stop.getName() + "' of line '" +
-                    ride.getLine().getName() + "' for the " + direction + " direction on " + ride.getDate());
+                    pupil.getName() + " of user '" + pupil.getUser().getEmail() + " on stop '" + stop.getName() +
+                    "' of line '" + ride.getLine().getName() + "' for the " + direction + " direction on " + ride.getDate());
         }
         // Notify reservation creation
         notifyReservationOperation(reservation);
