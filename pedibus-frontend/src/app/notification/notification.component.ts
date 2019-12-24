@@ -6,6 +6,8 @@ import { MatSnackBar } from '@angular/material';
 import { AuthenticationService } from '../authentication.service';
 import {MatDialog, MatDialogRef, MatDialogConfig} from '@angular/material/dialog';
 import {MAT_DIALOG_DATA} from '@angular/material/dialog';
+import { RxStompService } from '@stomp/ng2-stompjs';
+import { map, concatAll } from 'rxjs/operators';
 
 @Component({
   selector: 'app-notification',
@@ -19,24 +21,50 @@ export class NotificationComponent implements OnInit {
   nextEnabled;
   prevEnabled;
   noNotifications;
+  notificationsSub = undefined;
 
   constructor(private usersService: UsersService,
               private authService: AuthenticationService,
               public dialog: MatDialog,
               private router: Router,
               private _snackBar: MatSnackBar,
-              private authenticationService: AuthenticationService) { 
+              private authenticationService: AuthenticationService,
+              private rxStompService: RxStompService) { 
                 this.pageNumber = 0;
                 this.pageSize = 6;
                 this.noNotifications = false;
     }
 
   ngOnInit() {
+    this.updateNotifications();
+    if(this.notificationsSub == undefined){
+      let path = '/users/'+ this.authenticationService.getUsername() + '/notifications';
+      this.notificationsSub = this.rxStompService.watch("/topic" + path).pipe(
+        map(() => this.updateNotifications()),
+        concatAll()
+      ).subscribe(
+        (res) => {
+          this.notifications = res;
+        },
+        (error) => {
+          this.handleError(error)
+        }
+      );
+    }
+  }
+
+  ngOnDestroy() {
+    this.notificationsSub.unsubscribe();
+  }
+
+  updateNotifications(){
     this.usersService.getUserNotifications(this.pageNumber, this.pageSize).subscribe((res) => {
       this.notifications = res;
-      this.prevEnabled = false;
       if(this.notifications.length==0){
         this.noNotifications = true;
+      }
+      if(this.pageNumber == 0){
+        this.prevEnabled = false;
       }
       if(this.notifications[this.notifications.length - 1].hasNext){
         this.nextEnabled = true;

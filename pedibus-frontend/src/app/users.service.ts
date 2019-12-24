@@ -7,7 +7,6 @@ import { map, concatAll } from 'rxjs/operators';
 import { environment } from '../environments/environment'
 import { AuthenticationService } from './authentication.service';
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -108,6 +107,5 @@ export class UsersService {
 
   updateUserNotification(notificationId, read: boolean){
     return this.http.put(environment.apiUrl+'/notifications/'+notificationId, {read});
-}
-
+  }
 }
