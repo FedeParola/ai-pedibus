@@ -10,6 +10,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 public interface NotificationRepository extends PagingAndSortingRepository<Notification, Long> {
     Page<Notification> findByUser(User user, Pageable pageable);
-
+    Long countByUserAndRead(User user, Boolean read);
     Iterable<Object> findByUser(User user);
 }

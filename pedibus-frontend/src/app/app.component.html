@@ -1,38 +1,40 @@
 <mat-toolbar class="toolbar">
   <mat-toolbar-row>
-      <span class="spacer"></span>
-      <span >PediBUS</span>
-      <span class="spacer"></span>
-      <button class="button" mat-raised-button (click)="logout()" [disabled]="logoutDisabled" color="warn">Logout</button>
+    <div></div>
+    <div class="title">PediBUS</div>
+    <div class="toolbar-items">
+      <div class="notifications-alert" *ngIf="loggedIn" [routerLink]="'/notifications'">
+        <mat-icon>notifications</mat-icon>
+        <div class="pending-notifications-count" *ngIf="pendingNotifications">{{pendingNotifications}}</div>
+      </div>
+      <button mat-raised-button *ngIf="loggedIn" (click)="logout()" color="warn">Logout</button>
+    </div>
   </mat-toolbar-row>
 </mat-toolbar>
 
-<mat-list class="menu" *ngIf="menuVisible">
+<mat-list class="menu" *ngIf="loggedIn">
   <mat-list-item>
     <span class="spacer"></span>
     <h3 mat-subheader>Menu</h3>
     <span class="spacer"></span>
   </mat-list-item>
   <mat-list-item *ngIf="!usersDisabled">
-    <button mat-button (click)="users()">Users</button>
+    <button mat-button [routerLink]="'/users'">Users</button>
   </mat-list-item>
   <mat-list-item>
-    <button mat-button (click)="pupils()">Pupils</button>
+    <button mat-button [routerLink]="'/pupils'">Pupils</button>
   </mat-list-item>
   <mat-list-item>
-    <button mat-button (click)="attendances()">Attendances</button>
+    <button mat-button [routerLink]="'/attendance'">Attendances</button>
   </mat-list-item>
   <mat-list-item>
-    <button mat-button (click)="availabilities()">Availabilities</button>
+    <button mat-button [routerLink]="'/availability'">Availabilities</button>
   </mat-list-item>
   <mat-list-item>
-    <button mat-button (click)="reservations()">Reservations</button>
-  </mat-list-item>
-  <mat-list-item>
-    <button mat-button (click)="notifications()">Comunications</button>
+    <button mat-button [routerLink]="'/reservation'">Reservations</button>
   </mat-list-item>
   <mat-list-item *ngIf="!ridesDisabled">
-    <button mat-button (click)="rides()">Rides</button>
+    <button mat-button [routerLink]="'/rides'">Rides</button>
   </mat-list-item>
 </mat-list>
 

@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticationService } from './authentication.service';
 import { RxStompService } from '@stomp/ng2-stompjs';
+import { Message } from '@stomp/stompjs';
 
 @Component({
   selector: 'app-root',
@@ -9,11 +10,11 @@ import { RxStompService } from '@stomp/ng2-stompjs';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  logoutDisabled: boolean;
+  loggedIn: boolean;
   usersDisabled: boolean;
   ridesDisabled: boolean;
-  menuVisible: boolean;
   selectedView;
+  pendingNotifications: number;
 
   constructor(private authService: AuthenticationService,
               private router: Router,
@@ -21,26 +22,23 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.rxStompService.watch('/user/topic/notifications').subscribe(
-      () => {
-        console.log('New notifications available');
-
-        // Add here code to handle new notifications
+      (message: Message) => {
+        this.pendingNotifications = +message.body;
       }
     );
     
     this.authService.getLoggedIn$().subscribe(
       (loggedIn) => {
+        this.loggedIn = loggedIn;
+
         if (loggedIn) {
           console.log('Logged In');
 
-          this.logoutDisabled = false;
-          this.menuVisible = true;
-
           const roles = this.authService.getRoles();
-          if(roles.indexOf('ROLE_ADMIN') > -1){
+          if (roles.indexOf('ROLE_ADMIN') > -1) {
             this.usersDisabled = false;
             this.ridesDisabled = false;
-          }else{
+          } else {
             this.usersDisabled = true;
             this.ridesDisabled = true;
           }
@@ -49,8 +47,7 @@ export class AppComponent implements OnInit {
 
         } else {
           console.log('Logged Out');
-          this.logoutDisabled = true;
-          this.menuVisible = false;
+          
           this.router.navigateByUrl('/login');
 
           this.rxStompService.deactivate();
@@ -61,33 +58,5 @@ export class AppComponent implements OnInit {
 
   logout() {
     this.authService.logout();
-  }
-
-  users(){
-    this.router.navigateByUrl('/users');
-  }
-
-  pupils(){
-    this.router.navigateByUrl('/pupils');
-  }
-
-  notifications(){
-    this.router.navigateByUrl('/notifications');
-  }
-
-  attendances(){
-    this.router.navigateByUrl('/attendance');
-  }
-
-  availabilities(){
-    this.router.navigateByUrl('/availability');
-  }
-
-  reservations(){
-    this.router.navigateByUrl('/reservation');
-  }
-
-  rides(){
-    this.router.navigateByUrl('/rides');
   }
 }
