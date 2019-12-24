@@ -7,7 +7,6 @@ import { AuthenticationService } from '../authentication.service';
 import {MatDialog, MatDialogRef, MatDialogConfig} from '@angular/material/dialog';
 import {MAT_DIALOG_DATA} from '@angular/material/dialog';
 import { RxStompService } from '@stomp/ng2-stompjs';
-import { map, concatAll } from 'rxjs/operators';
 
 @Component({
   selector: 'app-notification',
@@ -38,16 +37,10 @@ export class NotificationComponent implements OnInit {
   ngOnInit() {
     this.updateNotifications();
     if(this.notificationsSub == undefined){
-      let path = '/users/'+ this.authenticationService.getUsername() + '/notifications';
-      this.notificationsSub = this.rxStompService.watch("/topic" + path).pipe(
-        map(() => this.updateNotifications()),
-        concatAll()
-      ).subscribe(
+      let path = '/user/topic/notifications';
+      this.notificationsSub = this.rxStompService.watch(path).subscribe(
         (res) => {
-          this.notifications = res;
-        },
-        (error) => {
-          this.handleError(error)
+          this.updateNotifications()
         }
       );
     }

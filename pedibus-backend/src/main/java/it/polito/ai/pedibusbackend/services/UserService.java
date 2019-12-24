@@ -659,7 +659,7 @@ public class UserService implements InitializingBean, UserDetailsService {
         User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
 
         if(page.isPresent() && size.isPresent()){
-            requestedNotifications = notificationRepository.findByUser(user, PageRequest.of(page.get(), size.get(), Sort.by("timestamp"))).getContent()
+            requestedNotifications = notificationRepository.findByUser(user, PageRequest.of(page.get(), size.get(), Sort.by(Sort.Direction.DESC, "timestamp"))).getContent()
                     .stream()
                     .collect(Collectors.toList());
         }else if(!page.isPresent() && !size.isPresent()){

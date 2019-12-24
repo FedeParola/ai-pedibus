@@ -132,7 +132,7 @@ public class LineService implements InitializingBean {
             }
         }
         else{
-            for (Ride ride: rideRepository.getByLine(line)) {
+            for (Ride ride: rideRepository.getByLineOrderByDateAscDirectionAsc(line)) {
                 rideDTO = new RideDTO();
                 rideDTO.setId(ride.getId());
                 rideDTO.setDate(ride.getDate());
