@@ -1,13 +1,11 @@
 import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import { UsersService } from '../users.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { AuthenticationService } from '../authentication.service';
-import {MatDialog, MatDialogRef, MatDialogConfig} from '@angular/material/dialog';
-import {MAT_DIALOG_DATA} from '@angular/material/dialog';
+import { MatDialog, MatDialogRef, MatDialogConfig } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogPupilComponent } from './dialog-pupil/dialog-pupil.component';
-import { RxStompService } from '@stomp/ng2-stompjs';
 
 @Component({
   selector: 'app-pupils',
@@ -25,11 +23,8 @@ export class PupilsComponent implements OnInit, OnDestroy {
 
   constructor(private usersService: UsersService,
               private authService: AuthenticationService,
-              private router: Router,
               public dialog: MatDialog,
-              private rxStompService: RxStompService,
-              private _snackBar: MatSnackBar,
-              private authenticationService: AuthenticationService) { 
+              private _snackBar: MatSnackBar) { 
                 this.pageNumber = 0;
                 this.pageSize = 6;
                 this.noPupils = false;
@@ -171,7 +166,7 @@ export class PupilsComponent implements OnInit, OnDestroy {
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {
       /* Not authenticated or auth expired */
-      this.authenticationService.logout();
+      this.authService.logout();
     
     } else {
       /* All other errors*/

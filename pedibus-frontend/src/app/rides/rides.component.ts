@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { RidesService } from '../rides.service';
 import { AuthenticationService } from '../authentication.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { LineService } from '../line.service';
 import * as moment from 'moment';
@@ -27,7 +26,6 @@ export class RidesComponent implements OnInit {
   constructor(private rideService: RidesService,
               private authenticationService: AuthenticationService,
               private lineService: LineService,
-              private router: Router,
               private _snackBar: MatSnackBar,
               private appComponent: AppComponent) {
                 this.appComponent.selectedView="Rides";

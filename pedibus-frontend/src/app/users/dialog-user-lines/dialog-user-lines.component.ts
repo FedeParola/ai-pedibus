@@ -1,8 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { UsersService } from '../../users.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { AuthenticationService } from '../../authentication.service';
 
@@ -26,10 +25,8 @@ export class DialogUserLinesComponent implements OnInit {
 
   constructor(private authService: AuthenticationService,
               private usersService: UsersService,
-              private router: Router,
               private _snackBar: MatSnackBar,
               public dialogRef: MatDialogRef<DialogUserLinesComponent>,
-              private authenticationService: AuthenticationService,
               @Inject(MAT_DIALOG_DATA) data) {
       this.selectedUsername = data.username;
       this.selectedUserLines = data.userLines;
@@ -99,7 +96,7 @@ export class DialogUserLinesComponent implements OnInit {
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {
       /* Not authenticated or auth expired */
-      this.authenticationService.logout();
+      this.authService.logout();
     
     } else {
       /* All other errors*/

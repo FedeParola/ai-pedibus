@@ -1,6 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
 import { MatSnackBar, MatDialog } from '@angular/material';
 import * as moment from 'moment';
 
@@ -39,7 +38,6 @@ export class AttendanceComponent implements OnInit, OnDestroy {
   constructor(private attendanceService: AttendanceService,
               private authenticationService: AuthenticationService,
               private lineService: LineService,
-              private router: Router,
               private _snackBar: MatSnackBar,
               private dialog: MatDialog,
               private appComponent: AppComponent) {

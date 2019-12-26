@@ -3,7 +3,6 @@ import { ReservationService } from '../reservation.service';
 import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
 import { UsersService } from '../users.service';
-import { Router } from '@angular/router';
 import { MatSnackBar, MatDialog } from '@angular/material';
 import { HttpErrorResponse } from '@angular/common/http';
 import * as moment from 'moment';
@@ -33,7 +32,6 @@ export class ReservationComponent implements OnInit, OnDestroy {
               private authenticationService: AuthenticationService,
               private lineService: LineService,
               private usersService: UsersService,
-              private router: Router,
               private _snackBar: MatSnackBar,
               private dialog: MatDialog,
               private appComponent: AppComponent) { 

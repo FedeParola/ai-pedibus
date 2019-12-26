@@ -1,14 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import {MatDialog, MatDialogRef, MatDialogConfig} from '@angular/material/dialog';
+import { MatDialog, MatDialogRef, MatDialogConfig } from '@angular/material/dialog';
 import { DialogUserLinesComponent } from './dialog-user-lines/dialog-user-lines.component';
 import { UsersService } from '../users.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { FormGroup, FormBuilder, Validators} from '@angular/forms';
 import { AuthenticationService } from '../authentication.service';
-import { RxStompService } from '@stomp/ng2-stompjs';
-import { Message } from '@stomp/stompjs';
 
 @Component({
   selector: 'app-users',
@@ -26,10 +23,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   constructor(private usersService: UsersService,
               private authService: AuthenticationService,
               public dialog: MatDialog,
-              private router: Router,
-              private _snackBar: MatSnackBar,
-              private rxStompService: RxStompService,
-              private authenticationService: AuthenticationService) { 
+              private _snackBar: MatSnackBar) { 
                 this.pageNumber = 0;
                 this.pageSize = 6;
               }
@@ -156,7 +150,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   private handleError(error: HttpErrorResponse) {
     if (!(error.error instanceof ErrorEvent) && error.status == 401) {
       /* Not authenticated or auth expired */
-      this.authenticationService.logout();
+      this.authService.logout();
     
     } else {
       /* All other errors*/

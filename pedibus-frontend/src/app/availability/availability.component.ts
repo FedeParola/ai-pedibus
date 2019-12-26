@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AvailabilityService } from '../availability.service';
 import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
-import { Router } from '@angular/router';
 import { MatSnackBar, MatDialog } from '@angular/material';
 import { HttpErrorResponse } from '@angular/common/http';
 import * as moment from 'moment';
@@ -29,7 +28,6 @@ export class AvailabilityComponent implements OnInit, OnDestroy {
   constructor(private availabilityService: AvailabilityService,
               private authenticationService: AuthenticationService,
               private lineService: LineService,
-              private router: Router,
               private _snackBar: MatSnackBar,
               private dialog: MatDialog,
               private appComponent: AppComponent) {
