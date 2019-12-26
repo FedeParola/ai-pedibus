@@ -12,7 +12,7 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthenticationService {
-  private loggedIn$;
+  private loggedIn$: BehaviorSubject<boolean>;
 
   constructor(private http: HttpClient,
               private rxStompService: RxStompService) {

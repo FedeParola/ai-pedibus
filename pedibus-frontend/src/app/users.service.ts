@@ -96,16 +96,4 @@ export class UsersService {
   updateUserPupil(name:string, lineId, pupilId){
       return this.http.put(environment.apiUrl+'/pupils/'+pupilId, {name, lineId});
   }
-
-  getUserNotifications(page: number, size: number){
-    return this.http.get(environment.apiUrl+'/users/'+this.authenticationService.getUsername()+'/notifications?page='+page+'&size='+size);
-  }
-
-  removeUserNotification(notificationId){
-    return this.http.delete(environment.apiUrl+'/notifications/'+notificationId);
-  }
-
-  updateUserNotification(notificationId, read: boolean){
-    return this.http.put(environment.apiUrl+'/notifications/'+notificationId, {read});
-  }
 }

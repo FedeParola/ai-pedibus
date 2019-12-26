@@ -4,6 +4,9 @@ import { AuthenticationService } from './authentication.service';
 import { RxStompService } from '@stomp/ng2-stompjs';
 import { Message } from '@stomp/stompjs';
 
+import { NotificationService } from './notification.service';
+
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -18,12 +21,13 @@ export class AppComponent implements OnInit {
 
   constructor(private authService: AuthenticationService,
               private router: Router,
-              private rxStompService: RxStompService) {}
+              private rxStompService: RxStompService,
+              private notificationService: NotificationService) {}
 
   ngOnInit() {
-    this.rxStompService.watch('/user/topic/notifications').subscribe(
-      (message: Message) => {
-        this.pendingNotifications = +message.body;
+    this.notificationService.getNotificationsUpdate$().subscribe(
+      (pendingNotifications: number) => {
+        this.pendingNotifications = pendingNotifications;
       }
     );
     

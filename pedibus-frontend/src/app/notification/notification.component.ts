@@ -1,11 +1,12 @@
 import { Component, OnInit, Inject  } from '@angular/core';
-import { UsersService } from '../users.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material';
 import { AuthenticationService } from '../authentication.service';
-import {MatDialog, MatDialogRef, MatDialogConfig} from '@angular/material/dialog';
-import {MAT_DIALOG_DATA} from '@angular/material/dialog';
-import { RxStompService } from '@stomp/ng2-stompjs';
+import { MatDialog, MatDialogRef, MatDialogConfig } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog'
+
+import { NotificationService } from '../notification.service';
+
 
 @Component({
   selector: 'app-notification',
@@ -21,11 +22,10 @@ export class NotificationComponent implements OnInit {
   noNotifications;
   notificationsSub = undefined;
 
-  constructor(private usersService: UsersService,
+  constructor(private notificationService: NotificationService,
               private authService: AuthenticationService,
               public dialog: MatDialog,
-              private _snackBar: MatSnackBar,
-              private rxStompService: RxStompService) { 
+              private _snackBar: MatSnackBar) { 
                 this.pageNumber = 0;
                 this.pageSize = 6;
                 this.noNotifications = false;
@@ -33,9 +33,8 @@ export class NotificationComponent implements OnInit {
 
   ngOnInit() {
     this.updateNotifications();
-    if(this.notificationsSub == undefined){
-      let path = '/user/topic/notifications';
-      this.notificationsSub = this.rxStompService.watch(path).subscribe(
+    if(this.notificationsSub == undefined) {
+      this.notificationsSub = this.notificationService.getNotificationsUpdate$().subscribe(
         (res) => {
           this.updateNotifications()
         }
@@ -48,57 +47,69 @@ export class NotificationComponent implements OnInit {
   }
 
   updateNotifications(){
-    this.usersService.getUserNotifications(this.pageNumber, this.pageSize).subscribe((res) => {
-      this.notifications = res;
-      if(this.notifications.length==0){
-        this.noNotifications = true;
+    this.notificationService.getNotifications(this.authService.getUsername(),
+                                              this.pageNumber,
+                                              this.pageSize).subscribe(
+      (res) => {
+        this.notifications = res;
+        if(this.notifications.length==0){
+          this.noNotifications = true;
+        }
+        if(this.pageNumber == 0){
+          this.prevEnabled = false;
+        }
+        if(this.notifications[this.notifications.length - 1].hasNext){
+          this.nextEnabled = true;
+        }else{
+          this.nextEnabled = false;
+        }
+      },
+      (error) => {
+        this.handleError(error)
       }
-      if(this.pageNumber == 0){
-        this.prevEnabled = false;
-      }
-      if(this.notifications[this.notifications.length - 1].hasNext){
-        this.nextEnabled = true;
-      }else{
-        this.nextEnabled = false;
-      }
-    },
-    (error) => {
-      this.handleError(error)
-    });
+    );
   }
 
   nextPage(){
     this.pageNumber++;
-    this.usersService.getUserNotifications(this.pageNumber, this.pageSize).subscribe((res) => {
-      this.notifications = res;
-      this.prevEnabled = true;
-      if(this.notifications[this.notifications.length - 1].hasNext){
-        this.nextEnabled = true;
-      }else{
-        this.nextEnabled = false;
+    this.notificationService.getNotifications(this.authService.getUsername(),
+                                              this.pageNumber,
+                                              this.pageSize).subscribe(
+      (res) => {
+        this.notifications = res;
+        this.prevEnabled = true;
+        if(this.notifications[this.notifications.length - 1].hasNext){
+          this.nextEnabled = true;
+        }else{
+          this.nextEnabled = false;
+        }
+      },
+      (error) => {
+        this.handleError(error)
       }
-    },
-    (error) => {
-      this.handleError(error)
-    });
+    );
   }
 
   prevPage(){
     this.pageNumber--;
-    this.usersService.getUserNotifications(this.pageNumber, this.pageSize).subscribe((res) => {
-      this.notifications = res;
-      if(this.pageNumber == 0){
-        this.prevEnabled = false;
+    this.notificationService.getNotifications(this.authService.getUsername(),
+                                              this.pageNumber,
+                                              this.pageSize).subscribe(
+      (res) => {
+        this.notifications = res;
+        if(this.pageNumber == 0){
+          this.prevEnabled = false;
+        }
+        this.nextEnabled = true;
+      },
+      (error) => {
+        this.handleError(error)
       }
-      this.nextEnabled = true;
-    },
-    (error) => {
-      this.handleError(error)
-    });
+    );
   }
 
   removeNotification(notification){
-    this.usersService.removeUserNotification(notification.id).subscribe((res) => {
+    this.notificationService.removeNotification(notification.id).subscribe((res) => {
       //dovrebbe funzionare con questo al posto della remove
       const index = this.notifications.indexOf(notification, 0);
       if (index > -1) {
@@ -137,7 +148,7 @@ export class NotificationComponent implements OnInit {
     const dialogRef = this.dialog.open(DialogShowNotificationComponent, dialogConfig);
 
     dialogRef.afterClosed().subscribe(result => {
-      this.usersService.updateUserNotification(notification.id, true)
+      this.notificationService.updateNotification(notification.id, true)
       .subscribe(
         () => {
           notification.read = true;
