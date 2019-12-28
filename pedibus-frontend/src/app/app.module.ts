@@ -29,7 +29,6 @@ import { AppComponent } from './app.component';
 import { AttendanceComponent } from './attendance/attendance.component';
 import { StopDialogComponent } from './attendance/stop-dialog/stop-dialog.component';
 import { LoginComponent } from './login/login.component';
-import { RegisterComponent } from './register/register.component';
 import { AttendanceService } from './attendance.service';
 import { AuthenticationService } from './authentication.service';
 import { AuthInterceptor } from './auth-interceptor';
@@ -57,7 +56,6 @@ import { myRxStompServiceFactory } from './my-rx-stomp-service-factory';
     AttendanceComponent,
     StopDialogComponent,
     LoginComponent,
-    RegisterComponent,
     UsersComponent,
     SimpleRideSelectorComponent,
     RideSelectorComponent,
