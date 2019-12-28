@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatSnackBar, MatDialog } from '@angular/material';
 import * as moment from 'moment';
@@ -8,6 +7,7 @@ import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
 import { StopDialogComponent } from './stop-dialog/stop-dialog.component';
 import { AppComponent } from '../app.component';
+import { handleError } from '../utils';
 
 
 @Component({
@@ -53,7 +53,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -110,7 +110,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         this.stops = res;
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
 
@@ -125,7 +125,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         }
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
 
@@ -169,7 +169,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         }
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -196,7 +196,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         }
       },
       (error) => {
-        this.handleError(error);
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -244,7 +244,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
           data.type = 'both';
         },
         (error) => {
-          this.handleError(error);
+          handleError(error, this._snackBar);
         }
       );
 
@@ -266,7 +266,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
           }
         },
         (error) => {
-          this.handleError(error);
+          handleError(error, this._snackBar);
         }
       );
 
@@ -313,7 +313,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
             this.computeMissingPupils();
           },
           (error) => {
-            this.handleError(error);
+            handleError(error, this._snackBar);
           }
         );
       }
@@ -444,16 +444,4 @@ export class AttendanceComponent implements OnInit, OnDestroy {
 
     return csvContent;
   }
-
-  private handleError(error: HttpErrorResponse) {
-    if (!(error.error instanceof ErrorEvent) && error.status == 401) {
-      // Not authenticated or auth expired
-      this.authenticationService.logout();
-    
-    } else {
-      // All other errors
-      console.error("Error contacting server");
-      this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
-    }
-  };
 }

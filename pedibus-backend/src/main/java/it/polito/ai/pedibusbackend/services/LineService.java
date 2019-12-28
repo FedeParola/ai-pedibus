@@ -73,7 +73,7 @@ public class LineService implements InitializingBean {
         /* Get requested line */
         Line line = lineRepository.getById(lineId);
         if(line == null) {
-            throw new NotFoundException("Line " + lineId + " not found");
+            throw new NotFoundException("Line not found");
         }
 
         LineDTO lineDTO = new LineDTO();
@@ -112,7 +112,7 @@ public class LineService implements InitializingBean {
 
         Line line = lineRepository.getById(lineId);
         if(line == null) {
-            throw new NotFoundException("Line " + lineId + " not found");
+            throw new NotFoundException("Line not found");
         }
 
         if(direction != null){
@@ -153,7 +153,7 @@ public class LineService implements InitializingBean {
         /* Get requested line */
         Line line = lineRepository.getById(lineId);
         if(line == null) {
-            throw new NotFoundException("Line " + lineId + " not found");
+            throw new NotFoundException("Line not found");
         }
 
         for (Pupil p: line.getPupils()) {

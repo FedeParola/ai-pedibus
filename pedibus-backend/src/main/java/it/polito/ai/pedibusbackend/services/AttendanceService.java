@@ -45,17 +45,17 @@ public class AttendanceService {
         //Check existence of the referenced entities
         Ride ride = rideRepository.findById(attendanceDTO.getRideId()).orElse(null);
         if(ride == null) {
-            throw new BadRequestException("Unknown ride with id " + attendanceDTO.getRideId());
+            throw new BadRequestException("Unknown ride");
         }
 
         Pupil pupil = pupilRepository.findById(attendanceDTO.getPupilId()).orElse(null);
         if(pupil == null) {
-            throw new BadRequestException("Unknown pupil with id " + attendanceDTO.getPupilId());
+            throw new BadRequestException("Unknown pupil");
         }
 
         Stop stop = stopRepository.findById(attendanceDTO.getStopId()).orElse(null);
         if(stop == null) {
-            throw new BadRequestException("Unknown stop with id " + attendanceDTO.getStopId());
+            throw new BadRequestException("Unknown stop");
         }
 
         //Check if the user can add the attendance (system admin or escort of that ride)
@@ -82,7 +82,7 @@ public class AttendanceService {
         Date now = new Date();
         now.setTime(now.getTime() - 30 * 60 * 1000);
         if(stopTime.compareTo(now) <  0){
-            throw new BadRequestException("TIME_EXCEEDED");
+            throw new BadRequestException("Time for the ride expired");
         }
 
         //Check if the stop belongs to the ride
@@ -131,7 +131,7 @@ public class AttendanceService {
 
         Attendance attendance = attendanceRepository.findById(attendanceId).orElse(null);
         if(attendance == null){
-            throw new NotFoundException("Attendance with id " + attendanceId + " not found");
+            throw new NotFoundException("Attendance not found");
         }
 
         //Check if current date and time is before than when the stop takes place (with 30 min tolerance)
@@ -139,7 +139,7 @@ public class AttendanceService {
         Date now = new Date();
         now.setTime(now.getTime() - 30 * 60 * 1000);
         if(stopTime.compareTo(now) <  0){
-            throw new BadRequestException("TIME_EXCEEDED");
+            throw new BadRequestException("Time for the ride expired");
         }
 
         //Check if the user can delete the attendance (system admin or escort of that ride)

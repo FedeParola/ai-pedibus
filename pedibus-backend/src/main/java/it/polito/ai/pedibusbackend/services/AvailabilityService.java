@@ -45,17 +45,17 @@ public class AvailabilityService {
         //Check existence of the referenced entities
         User user = userRepository.findById(availabilityDTO.getEmail()).orElse(null);
         if(user == null) {
-            throw new BadRequestException("Unknown user with id " + availabilityDTO.getEmail());
+            throw new BadRequestException("Unknown user");
         }
 
         Ride ride = rideRepository.findById(availabilityDTO.getRideId()).orElse(null);
         if(ride == null) {
-            throw new BadRequestException("Unknown ride with id " + availabilityDTO.getRideId());
+            throw new BadRequestException("Unknown ride");
         }
 
         Stop stop = stopRepository.findById(availabilityDTO.getStopId()).orElse(null);
         if(stop == null) {
-            throw new BadRequestException("Unknown stop with id " + availabilityDTO.getStopId());
+            throw new BadRequestException("Unknown stop");
         }
 
         //Check if the ride is already consolidated
@@ -67,8 +67,7 @@ public class AvailabilityService {
         if(!ride.getLine().getStops().stream()
                                      .filter((s) -> s.getId() == stop.getId())
                                      .findAny().isPresent()  ||  !stop.getDirection().equals(ride.getDirection())){
-            throw new BadRequestException("Stop '" + stop.getId() + "' doesn't belong to ride '" +
-            ride.getId() + "'");
+            throw new BadRequestException("The stop does not belong to the ride");
         }
 
         //Check if current date and time is before the deadline (18:00 of the previous day)
@@ -120,7 +119,7 @@ public class AvailabilityService {
 
         Availability availability = availabilityRepository.findById(availabilityId).orElse(null);
         if(availability == null) {
-            throw new NotFoundException("Availability with id " + availabilityId + " not found");
+            throw new NotFoundException("Availability not found");
         }
 
         //Check if the ride is already consolidated
@@ -149,15 +148,14 @@ public class AvailabilityService {
 
             Stop newStop = stopRepository.findById(newStopId).orElse(null);
             if(newStop == null){
-                throw new BadRequestException("Unknown stop with id " + newStopId);
+                throw new BadRequestException("Unknown stop");
             }
 
             //Check if the stop belongs to the ride
             if(!availability.getRide().getLine().getStops().stream()
                                                            .filter((s) -> s.getId() == newStop.getId())
                                                            .findAny().isPresent()  ||  !availability.getRide().getDirection().equals(newStop.getDirection())){
-                throw new BadRequestException("Stop '" + newStop.getId() + "' doesn't belong to ride '" +
-                                              availability.getRide().getId() + "'");
+                throw new BadRequestException("The stop does not belong to the ride");
             }
 
             //Check if the user can update the availability's stop (sys admin for anyone, or any user only for himself)
@@ -219,8 +217,8 @@ public class AvailabilityService {
                     Availability a = availabilityRepository.findByUserAndDateAndDirection(availability.getUser(),
                             availability.getRide().getDate(), availability.getRide().getDirection()).orElse(null);
                     if(a != null  &&  a.getStatus().equals("CONFIRMED")){
-                        throw new BadRequestException("The user has already confirmed his availability somewhere " +
-                                "the same day in the same direction");
+                        throw new BadRequestException("The user has already confirmed his availability for a ride " +
+                                "at the same time");
                     }
 
                     Ride ride = availability.getRide();
@@ -235,7 +233,7 @@ public class AvailabilityService {
                     throw new BadRequestException("This transition of status of the availability is not a valid one");
                 }
             } else {
-                throw new BadRequestException();
+                throw new BadRequestException("Invalid status");
             }
 
             availability.setStatus(newStatus);
@@ -262,7 +260,7 @@ public class AvailabilityService {
 
         Availability availability = availabilityRepository.findById(availabilityId).orElse(null);
         if(availability == null) {
-            throw new NotFoundException("Availability with id " + availabilityId + " not found");
+            throw new NotFoundException("Availability not found");
         }
 
         //Check if the user can delete the availability (user who provided it or sytem admin)

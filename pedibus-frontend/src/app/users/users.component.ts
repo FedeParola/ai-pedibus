@@ -1,11 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogRef, MatDialogConfig } from '@angular/material/dialog';
-import { DialogUserLinesComponent } from './dialog-user-lines/dialog-user-lines.component';
-import { UsersService } from '../users.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material';
 import { FormGroup, FormBuilder, Validators} from '@angular/forms';
+
+import { DialogUserLinesComponent } from './dialog-user-lines/dialog-user-lines.component';
+import { UsersService } from '../users.service';
 import { AuthenticationService } from '../authentication.service';
+import { handleError } from '../utils';
 
 @Component({
   selector: 'app-users',
@@ -39,7 +41,7 @@ export class UsersComponent implements OnInit, OnDestroy {
       }
     },
     (error) => {
-      this.handleError(error)
+      handleError(error, this._snackBar);
     });
   }
 
@@ -78,7 +80,7 @@ export class UsersComponent implements OnInit, OnDestroy {
       }
     },
     (error) => {
-      this.handleError(error)
+      handleError(error, this._snackBar);
     });
   }
 
@@ -93,7 +95,7 @@ export class UsersComponent implements OnInit, OnDestroy {
       this.nextEnabled = true;
     },
     (error) => {
-      this.handleError(error)
+      handleError(error, this._snackBar);
     });
   }
 
@@ -125,7 +127,7 @@ export class UsersComponent implements OnInit, OnDestroy {
         }
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       });
     });
   }
@@ -146,19 +148,6 @@ export class UsersComponent implements OnInit, OnDestroy {
       console.log('The dialog was closed');
     });
   }
-
-  private handleError(error: HttpErrorResponse) {
-    if (!(error.error instanceof ErrorEvent) && error.status == 401) {
-      /* Not authenticated or auth expired */
-      this.authService.logout();
-    
-    } else {
-      /* All other errors*/
-      console.error("Error contacting server");
-      this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
-    }
-  };
-
 }
 
 @Component({

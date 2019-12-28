@@ -69,7 +69,8 @@ public class UserService implements InitializingBean, UserDetailsService {
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void register(String uuid, RegistrationDTO registrationDTO) throws NotFoundException {
-        RegistrationToken token = registrationTokenRepository.findByUuid(uuid).orElseThrow(NotFoundException::new);
+        RegistrationToken token = registrationTokenRepository.findByUuid(uuid).orElseThrow(
+                () -> new NotFoundException("Registration token not found"));
 
         User user = token.getUser();
 
@@ -78,7 +79,7 @@ public class UserService implements InitializingBean, UserDetailsService {
             registrationTokenRepository.delete(token);
             userRepository.delete(user);
 
-            throw new NotFoundException();
+            throw new NotFoundException("Registration time expired");
         }
 
         /* Save data and enable the user */
@@ -119,7 +120,7 @@ public class UserService implements InitializingBean, UserDetailsService {
 
         if (token.isExpired()) {
             recoverTokenRepository.delete(token);
-            throw new NotFoundException("Recover token with UUID " + UUID + " has expired!");
+            throw new NotFoundException("Password recovery time expired");
 
         } else {
             User user = token.getUser();
@@ -142,7 +143,7 @@ public class UserService implements InitializingBean, UserDetailsService {
                     .stream(userRepository.findAll().spliterator(), false)
                     .collect(Collectors.toList());
         }else{
-            throw new BadRequestException();
+            throw new BadRequestException("Invalid request parameters");
         }
 
         for (User u : requestedUsers) {
@@ -230,7 +231,7 @@ public class UserService implements InitializingBean, UserDetailsService {
 
         //if we are only checking if the user exists
         if(check.isPresent() && check.get().equals(true)){
-            user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+            user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
             userDTO.setEmail(user.getEmail());
             return userDTO;
         }
@@ -238,10 +239,10 @@ public class UserService implements InitializingBean, UserDetailsService {
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(userId) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
 
-        user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         /* Build result structure */
         userDTO.setName(user.getName());
@@ -256,10 +257,10 @@ public class UserService implements InitializingBean, UserDetailsService {
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(userId) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
 
-        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         /* Update only received fields */
         if (userUpdate.getName() != null) {
@@ -278,12 +279,12 @@ public class UserService implements InitializingBean, UserDetailsService {
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(userId) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
 
         /* Retrieve user and line entities */
-        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
-        Line line = lineRepository.findById(lineId).orElseThrow(BadRequestException::new);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Line line = lineRepository.findById(lineId).orElseThrow(() -> new BadRequestException("Unknown line"));
 
         /* Retrieve availabilities according to query params */
         Iterable<Availability> availabilities;
@@ -312,7 +313,7 @@ public class UserService implements InitializingBean, UserDetailsService {
     }
 
     public List<LineDTO> getAdminLines(String userId) throws NotFoundException {
-        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         List<LineDTO> lines = new ArrayList<>();
         LineDTO lineDTO;
 
@@ -331,7 +332,7 @@ public class UserService implements InitializingBean, UserDetailsService {
     public void addAdminLines(String userId, Set<Long> lineIds, String loggedUserId)
             throws BadRequestException, NotFoundException, ForbiddenException {
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
-        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         if (lineIds.size() == 0) {
             return;
@@ -343,7 +344,7 @@ public class UserService implements InitializingBean, UserDetailsService {
         List<Line> lines = new ArrayList<>();
         for (Long lineId : lineIds) {
             if (!currentLinesIds.contains(lineId)) {
-                lines.add(lineRepository.findById(lineId).orElseThrow(BadRequestException::new));
+                lines.add(lineRepository.findById(lineId).orElseThrow(() -> new BadRequestException("Unknown line")));
             }
         }
 
@@ -364,13 +365,13 @@ public class UserService implements InitializingBean, UserDetailsService {
     public void removeAdminLine(String userId, Long lineId, String loggedUserId)
             throws BadRequestException, NotFoundException, ForbiddenException {
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
-        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
-        Line line = lineRepository.findById(lineId).orElseThrow(NotFoundException::new);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Line line = lineRepository.findById(lineId).orElseThrow(() -> new NotFoundException("Line not found"));
 
         AuthorizationManager.authorizeLineAccess(loggedUser, lineId);
 
         if (!user.getLines().removeIf(l -> l.getId().equals(lineId))) {
-            throw new NotFoundException();
+            throw new NotFoundException("Line not found");
         }
 
         if(user.getLines().size() == 0) {
@@ -387,10 +388,10 @@ public class UserService implements InitializingBean, UserDetailsService {
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(userId) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
         /* Retrieve user */
-        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         List<PupilDTO> pupils = new ArrayList<>();
         List<Pupil> requestedPupils = new ArrayList<>();
 
@@ -401,7 +402,7 @@ public class UserService implements InitializingBean, UserDetailsService {
         }else if(!page.isPresent() && !size.isPresent()){
             requestedPupils = user.getPupils();
         }else{
-            throw new BadRequestException();
+            throw new BadRequestException("Invalid request parameters");
         }
 
         for (Pupil p : requestedPupils) {
@@ -431,12 +432,12 @@ public class UserService implements InitializingBean, UserDetailsService {
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(userId) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
 
         /* Retrieve user and line entities */
-        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
-        Line line = lineRepository.findById(lineId).orElseThrow(BadRequestException::new);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Line line = lineRepository.findById(lineId).orElseThrow(() -> new BadRequestException("Unknown line"));
 
         /* Retrieve rides */
         Iterable<Ride> rides = rideRepository.getByEscortAndLine(user, line);
@@ -653,10 +654,10 @@ public class UserService implements InitializingBean, UserDetailsService {
         /* Authorize access */
         User loggedUser = userRepository.findById(name).orElseThrow(BadRequestException::new);
         if (!(name.equals(userId) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
 
-        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         if(page.isPresent() && size.isPresent()){
             requestedNotifications = notificationRepository.findByUser(user, PageRequest.of(page.get(), size.get(), Sort.by(Sort.Direction.DESC, "timestamp"))).getContent()
@@ -665,7 +666,7 @@ public class UserService implements InitializingBean, UserDetailsService {
         }else if(!page.isPresent() && !size.isPresent()){
             requestedNotifications = user.getNotifications();
         }else{
-            throw new BadRequestException();
+            throw new BadRequestException("Invalid request parameters");
         }
 
         for (Notification n : requestedNotifications) {

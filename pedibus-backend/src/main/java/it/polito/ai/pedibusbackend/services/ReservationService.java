@@ -49,17 +49,17 @@ public class ReservationService implements InitializingBean {
         //Check existence of the referenced entities
         Ride ride = rideRepository.findById(reservationDTO.getRideId()).orElse(null);
         if(ride == null) {
-            throw new BadRequestException("Unknown ride with id " + reservationDTO.getRideId());
+            throw new BadRequestException("Unknown ride");
         }
 
         Pupil pupil = pupilRepository.findById(reservationDTO.getPupilId()).orElse(null);
         if(pupil == null) {
-            throw new BadRequestException("Unknown pupil with id " + reservationDTO.getPupilId());
+            throw new BadRequestException("Unknown pupil");
         }
 
         Stop stop = stopRepository.findById(reservationDTO.getStopId()).orElse(null);
         if(stop == null) {
-            throw new BadRequestException("Unknown stop with id " + reservationDTO.getStopId());
+            throw new BadRequestException("Unknown stop");
         }
 
         //Check if the logged user is the system admin
@@ -87,7 +87,7 @@ public class ReservationService implements InitializingBean {
         Reservation r = reservationRepository.findByPupilAndDateAndDirection(pupil, ride.getDate(),
                 ride.getDirection()).orElse(null);
         if(r != null){
-            throw new BadRequestException("The pupil was already reserved that day in the same direction");
+            throw new BadRequestException("The pupil is already reserved on another ride at the same time");
         }
 
         //Create the reservation and add it to the repository
@@ -117,7 +117,7 @@ public class ReservationService implements InitializingBean {
 
         Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
         if(reservation == null) {
-            throw new NotFoundException("Reservation with id " + reservationId + " not found");
+            throw new NotFoundException("Reservation not found");
         }
 
         //Check if the user can update the reservation (user who made it or system admin)
@@ -131,7 +131,7 @@ public class ReservationService implements InitializingBean {
         //Check stop existence
         Stop stop = stopRepository.findById(newStopId).orElse(null);
         if(stop == null) {
-            throw new BadRequestException("Unknown stop with id " + newStopId);
+            throw new BadRequestException("Unknown stop");
         }
 
         //Check that the new stop belongs to the same ride
@@ -165,7 +165,7 @@ public class ReservationService implements InitializingBean {
 
         Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
         if(reservation == null) {
-            throw new NotFoundException("Reservation with id " + reservationId + " not found");
+            throw new NotFoundException("Reservation not found");
         }
 
         //Check if the user can delete the reservation (user who made it or system admin)

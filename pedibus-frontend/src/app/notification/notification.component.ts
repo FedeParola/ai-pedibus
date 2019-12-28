@@ -1,11 +1,11 @@
 import { Component, OnInit, Inject  } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material';
-import { AuthenticationService } from '../authentication.service';
 import { MatDialog, MatDialogRef, MatDialogConfig } from '@angular/material/dialog';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog'
 
+import { AuthenticationService } from '../authentication.service';
 import { NotificationService } from '../notification.service';
+import { handleError } from '../utils';
 
 
 @Component({
@@ -65,7 +65,7 @@ export class NotificationComponent implements OnInit {
         }
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -85,7 +85,7 @@ export class NotificationComponent implements OnInit {
         }
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -103,7 +103,7 @@ export class NotificationComponent implements OnInit {
         this.nextEnabled = true;
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -161,19 +161,6 @@ export class NotificationComponent implements OnInit {
       );
     });
   }
-
-  private handleError(error: HttpErrorResponse) {
-    if (!(error.error instanceof ErrorEvent) && error.status == 401) {
-      /* Not authenticated or auth expired */
-      this.authService.logout();
-    
-    } else {
-      /* All other errors*/
-      console.error("Error contacting server");
-      this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
-    }
-  };
-
 }
 
 

@@ -62,7 +62,7 @@ public class RideService implements InitializingBean {
         /* Retrieve the line from lineId */
         Line line = lineRepository.getById(newRideDTO.getLineId());
         if(line == null) {
-            throw new NotFoundException("Line with id " + newRideDTO.getLineId() + " not found");
+            throw new NotFoundException("Line not found");
         }
 
         /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */
@@ -113,7 +113,7 @@ public class RideService implements InitializingBean {
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
-            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+            throw new NotFoundException("Ride not found");
         }
 
         /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */
@@ -240,7 +240,7 @@ public class RideService implements InitializingBean {
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
-            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+            throw new NotFoundException("Ride not found");
         }
 
         if(ride.getConsolidated() == true){
@@ -288,7 +288,7 @@ public class RideService implements InitializingBean {
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
-            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+            throw new NotFoundException("Ride not found");
         }
 
         // Check if the user is SYSTEM-ADMIN or ADMIN of the line or conductor or the ride
@@ -327,7 +327,7 @@ public class RideService implements InitializingBean {
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
-            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+            throw new NotFoundException("Ride not found");
         }
 
         // Check if the user is SYSTEM-ADMIN or ADMIN of the line or conductor or the ride
@@ -365,7 +365,7 @@ public class RideService implements InitializingBean {
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
-            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+            throw new NotFoundException("Ride not found");
         }
 
         /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */

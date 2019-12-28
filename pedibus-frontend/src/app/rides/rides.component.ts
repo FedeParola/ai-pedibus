@@ -7,6 +7,8 @@ import { LineService } from '../line.service';
 import * as moment from 'moment';
 import { AppComponent } from '../app.component';
 
+import { handleError } from '../utils';
+
 @Component({
   selector: 'app-rides',
   templateUrl: './rides.component.html',
@@ -39,7 +41,7 @@ export class RidesComponent implements OnInit {
         this.loadLine();
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -54,7 +56,7 @@ export class RidesComponent implements OnInit {
         this.stops = res;
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
 
@@ -80,7 +82,7 @@ export class RidesComponent implements OnInit {
         }
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -95,7 +97,7 @@ export class RidesComponent implements OnInit {
         this.availabilities = res;
       },
       (error) => {
-        this.handleError(error);
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -155,7 +157,7 @@ export class RidesComponent implements OnInit {
         availability.status = newStatus;
       },
       (error) => {
-        this.handleError(error);
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -167,7 +169,7 @@ export class RidesComponent implements OnInit {
         this.loadRide(this.currentDirection);
       },
       (error) => {
-        this.handleError(error);
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -178,7 +180,7 @@ export class RidesComponent implements OnInit {
         this.loadRide(this.selectedRide.direction);
       },
       (error) => {
-        this.handleError(error);
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -189,20 +191,20 @@ export class RidesComponent implements OnInit {
         this.selectedRide = undefined;
       },
       (error) => {
-        this.handleError(error);
+        handleError(error, this._snackBar);
       }
     );
   }
 
-  private handleError(error: HttpErrorResponse) {
-    if (!(error.error instanceof ErrorEvent) && error.status == 401) {
-      // Not authenticated or auth expired
-      this.authenticationService.logout();
+  // private handleError(error: HttpErrorResponse) {
+  //   if (!(error.error instanceof ErrorEvent) && error.status == 401) {
+  //     // Not authenticated or auth expired
+  //     this.authenticationService.logout();
     
-    } else {
-      // All other errors
-      console.error("Error contacting server");
-      this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
-    }
-  };
+  //   } else {
+  //     // All other errors
+  //     console.error("Error contacting server");
+  //     this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
+  //   }
+  // };
 }

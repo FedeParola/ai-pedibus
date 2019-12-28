@@ -22,7 +22,7 @@ public class AuthorizationManager {
                     .collect(Collectors.toList())
                     .contains(ride.getLine().getId()))){
                 if(!availability.getStatus().equals("CONSOLIDATED")){
-                    throw new ForbiddenException();
+                    throw new ForbiddenException("The user is not allowed to do this action");
                 }
             }
         }
@@ -38,7 +38,7 @@ public class AuthorizationManager {
                     .map((l)-> l.getId())
                     .collect(Collectors.toList())
                     .contains(lineId))){
-                throw new ForbiddenException();
+                throw new ForbiddenException("The user is not allowed to do this action");
             }
         }
     }
@@ -49,7 +49,7 @@ public class AuthorizationManager {
                     .map((l)-> l.getId())
                     .collect(Collectors.toList())
                     .containsAll(lineIds))) {
-                throw new ForbiddenException();
+                throw new ForbiddenException("The user is not allowed to do this action");
             }
         }
     }

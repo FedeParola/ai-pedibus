@@ -1,13 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { MatSnackBar, MatDialog } from '@angular/material';
+import * as moment from 'moment';
+
+import { PupilsDialogComponent } from './pupils-dialog/pupils-dialog.component';
 import { ReservationService } from '../reservation.service';
 import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
 import { UsersService } from '../users.service';
-import { MatSnackBar, MatDialog } from '@angular/material';
-import { HttpErrorResponse } from '@angular/common/http';
-import * as moment from 'moment';
-import { PupilsDialogComponent } from './pupils-dialog/pupils-dialog.component';
 import { AppComponent } from '../app.component';
+import { handleError } from '../utils';
 
 @Component({
   selector: 'app-reservation',
@@ -60,7 +61,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
         
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
 
@@ -78,7 +79,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
         
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -118,7 +119,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
         this.stops = res;
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
 
@@ -157,7 +158,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
         }
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -195,7 +196,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
         this.reservations = res;
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
     
@@ -231,7 +232,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
             reservations.delete(this.selectedRide.id)
           },
           (error) => {
-            this.handleError(error);
+            handleError(error, this._snackBar);
           }
         );
 
@@ -242,7 +243,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
             r.stopId = stopId;
           },
           (error) => {
-            this.handleError(error);
+            handleError(error, this._snackBar);
           }
         );
 
@@ -264,7 +265,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
           reservations.set(this.selectedRide.id, r);
         },
         (error) => {
-          this.handleError(error);
+          handleError(error, this._snackBar);
         }
       );
     }
@@ -290,17 +291,5 @@ export class ReservationComponent implements OnInit, OnDestroy {
     }
     
     return cantUpdate;
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    if (!(error.error instanceof ErrorEvent) && error.status == 401) {
-      // Not authenticated or auth expired
-      this.authenticationService.logout();
-    
-    } else {
-      // All other errors
-      console.error("Error contacting server");
-      this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
-    }
   }
 }
