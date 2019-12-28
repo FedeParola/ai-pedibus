@@ -193,14 +193,15 @@ export class ReservationComponent implements OnInit, OnDestroy {
   }
 
   onStopClick(stopId: number) {
-    let r = this.reservations.get(this.selectedRide.id);
+    let reservations = this.reservations;
+    let r = this.selectedReservation;
 
     if (r) {
       if (stopId == r.stopId) {
         // Delete reservation
         this.reservationService.deleteReservation(r.id).subscribe(
           (res) => {
-            this.reservations.delete(this.selectedRide.id)
+            reservations.delete(this.selectedRide.id)
           },
           (error) => {
             this.handleError(error);
@@ -233,7 +234,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
             rideId: this.selectedRide.id,
             stopId: stopId
           }
-          this.reservations.set(this.selectedRide.id, r);
+          reservations.set(this.selectedRide.id, r);
         },
         (error) => {
           this.handleError(error);

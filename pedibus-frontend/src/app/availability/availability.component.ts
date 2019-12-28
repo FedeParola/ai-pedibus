@@ -152,7 +152,8 @@ export class AvailabilityComponent implements OnInit, OnDestroy {
   }
 
   onStopClick(stopId: number) {
-    let a = this.availabilities.get(this.selectedRide.id);
+    let availabilities = this.availabilities;
+    let a = this.selectedAvailability;
 
     if (a) {
       if (stopId == a.stopId) {
@@ -164,7 +165,7 @@ export class AvailabilityComponent implements OnInit, OnDestroy {
           if (conf) {
             this.availabilityService.deleteAvailability(a.id).subscribe(
               (res) => {
-                this.availabilities.delete(this.selectedRide.id)
+                availabilities.delete(this.selectedRide.id)
               },
               (error) => {
                 this.handleError(error);
@@ -199,7 +200,7 @@ export class AvailabilityComponent implements OnInit, OnDestroy {
             stopId: stopId,
             status: 'NEW'
           }
-          this.availabilities.set(this.selectedRide.id, a);
+          availabilities.set(this.selectedRide.id, a);
         },
         (error) => {
           this.handleError(error);
@@ -211,9 +212,10 @@ export class AvailabilityComponent implements OnInit, OnDestroy {
   }
 
   confirm() {
-    this.availabilityService.confirmAvailability(this.selectedAvailability.id).subscribe(
+    let a = this.selectedAvailability;
+    this.availabilityService.confirmAvailability(a.id).subscribe(
       (res) => {
-        this.selectedAvailability.status = 'CONFIRMED';
+        a.status = 'CONFIRMED';
       },
       (error) => {
         this.handleError(error);

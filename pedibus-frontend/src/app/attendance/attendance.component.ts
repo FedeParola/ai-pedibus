@@ -250,12 +250,13 @@ export class AttendanceComponent implements OnInit, OnDestroy {
 
     } else {
       // Both other types represent an attendance, delete it
+      let rideData = this.rideData;
       this.attendanceService.deleteAttendance(data.attendanceId).subscribe(
         () => {
           if (data.type == 'attendance') {
             // Just deleted an attendance without reservation, delete data an add pupil to missing
-            this.rideData.get(data.stopId).splice(i, 1);
-            this.missingPupils.push(data.pupil)
+            rideData.get(data.stopId).splice(i, 1);
+            this.computeMissingPupils();
           
           } else {
             // Just deleted an attendance with reservation, mark data as simple reservation
@@ -289,6 +290,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
       }
     });
 
+    let rideData = this.rideData;
     dialogRef.afterClosed().subscribe(stop => {
       if (stop) {
         this.attendanceService.createAttendance(pupil.id, this.selectedRide.id, stop.id).subscribe(
@@ -301,12 +303,14 @@ export class AttendanceComponent implements OnInit, OnDestroy {
               stopId: stop.id
             };
             if (!this.rideData.has(stop.id)) {
-              this.rideData.set(stop.id, []);
+              rideData.set(stop.id, []);
             }
-            this.rideData.get(stop.id).push(data);
+            let pupilsData = rideData.get(stop.id);
+            pupilsData.push(data);
+            pupilsData.sort((a, b) => a.pupil.name.localeCompare(b.pupil.name));
             
             // Remove the pupil from missing ones
-            this.missingPupils.splice(i, 1);
+            this.computeMissingPupils();
           },
           (error) => {
             this.handleError(error);
