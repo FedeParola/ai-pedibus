@@ -43,18 +43,20 @@ export class ReservationComponent implements OnInit, OnDestroy {
       (res) => {
         this.pupils = res;
 
-        if (this.selectedPupil) {
-          // Select the old pupil if still present
-          for (let p of this.pupils) {
-            if (p.id === this.selectedPupil.id) {
-              this.selectedPupil = p;
-              return;
+        if (this.pupils.length > 0) {
+          if (this.selectedPupil) {
+            // Select the old pupil if still present
+            for (let p of this.pupils) {
+              if (p.id === this.selectedPupil.id) {
+                this.selectedPupil = p;
+                return;
+              }
             }
           }
+          
+          this.selectedPupil = this.pupils[0];
+          this.loadPupil();
         }
-        
-        this.selectedPupil = this.pupils[0];
-        this.loadPupil();
         
       },
       (error) => {
@@ -65,8 +67,14 @@ export class ReservationComponent implements OnInit, OnDestroy {
     this.lineService.getLines().subscribe(
       (res) => {
         this.lines = res;
-        this.selectedLine = this.lines[0];
-        this.loadLine();
+        if (this.selectedPupil) {
+          let line = this.findLine(this.selectedPupil.lineId);
+          if (line) {
+            this.selectLine(line);
+          } else {
+            this.selectLine(this.lines[0]);
+          }
+        }
         
       },
       (error) => {
@@ -190,6 +198,25 @@ export class ReservationComponent implements OnInit, OnDestroy {
         this.handleError(error)
       }
     );
+    
+    if (this.lines) {
+      let line = this.findLine(this.selectedPupil.lineId);
+      if (line) {
+        this.selectLine(line);
+      } else {
+        this.selectLine(this.lines[0]);
+      }
+    }
+  }
+
+  findLine(lineId: number) {
+    for (let line of this.lines) {
+      if (line.id == lineId) {
+        return line;
+      }
+    }
+
+    return undefined;
   }
 
   onStopClick(stopId: number) {
