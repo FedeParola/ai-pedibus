@@ -7,7 +7,7 @@ import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
 import { AppComponent } from '../app.component';
 import { DeletionConfirmDialogComponent } from './deletion-confirm-dialog/deletion-confirm-dialog.component';
-import { handleError } from '../utils';
+import { handleError, findElement, findNextClosestRide } from '../utils';
 
 @Component({
   selector: 'app-availability',
@@ -100,23 +100,13 @@ export class AvailabilityComponent implements OnInit, OnDestroy {
           if (selRide) {
             // Check if current ride is present in the new list,
             // if it is stay on that ride
-            this.selectedRideIndex = this.findRide(selRide);
+            this.selectedRideIndex = findElement(selRide, this.rides);
           }
 
           // If prevoius current ride was removed or this is the first time displaying a ride
           // pick the closest ride with date >= current date
           if (this.selectedRideIndex == -1) {
-            let curDate = moment().format('YYYY-MM-DD');
-            let closestRide = this.rides.length-1;
-
-            while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
-              closestRide--;
-            }
-
-            if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
-              closestRide++;
-            }
-            this.selectedRideIndex = closestRide;
+            this.selectedRideIndex = findNextClosestRide(this.rides);
           }
         }
       },
@@ -139,16 +129,6 @@ export class AvailabilityComponent implements OnInit, OnDestroy {
         handleError(error, this._snackBar);
       }
     );
-  }
-
-  private findRide(ride): number {
-    for (let [i, r] of this.rides.entries()) {
-      if (ride.id == r.id) {
-        return i;
-      }
-    }
-
-    return -1;
   }
 
   onStopClick(stopId: number) {
