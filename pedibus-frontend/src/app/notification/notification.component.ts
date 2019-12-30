@@ -58,7 +58,7 @@ export class NotificationComponent implements OnInit {
         if(this.pageNumber == 0){
           this.prevEnabled = false;
         }
-        if(this.notifications[this.notifications.length - 1].hasNext){
+        if(this.notifications.length > 0 && this.notifications[this.notifications.length - 1].hasNext){
           this.nextEnabled = true;
         }else{
           this.nextEnabled = false;
@@ -135,19 +135,8 @@ export class NotificationComponent implements OnInit {
     });
   }
 
-  openDialogShowNotification(notification): void {
-    const dialogConfig = new MatDialogConfig();
-    dialogConfig.disableClose = true;
-    dialogConfig.autoFocus = true;
-    dialogConfig.width = '230px';
-
-    dialogConfig.data = {
-      notification: notification
-    };
-
-    const dialogRef = this.dialog.open(DialogShowNotificationComponent, dialogConfig);
-
-    dialogRef.afterClosed().subscribe(result => {
+  readNotification(notification){
+    if(!notification.read){
       this.notificationService.updateNotification(notification.id, true)
       .subscribe(
         () => {
@@ -159,28 +148,6 @@ export class NotificationComponent implements OnInit {
               { panelClass: 'error-snackbar', duration: 5000 });
         }
       );
-    });
+    }
   }
-}
-
-
-@Component({
-  selector: 'dialog-show-notification',
-  templateUrl: 'dialog-show-notification.component.html',
-})
-export class DialogShowNotificationComponent {
-  currentNotification;
-
-  constructor(
-    public dialogRef: MatDialogRef<DialogShowNotificationComponent>,
-    private authService: AuthenticationService,
-    private _snackBar: MatSnackBar, @Inject(MAT_DIALOG_DATA) data) {
-
-      this.currentNotification = data.notification;
-    }
-
-    onDoneClick(): void {
-      this.dialogRef.close();
-    }
-  
 }

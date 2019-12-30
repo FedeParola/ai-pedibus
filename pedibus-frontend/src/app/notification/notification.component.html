@@ -1,26 +1,29 @@
 <mat-card class="notifications-card">
-    <mat-card-title class="title">Comunications</mat-card-title>
+    <mat-card-title class="title">Notifications</mat-card-title>
     <mat-card-content class="card-content">
-        <mat-divider></mat-divider>
-        <mat-list>
-            <mat-list-item *ngIf="noNotifications">
-                <span class="spacer"></span> 
-                <p>There are no notifications</p>
-                <span class="spacer"></span> 
-            </mat-list-item>
-            <mat-list-item *ngFor="let notification of notifications">
-                <span class="spacer"></span> 
-                <p *ngIf="notification.read == false">{{notification.title}}</p>
-                <p *ngIf="notification.read == true" class="read">{{notification.title}}</p>
-                <span class="spacer"></span>
-                <p *ngIf="notification.read == false">{{notification.date | date:'dd/M/yy, H:mm'}}</p>
-                <p *ngIf="notification.read == true" class="read">{{notification.date | date:'dd/M/yy, H:mm'}}</p>
-                <span class="spacer"></span>
-                <button mat-raised-button class="show-button" (click)="openDialogShowNotification(notification)" color="primary">Show</button>
-                <button mat-raised-button class="remove-button" (click)="removeNotification(notification)" color="warn">Remove</button>
-                <mat-divider></mat-divider>
-            </mat-list-item>
-        </mat-list>
+        
+        <div *ngIf="noNotifications">
+            <span class="spacer"></span> 
+            <p>There are no new notifications</p>
+            <span class="spacer"></span> 
+        </div>
+
+        <mat-accordion>
+            <mat-expansion-panel *ngFor="let notification of notifications" hideToggle='true' (closed)=readNotification(notification)>
+                <mat-expansion-panel-header>
+                    <span class="spacer"></span> 
+                    <p *ngIf="notification.read == false">{{notification.title}}</p>
+                    <p *ngIf="notification.read == true" class="read">{{notification.title}}</p>
+                    <span class="spacer"></span>
+                    <p *ngIf="notification.read == false">{{notification.date | date:'dd/M/yy, H:mm'}}</p>
+                    <p *ngIf="notification.read == true" class="read">{{notification.date | date:'dd/M/yy, H:mm'}}</p>
+                    <span class="spacer"></span>
+                    <button mat-icon-button class="remove-button" (click)="removeNotification(notification)" color="warn"><mat-icon>close</mat-icon></button>
+                </mat-expansion-panel-header>
+                {{notification.message}}
+            </mat-expansion-panel>
+        </mat-accordion>   
+        
         <span class="nav-buttons">
             <button mat-icon-button (click)="prevPage()" [disabled]="!prevEnabled"><mat-icon>chevron_left</mat-icon></button>
             <button mat-icon-button (click)="nextPage()" [disabled]="!nextEnabled"><mat-icon>chevron_right</mat-icon></button>

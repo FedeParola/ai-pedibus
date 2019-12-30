@@ -21,6 +21,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 import { InjectableRxStompConfig, RxStompService } from '@stomp/ng2-stompjs';
 
@@ -44,7 +45,6 @@ import { PupilsComponent } from './pupils/pupils.component';
 import { DialogPupilComponent } from './pupils/dialog-pupil/dialog-pupil.component';
 import { RidesComponent } from './rides/rides.component';
 import { NotificationComponent } from './notification/notification.component';
-import { DialogShowNotificationComponent } from './notification/notification.component';
 import { DialogRemovePupilComponent } from './pupils/pupils.component';
 import { rxStompConfig } from './rx-stomp.config';
 import { myRxStompServiceFactory } from './my-rx-stomp-service-factory';
@@ -70,7 +70,6 @@ import { from } from 'rxjs';
     DialogPupilComponent,
     RidesComponent,
     NotificationComponent,
-    DialogShowNotificationComponent,
     DialogRemovePupilComponent
   ],
   imports: [
@@ -95,7 +94,8 @@ import { from } from 'rxjs';
     MatMenuModule,
     MatToolbarModule,
     MatDialogModule,
-    MatSelectModule
+    MatSelectModule,
+    MatExpansionModule
   ],
   providers: [
     AttendanceService,
@@ -123,7 +123,6 @@ import { from } from 'rxjs';
     DeletionConfirmDialogComponent,
     PupilsDialogComponent,
     DialogPupilComponent,
-    DialogShowNotificationComponent,
     DialogRemovePupilComponent
   ]
 })
