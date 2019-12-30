@@ -10,9 +10,9 @@
   </div>
 
   <div *ngIf="!nullRide && stops">
-    <h2 class="top-header" *ngIf="selectedRide.consolidated">RIDE CONSOLIDATED</h2>
+    <h2 class="top-header" *ngIf="selectedRide?.consolidated">RIDE CONSOLIDATED</h2>
     <mat-list>
-      <mat-list-item *ngFor="let stop of (selectedRide.direction == 'O' ? stops.outwardStops : stops.returnStops)"> 
+      <mat-list-item *ngFor="let stop of (selectedRide?.direction == 'O' ? stops.outwardStops : stops.returnStops)"> 
         <mat-icon matListIcon>fiber_manual_record</mat-icon>
         <h4 mat-line><span class="hour">{{stop.time}}</span> <strong>{{stop.name}}</strong></h4>
         <mat-chip-list mat-line>
@@ -26,15 +26,15 @@
     </mat-list>
 
     <div class="button-div">
-      <div matTooltip="" 
-      [matTooltipDisabled]="" style="display: inline;">
+      <div matTooltip="You can no longer consolidate this ride!" 
+      [matTooltipDisabled]="!cantChangeRideStatus()" style="display: inline;">
         <button mat-raised-button class="button" color="primary" 
-        *ngIf="!selectedRide.consolidated" (click)="changeRideStatus()">CONSOLIDATE RIDE</button>
+        *ngIf="!selectedRide.consolidated" [disabled]="cantChangeRideStatus()" (click)="changeRideStatus()">CONSOLIDATE RIDE</button>
       </div>
-      <div matTooltip="" 
-      [matTooltipDisabled]="" style="display: inline;">
+      <div matTooltip="You can no longer re-open this ride!" 
+      [matTooltipDisabled]="!cantChangeRideStatus()" style="display: inline;">
         <button mat-raised-button class="button" color="primary" 
-        *ngIf="selectedRide.consolidated" (click)="changeRideStatus()">RE-OPEN RIDE</button>
+        *ngIf="selectedRide.consolidated" [disabled]="cantChangeRideStatus()" (click)="changeRideStatus()">RE-OPEN RIDE</button>
       </div>
       <div matTooltip="You cannot delete a consolidated ride! Re-open it first" 
       [matTooltipDisabled]="!selectedRide.consolidated" style="display: inline;">
@@ -46,7 +46,7 @@
 
 </app-simple-ride-selector>
 
-<mat-card class="legend" *ngIf="!nullRide" >
+<mat-card class="legend mat-elevation-z3" *ngIf="!nullRide" >
   <mat-card-title class="legend-title">Legend</mat-card-title>
   <mat-card-content class="legend-content">
     <span><mat-icon class="new-icon brush">brush</mat-icon> = NEW</span>

@@ -196,4 +196,9 @@ export class RidesComponent implements OnInit {
       }
     );
   }
+
+  cantChangeRideStatus(){
+    let treshold = moment(this.selectedRide.date).subtract(1, 'days').add(18, 'hours');
+    return moment().isAfter(treshold);
+  }
 }
