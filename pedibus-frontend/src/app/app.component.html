@@ -1,41 +1,46 @@
 <mat-toolbar class="toolbar">
   <mat-toolbar-row>
-    <div></div>
+    <div>
+      <button class="menu-button" [matMenuTriggerFor]="menu" *ngIf="loggedIn">
+        <mat-icon class="menu-icon">menu</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu" class="toolbar-menu">
+        <button mat-menu-item [routerLink]="'/users'" *ngIf="!usersDisabled">
+          <mat-icon class="menu-icons">supervised_user_circle</mat-icon>
+          <span>Users</span>
+        </button>
+        <button mat-menu-item [routerLink]="'/pupils'">
+          <mat-icon class="menu-icons">child_care</mat-icon>
+          <span>Pupils</span>
+        </button>
+        <button mat-menu-item [routerLink]="'/attendance'">
+          <mat-icon class="menu-icons">how_to_reg</mat-icon>
+          <span>Attendances</span>
+        </button>
+        <button mat-menu-item [routerLink]="'/availability'">
+          <mat-icon class="menu-icons">event_available</mat-icon>
+          <span>Availabilities</span>
+        </button>
+        <button mat-menu-item [routerLink]="'/reservation'">
+          <mat-icon class="menu-icons">menu_book</mat-icon>
+          <span>Reservations</span>
+        </button>
+        <button mat-menu-item [routerLink]="'/rides'" *ngIf="!ridesDisabled">
+          <mat-icon class="menu-icons">directions_bus</mat-icon>
+          <span>Rides</span>
+        </button>
+      </mat-menu>
+    </div>
     <div class="title">PediBUS</div>
     <div class="toolbar-items">
+      <div class="username" *ngIf="loggedIn">{{loggedUser}}</div>
       <div class="notifications-alert" *ngIf="loggedIn" [routerLink]="'/notifications'">
         <mat-icon>notifications</mat-icon>
         <div class="pending-notifications-count" *ngIf="pendingNotifications">{{pendingNotifications}}</div>
       </div>
-      <button mat-raised-button *ngIf="loggedIn" (click)="logout()" color="warn">Logout</button>
+      <div class="logout-button"><button mat-raised-button *ngIf="loggedIn" (click)="logout()" color="warn">Logout</button></div>
     </div>
   </mat-toolbar-row>
 </mat-toolbar>
 
-<mat-list class="menu" *ngIf="loggedIn">
-  <mat-list-item>
-    <span class="spacer"></span>
-    <h3 mat-subheader>Menu</h3>
-    <span class="spacer"></span>
-  </mat-list-item>
-  <mat-list-item *ngIf="!usersDisabled">
-    <button mat-button [routerLink]="'/users'">Users</button>
-  </mat-list-item>
-  <mat-list-item>
-    <button mat-button [routerLink]="'/pupils'">Pupils</button>
-  </mat-list-item>
-  <mat-list-item>
-    <button mat-button [routerLink]="'/attendance'">Attendances</button>
-  </mat-list-item>
-  <mat-list-item>
-    <button mat-button [routerLink]="'/availability'">Availabilities</button>
-  </mat-list-item>
-  <mat-list-item>
-    <button mat-button [routerLink]="'/reservation'">Reservations</button>
-  </mat-list-item>
-  <mat-list-item *ngIf="!ridesDisabled">
-    <button mat-button [routerLink]="'/rides'">Rides</button>
-  </mat-list-item>
-</mat-list>
-
-<router-outlet></router-outlet>
+<router-outlet class="container"></router-outlet>

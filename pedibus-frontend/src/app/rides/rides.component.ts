@@ -13,13 +13,13 @@ import { AppComponent } from '../app.component';
   styleUrls: ['./rides.component.css']
 })
 export class RidesComponent implements OnInit {
-  currentDirection = null;
-  currentDate = null;
-  lines = null;
-  selectedLine = null;
-  stops = null;
-  selectedRide = null;
-  availabilities = null;
+  currentDate;
+  lines;
+  selectedLine;
+  stops;
+  selectedRide;
+  nullRide: boolean;
+  availabilities;
   currRideSub;
   availabilitiesSub;
 
@@ -64,10 +64,6 @@ export class RidesComponent implements OnInit {
   }
 
   loadRide(direction: string){
-    if(direction.localeCompare('O') === 0)
-      this.currentDirection = 'O';
-    else
-      this.currentDirection = 'R';
     let date = this.currentDate.getFullYear()+'-'+(this.currentDate.getMonth()+1)+'-'+this.currentDate.getDate();
     if (this.currRideSub) {
       this.currRideSub.unsubscribe();
@@ -76,8 +72,14 @@ export class RidesComponent implements OnInit {
       (res) => {
         this.selectedRide = res[0];
         if(this.selectedRide != undefined){
+          this.nullRide = false;
           this.loadRideAvailabilities();
-        }
+        } else {
+          this.nullRide = true;
+          this.selectedRide = {};
+          this.selectedRide.direction = direction;
+          this.selectedRide.date = date;
+        }  
       },
       (error) => {
         this.handleError(error)
@@ -106,21 +108,21 @@ export class RidesComponent implements OnInit {
   }
 
   nextRide() {
-    if(this.currentDirection.localeCompare('O') === 0){
+    if(this.selectedRide.direction.localeCompare('O') === 0){
       this.loadRide('R');
     } else {
       this.currentDate.setDate(this.currentDate.getDate() + 1);
       this.loadRide('O');
-    }
+    } 
   }
 
   prevRide() {
-    if(this.currentDirection.localeCompare('R') === 0){
+    if(this.selectedRide.direction.localeCompare('R') === 0){
       this.loadRide('O');
     } else {
       this.currentDate.setDate(this.currentDate.getDate() - 1);
       this.loadRide('R');
-    }
+    } 
   }
 
   isChipDisabled(stop): boolean {
@@ -161,10 +163,9 @@ export class RidesComponent implements OnInit {
   }
 
   createRide(){
-    let date = this.currentDate.getFullYear()+'-'+(this.currentDate.getMonth()+1)+'-'+this.currentDate.getDate();
-    this.rideService.createRide(date, this.selectedLine.id, this.currentDirection).subscribe(
+    this.rideService.createRide(this.selectedRide.date, this.selectedLine.id, this.selectedRide.direction).subscribe(
       (res) => {
-        this.loadRide(this.currentDirection);
+        this.loadRide(this.selectedRide.direction);
       },
       (error) => {
         this.handleError(error);

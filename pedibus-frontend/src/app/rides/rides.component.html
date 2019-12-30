@@ -1,14 +1,15 @@
+
 <app-simple-ride-selector
     [lines]="lines" (lineSelect)="selectLine($event)" [line]="selectedLine"
     [ride]="selectedRide" [currentDirection]="currentDirection" [currentDate]="currentDate"
     (prevRideClick)="prevRide()" [prevRideDisabled]="false"
     (nextRideClick)="nextRide()" [nextRideDisabled]="false">
 
-  <div class="button-div">
-    <button mat-raised-button class="button" color="primary" *ngIf="!selectedRide" (click)="createRide()">CREATE RIDE</button> 
+  <div class="button-div" *ngIf="nullRide" >
+    <button mat-raised-button class="button" color="primary" (click)="createRide()">CREATE RIDE</button> 
   </div>
 
-  <div *ngIf="selectedRide && stops">
+  <div *ngIf="!nullRide && stops">
     <h2 class="top-header" *ngIf="selectedRide.consolidated">RIDE CONSOLIDATED</h2>
     <mat-list>
       <mat-list-item *ngFor="let stop of (selectedRide.direction == 'O' ? stops.outwardStops : stops.returnStops)"> 
@@ -25,13 +26,35 @@
     </mat-list>
 
     <div class="button-div">
-      <button mat-raised-button class="button" color="primary" 
-          *ngIf="!selectedRide.consolidated" (click)="changeRideStatus()">CONSOLIDATE RIDE</button>
-      <button mat-raised-button class="button" color="primary" 
-          *ngIf="selectedRide.consolidated" (click)="changeRideStatus()">RE-OPEN RIDE</button>
-      <button mat-raised-button class="button" color="warn" 
-          [disabled]="selectedRide.consolidated" (click)="deleteRide()">DELETE RIDE</button> 
+      <div matTooltip="" 
+      [matTooltipDisabled]="" style="display: inline;">
+        <button mat-raised-button class="button" color="primary" 
+        *ngIf="!selectedRide.consolidated" (click)="changeRideStatus()">CONSOLIDATE RIDE</button>
+      </div>
+      <div matTooltip="" 
+      [matTooltipDisabled]="" style="display: inline;">
+        <button mat-raised-button class="button" color="primary" 
+        *ngIf="selectedRide.consolidated" (click)="changeRideStatus()">RE-OPEN RIDE</button>
+      </div>
+      <div matTooltip="You cannot delete a consolidated ride! Re-open it first" 
+      [matTooltipDisabled]="!selectedRide.consolidated" style="display: inline;">
+        <button mat-raised-button class="button" color="warn" 
+        [disabled]="selectedRide.consolidated" (click)="deleteRide()">DELETE RIDE</button>
+      </div>
     </div>
   </div>
 
 </app-simple-ride-selector>
+
+<mat-card class="legend">
+  <mat-card-title class="legend-title">Legend</mat-card-title>
+  <mat-card-content class="legend-content">
+    <span><mat-icon class="new-icon brush">brush</mat-icon> = NEW</span>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <span><mat-icon class="assigned-icon brush">brush</mat-icon> = ASSIGNED</span>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <span><mat-icon class="confirmed-icon brush">brush</mat-icon> = CONFIRMED</span>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <span><mat-icon class="consolidated-icon brush">brush</mat-icon> = CONSOLIDATED</span>
+  </mat-card-content>
+</mat-card>

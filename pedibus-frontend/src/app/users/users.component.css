@@ -5,6 +5,7 @@
     width: 100%;
     margin: auto;
     margin-top: 10px;
+    border-radius: 10px;
 }
 
 .spacer {
@@ -16,12 +17,15 @@
 }
 
 .new-button{
-    font-size: 25px;
+    /* font-size: 25px;
     font-style: normal;
     width: 40%;
     position: absolute; 
     left: 30%;
-    bottom: 5%;
+    bottom: 5%; */
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 30px;
     background-color: #009600;
     color: #fff;
 }

@@ -14,8 +14,8 @@
                 <span class="spacer"></span>
                 <p>{{pupil.lineName}}</p>
                 <span class="spacer"></span>
-                <button mat-raised-button (click)="openDialog(pupil)" color="primary">Edit</button>
-                <button mat-raised-button class="remove-button" (click)="removePupil(pupil)" color="warn">Remove<mat-icon>delete</mat-icon></button>
+                <button mat-icon-button class="edit-button" (click)="openDialog(pupil)" ><mat-icon>edit</mat-icon></button>
+                <button mat-icon-button class="remove-button" (click)="removePupil(pupil)"><mat-icon>delete</mat-icon></button>
                 <mat-divider></mat-divider>
             </mat-list-item>
         </mat-list>

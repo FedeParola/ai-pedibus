@@ -11,7 +11,6 @@
         </div>
         <mat-card-title>{{line?.name}}</mat-card-title>
         <mat-card-subtitle *ngIf="ride">{{ride?.date | date:'E, d LLLL y'}}</mat-card-subtitle>
-        <mat-card-subtitle *ngIf="!ride">{{currentDate | date:'E, d LLLL y'}}</mat-card-subtitle>
         <span class="nav-buttons">
             <button mat-icon-button (click)="onPrevRideClick()" [disabled]="prevRideDisabled">
                 <mat-icon>chevron_left</mat-icon>
@@ -24,7 +23,6 @@
 
     <mat-card-content>
         <p class="direction" *ngIf="ride">{{ride.direction == 'O' ? 'Outbound' : 'Return'}}</p>
-        <p class="direction" *ngIf="!ride">{{currentDirection ? (currentDirection === 'O' ? 'Outbound' : 'Return') : '' }}</p>
         <ng-content></ng-content>
     </mat-card-content>
 </mat-card>

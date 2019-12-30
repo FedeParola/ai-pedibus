@@ -5,6 +5,7 @@
     width: 100%;
     margin: auto;
     margin-top: 10px;
+    border-radius: 10px;
 }
 
 .spacer {
@@ -16,18 +17,28 @@
 }
 
 .add-button{
-    font-size: 25px;
+    /* font-size: 25px;
     font-style: normal;
     width: 40%;
     position: absolute; 
     left: 30%;
-    bottom: 5%;
+    bottom: 5%; */
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 30px;
     background-color: #009600;
     color: #fff;
 }
 
 .remove-button{
     margin-left: 2%;
+    background-color: rgb(211, 37, 37);
+    color: white;
+}
+
+.edit-button{
+    background-color: #3f51b5;
+    color: white;
 }
 
 .nav-buttons {

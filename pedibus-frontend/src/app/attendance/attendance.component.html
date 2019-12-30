@@ -37,4 +37,15 @@
     <button mat-raised-button class="download" (click)="downloadJSON()" color="primary">Download JSON <mat-icon>file_download</mat-icon></button>
     <button mat-raised-button class="download " (click)="downloadCSV()" color="primary">Download CSV <mat-icon>file_download</mat-icon></button>
   </div>
-</app-ride-selector> 
+</app-ride-selector>
+
+<mat-card class="legend">
+  <mat-card-title class="legend-title">Legend</mat-card-title>
+  <mat-card-content class="legend-content">
+    <span><mat-icon class="reservation-icon brush">brush</mat-icon> = RESERVATION</span>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <span><mat-icon class="attendance-icon brush">brush</mat-icon> = ATTENDANCE (without reservation)</span>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <span><mat-icon class="both-icon brush">brush</mat-icon> = BOTH</span>
+  </mat-card-content>
+</mat-card>

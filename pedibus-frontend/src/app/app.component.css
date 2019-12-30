@@ -1,5 +1,5 @@
 .toolbar{
-    background-color: steelblue;
+    background-color: rgb(39, 79, 112);
     font-size: 45px;
     color: whitesmoke;
 }
@@ -11,6 +11,9 @@
 
 .title {
     justify-content: center;
+    font-weight: bold;
+    color: rgb(230, 208, 18);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .toolbar-items {
@@ -21,7 +24,8 @@
     display: flex;
     align-items: center;
     cursor: pointer;
-    margin-right: 40px;
+    margin-right: 20px;
+    color: rgb(230, 208, 18);
 }
 
 .pending-notifications-count {
@@ -31,23 +35,52 @@
     font-weight: 800;
 }
 
-.menu {
-    background-color: steelblue;
-    width: 20%;
-    min-height: 100%; /* Minimum height for modern browsers */
-    height:100%; /* Minimum height for IE */ 
-    position: fixed;
-}
-
 .mat-subheader{
     color: whitesmoke;
     font-size: 35px;
     font-style: oblique;
 }
 
-.mat-button{
+.username{
+    font-size: 17px;
+    margin: 15px;
+}
+
+.logout-button{
+    margin: 5px;
+}
+
+.container{
+    padding: 10px;
+}
+
+.mat-menu-item{
     width: 100%;
-    color: whitesmoke;
-    font-size: 20px;
+    font-size: 18px;
     font-style: normal;
+    color: white;
+}
+
+.menu-icons{ 
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 27px;
+    color: white;
+}
+
+.menu-button{
+    background-color: rgb(39, 79, 112);
+    color: white;
+    border: 0px;
+    width: 80px;
+}
+
+.menu-icon{
+    font-size: 45px;
+}
+
+::ng-deep .toolbar-menu{
+    background-color: rgb(39, 79, 112);
+    width: 20%;
+    position: fixed;
 }

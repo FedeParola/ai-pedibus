@@ -37,3 +37,40 @@
   margin-left: 10px;
   margin-right: 10px;
 }
+
+.legend{
+  min-width: 150px;
+  max-width: 630px;
+  width: 100%;
+  margin: auto;
+  margin-top: 10px;
+  border-radius: 10px;
+}
+
+.legend-title{
+  text-align: center;
+  margin: 15px;
+}
+
+.legend-content{
+  font-size: 15px;
+  font-style: italic;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  text-align: center;
+}
+
+.reservation-icon{
+  color: darkgray;
+}
+
+.attendance-icon{
+  color: crimson; 
+}
+
+.both-icon{
+  color: midnightblue;
+}
+
+.brush{
+  font-size: 30px;
+}

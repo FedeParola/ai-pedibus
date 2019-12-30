@@ -48,6 +48,7 @@ import { DialogShowNotificationComponent } from './notification/notification.com
 import { DialogRemovePupilComponent } from './pupils/pupils.component';
 import { rxStompConfig } from './rx-stomp.config';
 import { myRxStompServiceFactory } from './my-rx-stomp-service-factory';
+import { from } from 'rxjs';
 
 
 @NgModule({

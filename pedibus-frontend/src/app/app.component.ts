@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticationService } from './authentication.service';
 import { RxStompService } from '@stomp/ng2-stompjs';
-import { Message } from '@stomp/stompjs';
 
 import { NotificationService } from './notification.service';
 
@@ -18,6 +17,7 @@ export class AppComponent implements OnInit {
   ridesDisabled: boolean;
   selectedView;
   pendingNotifications: number;
+  loggedUser: string;
 
   constructor(private authService: AuthenticationService,
               private router: Router,
@@ -37,6 +37,7 @@ export class AppComponent implements OnInit {
 
         if (loggedIn) {
           console.log('Logged In');
+          this.loggedUser = this.authService.getUsername();
 
           const roles = this.authService.getRoles();
           if (roles.indexOf('ROLE_ADMIN') > -1) {
