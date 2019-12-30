@@ -40,16 +40,16 @@ public class PupilService {
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(newPupil.getUserId()) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
 
         /* Retrieve user and line */
-        User user = userRepository.findById(newPupil.getUserId()).orElseThrow(BadRequestException::new);
-        Line line = lineRepository.findById(newPupil.getLineId()).orElseThrow(BadRequestException::new);
+        User user = userRepository.findById(newPupil.getUserId()).orElseThrow(() -> new BadRequestException("Unknown user"));
+        Line line = lineRepository.findById(newPupil.getLineId()).orElseThrow(() -> new BadRequestException("Unknown line"));
 
         /* Check duplicate pupil name */
         if (user.getPupils().stream().map(Pupil::getName).collect(Collectors.toList()).contains(newPupil.getName())) {
-            throw new BadRequestException();
+            throw new BadRequestException("Duplicate pupil name");
         }
 
         /* Persist pupil */
@@ -68,25 +68,25 @@ public class PupilService {
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void updatePupil(Long pupilId, PupilUpdateDTO pupilUpdate, String loggedUserId)
             throws BadRequestException, ForbiddenException, NotFoundException {
-        Pupil pupil = pupilRepository.findById(pupilId).orElseThrow(NotFoundException::new);
+        Pupil pupil = pupilRepository.findById(pupilId).orElseThrow(() -> new NotFoundException("Pupil not found"));
 
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(pupil.getUser().getEmail()) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
 
         /* Update only received fields */
         if (pupilUpdate.getName() != null) {
             /* Check duplicate pupil name */
             if (pupil.getUser().getPupils().stream().map(Pupil::getName).collect(Collectors.toList()).contains(pupilUpdate.getName())) {
-                throw new BadRequestException();
+                throw new BadRequestException("Duplicate pupil name");
             }
             pupil.setName(pupilUpdate.getName());
         }
 
         if (pupilUpdate.getLineId() != null) {
-            Line line = lineRepository.findById(pupilUpdate.getLineId()).orElseThrow(BadRequestException::new);
+            Line line = lineRepository.findById(pupilUpdate.getLineId()).orElseThrow(() -> new BadRequestException("Unknown line"));
             pupil.setLine(line);
         }
 
@@ -97,12 +97,12 @@ public class PupilService {
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void deletePupil(Long pupilId, String loggedUserId)
             throws NotFoundException, BadRequestException, ForbiddenException {
-        Pupil pupil = pupilRepository.findById(pupilId).orElseThrow(NotFoundException::new);
+        Pupil pupil = pupilRepository.findById(pupilId).orElseThrow(() -> new NotFoundException("Pupil not found"));
 
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(pupil.getUser().getEmail()) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
 
         pupilRepository.delete(pupil);
@@ -113,12 +113,12 @@ public class PupilService {
 
     public List<ReservationDTO> getReservations(Long pupilId, String loggedUserId)
             throws ForbiddenException, BadRequestException, NotFoundException {
-        Pupil pupil = pupilRepository.findById(pupilId).orElseThrow(NotFoundException::new);
+        Pupil pupil = pupilRepository.findById(pupilId).orElseThrow(() -> new NotFoundException("Pupil not found"));
 
         /* Authorize access */
         User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
         if (!(loggedUserId.equals(pupil.getUser().getEmail()) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
 
         /* Build result structure */

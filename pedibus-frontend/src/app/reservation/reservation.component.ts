@@ -1,13 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { MatSnackBar, MatDialog } from '@angular/material';
+import * as moment from 'moment';
+
+import { PupilsDialogComponent } from './pupils-dialog/pupils-dialog.component';
 import { ReservationService } from '../reservation.service';
 import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
 import { UsersService } from '../users.service';
-import { MatSnackBar, MatDialog } from '@angular/material';
-import { HttpErrorResponse } from '@angular/common/http';
-import * as moment from 'moment';
-import { PupilsDialogComponent } from './pupils-dialog/pupils-dialog.component';
 import { AppComponent } from '../app.component';
+import { handleError, findElement, findNextClosestRide } from '../utils';
 
 @Component({
   selector: 'app-reservation',
@@ -43,34 +44,42 @@ export class ReservationComponent implements OnInit, OnDestroy {
       (res) => {
         this.pupils = res;
 
-        if (this.selectedPupil) {
-          // Select the old pupil if still present
-          for (let p of this.pupils) {
-            if (p.id === this.selectedPupil.id) {
-              this.selectedPupil = p;
-              return;
+        if (this.pupils.length > 0) {
+          if (this.selectedPupil) {
+            // Select the old pupil if still present
+            for (let p of this.pupils) {
+              if (p.id === this.selectedPupil.id) {
+                this.selectedPupil = p;
+                return;
+              }
             }
           }
+          
+          this.selectedPupil = this.pupils[0];
+          this.loadPupil();
         }
-        
-        this.selectedPupil = this.pupils[0];
-        this.loadPupil();
         
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
 
     this.lineService.getLines().subscribe(
       (res) => {
         this.lines = res;
-        this.selectedLine = this.lines[0];
-        this.loadLine();
+        if (this.selectedPupil) {
+          let line = this.findLine(this.selectedPupil.lineId);
+          if (line) {
+            this.selectLine(line);
+          } else {
+            this.selectLine(this.lines[0]);
+          }
+        }
         
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -110,7 +119,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
         this.stops = res;
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
 
@@ -128,40 +137,20 @@ export class ReservationComponent implements OnInit, OnDestroy {
           if (selRide) {
             // Check if current ride is present in the new list,
             // if it is stay on that ride
-            this.selectedRideIndex = this.findRide(selRide);
+            this.selectedRideIndex = findElement(selRide, this.rides);
           }
 
           // If prevoius current ride was removed or this is the first time displaying a ride
           // pick the closest ride with date >= current date
           if (this.selectedRideIndex == -1) {
-            let curDate = moment().format('YYYY-MM-DD');
-            let closestRide = this.rides.length-1;
-
-            while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
-              closestRide--;
-            }
-
-            if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
-              closestRide++;
-            }
-            this.selectedRideIndex = closestRide;
+            this.selectedRideIndex = findNextClosestRide(this.rides);
           }
         }
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
-  }
-
-  private findRide(ride): number {
-    for (let [i, r] of this.rides.entries()) {
-      if (ride.id == r.id) {
-        return i;
-      }
-    }
-
-    return -1;
   }
 
   changePupil() {
@@ -187,23 +176,43 @@ export class ReservationComponent implements OnInit, OnDestroy {
         this.reservations = res;
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
+    
+    if (this.lines) {
+      let line = this.findLine(this.selectedPupil.lineId);
+      if (line) {
+        this.selectLine(line);
+      } else {
+        this.selectLine(this.lines[0]);
+      }
+    }
+  }
+
+  findLine(lineId: number) {
+    for (let line of this.lines) {
+      if (line.id == lineId) {
+        return line;
+      }
+    }
+
+    return undefined;
   }
 
   onStopClick(stopId: number) {
-    let r = this.reservations.get(this.selectedRide.id);
+    let reservations = this.reservations;
+    let r = this.selectedReservation;
 
     if (r) {
       if (stopId == r.stopId) {
         // Delete reservation
         this.reservationService.deleteReservation(r.id).subscribe(
           (res) => {
-            this.reservations.delete(this.selectedRide.id)
+            reservations.delete(this.selectedRide.id)
           },
           (error) => {
-            this.handleError(error);
+            handleError(error, this._snackBar);
           }
         );
 
@@ -214,7 +223,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
             r.stopId = stopId;
           },
           (error) => {
-            this.handleError(error);
+            handleError(error, this._snackBar);
           }
         );
 
@@ -233,10 +242,10 @@ export class ReservationComponent implements OnInit, OnDestroy {
             rideId: this.selectedRide.id,
             stopId: stopId
           }
-          this.reservations.set(this.selectedRide.id, r);
+          reservations.set(this.selectedRide.id, r);
         },
         (error) => {
-          this.handleError(error);
+          handleError(error, this._snackBar);
         }
       );
     }
@@ -262,17 +271,5 @@ export class ReservationComponent implements OnInit, OnDestroy {
     }
     
     return cantUpdate;
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    if (!(error.error instanceof ErrorEvent) && error.status == 401) {
-      // Not authenticated or auth expired
-      this.authenticationService.logout();
-    
-    } else {
-      // All other errors
-      console.error("Error contacting server");
-      this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
-    }
   }
 }

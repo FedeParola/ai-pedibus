@@ -1,9 +1,11 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { UsersService } from '../../users.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material';
+
+import { UsersService } from '../../users.service';
 import { AuthenticationService } from '../../authentication.service';
+import { handleError } from '../../utils';
 
 
 export interface Lines {
@@ -38,7 +40,7 @@ export class DialogUserLinesComponent implements OnInit {
       this.selected = res[0];
     },
     (error) => {
-      this.handleError(error)
+      handleError(error, this._snackBar);
     });
   }
 
@@ -65,8 +67,7 @@ export class DialogUserLinesComponent implements OnInit {
                     { panelClass: 'success-snackbar', duration: 5000 });
     },
     (error) => {
-      this._snackBar.open("Error in the communication with the server!", "",
-                    { panelClass: 'error-snackbar', duration: 5000 });
+      handleError(error, this._snackBar);
     });
   }
 
@@ -84,25 +85,11 @@ export class DialogUserLinesComponent implements OnInit {
                     { panelClass: 'success-snackbar', duration: 5000 });
     },
     (error) => {
-      this._snackBar.open("Error in the communication with the server!", "",
-                    { panelClass: 'error-snackbar', duration: 5000 });
+      handleError(error, this._snackBar);
     });
   }
 
   onDoneClick(): void {
     this.dialogRef.close();
   }
-
-  private handleError(error: HttpErrorResponse) {
-    if (!(error.error instanceof ErrorEvent) && error.status == 401) {
-      /* Not authenticated or auth expired */
-      this.authService.logout();
-    
-    } else {
-      /* All other errors*/
-      console.error("Error contacting server");
-      this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
-    }
-  };
-
 }

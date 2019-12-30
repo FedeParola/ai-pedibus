@@ -45,17 +45,17 @@ public class AttendanceService {
         //Check existence of the referenced entities
         Ride ride = rideRepository.findById(attendanceDTO.getRideId()).orElse(null);
         if(ride == null) {
-            throw new BadRequestException("Unknown ride with id " + attendanceDTO.getRideId());
+            throw new BadRequestException("Unknown ride");
         }
 
         Pupil pupil = pupilRepository.findById(attendanceDTO.getPupilId()).orElse(null);
         if(pupil == null) {
-            throw new BadRequestException("Unknown pupil with id " + attendanceDTO.getPupilId());
+            throw new BadRequestException("Unknown pupil");
         }
 
         Stop stop = stopRepository.findById(attendanceDTO.getStopId()).orElse(null);
         if(stop == null) {
-            throw new BadRequestException("Unknown stop with id " + attendanceDTO.getStopId());
+            throw new BadRequestException("Unknown stop");
         }
 
         //Check if the user can add the attendance (system admin or escort of that ride)
@@ -82,7 +82,7 @@ public class AttendanceService {
         Date now = new Date();
         now.setTime(now.getTime() - 30 * 60 * 1000);
         if(stopTime.compareTo(now) <  0){
-            throw new BadRequestException("TIME_EXCEEDED");
+            throw new BadRequestException("Time for the ride expired");
         }
 
         //Check if the stop belongs to the ride
@@ -114,10 +114,12 @@ public class AttendanceService {
 
         attendance = attendanceRepository.save(attendance);
 
-        String direction = ride.getDirection().equals("O") ? "outbound" : "return";
-        notificationService.createNotification(pupil.getUser(), "Pupil marked as present", pupil.getName() +
-                " was marked as present on stop '" + stop.getName() + "' for the " + direction + " direction of line '" +
-                ride.getLine().getName() + "'  on " + ride.getDate());
+        if(!pupil.getUser().getEmail().equals(currentUser.getEmail())) {
+            String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+            notificationService.createNotification(pupil.getUser(), "Pupil marked as present", pupil.getName() +
+                    " was marked as present on stop '" + stop.getName() + "' for the " + direction + " direction of line '" +
+                    ride.getLine().getName() + "'  on " + ride.getDate());
+        }
 
         // Notify attendance creation
         msgTemplate.convertAndSend("/topic/rides/" + attendance.getRide().getId() + "/attendances", "");
@@ -131,7 +133,7 @@ public class AttendanceService {
 
         Attendance attendance = attendanceRepository.findById(attendanceId).orElse(null);
         if(attendance == null){
-            throw new NotFoundException("Attendance with id " + attendanceId + " not found");
+            throw new NotFoundException("Attendance not found");
         }
 
         //Check if current date and time is before than when the stop takes place (with 30 min tolerance)
@@ -139,7 +141,7 @@ public class AttendanceService {
         Date now = new Date();
         now.setTime(now.getTime() - 30 * 60 * 1000);
         if(stopTime.compareTo(now) <  0){
-            throw new BadRequestException("TIME_EXCEEDED");
+            throw new BadRequestException("Time for the ride expired");
         }
 
         //Check if the user can delete the attendance (system admin or escort of that ride)
@@ -163,11 +165,13 @@ public class AttendanceService {
 
         attendanceRepository.delete(attendance);
 
-        String direction = attendance.getRide().getDirection().equals("O") ? "outbound" : "return";
-        notificationService.createNotification(attendance.getPupil().getUser(), "Pupil unmarked as present",
-                "Your pupil " + attendance.getPupil().getName() + " that was marked as present on stop '" +
-                attendance.getStop().getName() + "' for the " + direction + " direction of line '" +
-                attendance.getRide().getLine().getName() + "'  on " + attendance.getRide().getDate() + " has been unmarked");
+        if(!attendance.getPupil().getUser().getEmail().equals(currentUser.getEmail())) {
+            String direction = attendance.getRide().getDirection().equals("O") ? "outbound" : "return";
+            notificationService.createNotification(attendance.getPupil().getUser(), "Pupil unmarked as present",
+                    "Your pupil " + attendance.getPupil().getName() + " that was marked as present on stop '" +
+                            attendance.getStop().getName() + "' for the " + direction + " direction of line '" +
+                            attendance.getRide().getLine().getName() + "'  on " + attendance.getRide().getDate() + " has been unmarked");
+        }
 
         if (attendance.getReservation() != null) {
             // Notify reservation update

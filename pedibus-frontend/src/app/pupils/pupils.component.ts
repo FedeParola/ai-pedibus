@@ -1,11 +1,12 @@
 import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
-import { UsersService } from '../users.service';
-import { HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material';
-import { AuthenticationService } from '../authentication.service';
 import { MatDialog, MatDialogRef, MatDialogConfig } from '@angular/material/dialog';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+
 import { DialogPupilComponent } from './dialog-pupil/dialog-pupil.component';
+import { AuthenticationService } from '../authentication.service';
+import { UsersService } from '../users.service';
+import { handleError } from '../utils';
 
 @Component({
   selector: 'app-pupils',
@@ -45,7 +46,7 @@ export class PupilsComponent implements OnInit, OnDestroy {
       }
     },
     (error) => {
-      this.handleError(error)
+      handleError(error, this._snackBar);
     });
     
   }
@@ -70,7 +71,7 @@ export class PupilsComponent implements OnInit, OnDestroy {
       }
     },
     (error) => {
-      this.handleError(error)
+      handleError(error, this._snackBar);
     });
   }
 
@@ -85,7 +86,7 @@ export class PupilsComponent implements OnInit, OnDestroy {
       this.nextEnabled = true;
     },
     (error) => {
-      this.handleError(error)
+      handleError(error, this._snackBar);
     });
   }
 
@@ -125,7 +126,7 @@ export class PupilsComponent implements OnInit, OnDestroy {
         }
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       });
     });
   }
@@ -162,19 +163,6 @@ export class PupilsComponent implements OnInit, OnDestroy {
       }
     });
   }
-
-  private handleError(error: HttpErrorResponse) {
-    if (!(error.error instanceof ErrorEvent) && error.status == 401) {
-      /* Not authenticated or auth expired */
-      this.authService.logout();
-    
-    } else {
-      /* All other errors*/
-      console.error("Error contacting server");
-      this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
-    }
-  };
-
 }
 
 @Component({

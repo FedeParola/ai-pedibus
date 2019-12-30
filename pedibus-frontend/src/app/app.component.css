@@ -2,6 +2,8 @@
     background-color: rgb(39, 79, 112);
     font-size: 45px;
     color: whitesmoke;
+    position:fixed;
+    z-index: 1000;
 }
 
 .mat-toolbar-row>div {
@@ -64,6 +66,7 @@
 .menu-icons{ 
     margin-left: 5px;
     margin-right: 5px;
+    margin-bottom: 8px;
     font-size: 27px;
     color: white;
 }

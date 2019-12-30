@@ -31,12 +31,13 @@ public class NotificationService {
 
     public void deleteNotification(Long notificationId, String name) throws NotFoundException, BadRequestException,
             ForbiddenException {
-        Notification notification = notificationRepository.findById(notificationId).orElseThrow(NotFoundException::new);
+        Notification notification = notificationRepository.findById(notificationId).orElseThrow(
+                () -> new NotFoundException("Notification not found"));
 
         /* Authorize access */
         User loggedUser = userRepository.findById(name).orElseThrow(BadRequestException::new);
         if (!(name.equals(notification.getUser().getEmail()) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
 
         notificationRepository.delete(notification);
@@ -47,12 +48,13 @@ public class NotificationService {
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void updateNotification(Long notificationId, NotificationUpdateDTO notificationUpdate, String name)
             throws BadRequestException, ForbiddenException, NotFoundException {
-        Notification notification = notificationRepository.findById(notificationId).orElseThrow(NotFoundException::new);
+        Notification notification = notificationRepository.findById(notificationId).orElseThrow(
+                () -> new NotFoundException("Notification not found"));
 
         /* Authorize access */
         User loggedUser = userRepository.findById(name).orElseThrow(BadRequestException::new);
         if (!(name.equals(notification.getUser().getEmail()) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("The user is not allowed to do this action");
         }
 
         /* Update only received fields */

@@ -62,7 +62,7 @@ public class RideService implements InitializingBean {
         /* Retrieve the line from lineId */
         Line line = lineRepository.getById(newRideDTO.getLineId());
         if(line == null) {
-            throw new NotFoundException("Line with id " + newRideDTO.getLineId() + " not found");
+            throw new NotFoundException("Line not found");
         }
 
         /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */
@@ -70,7 +70,7 @@ public class RideService implements InitializingBean {
 
         // Check if the date is > then 18:00 of the previous day
         //create the day before at 18:00
-        long millis = newRideDTO.getDate().getTime() - 8 * 60 * 60 * 1000;
+        long millis = newRideDTO.getDate().getTime() - 6 * 60 * 60 * 1000;
         Date dayBeforeRide = new Date(millis);
         //check if the date if after the day before at 18:00
         //current date
@@ -113,7 +113,7 @@ public class RideService implements InitializingBean {
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
-            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+            throw new NotFoundException("Ride not found");
         }
 
         /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */
@@ -121,7 +121,7 @@ public class RideService implements InitializingBean {
 
         // Check if the date is > then 18:00 of the previous day
         //create the day before at 18:00
-        long millis = ride.getDate().getTime() - 8 * 60 * 60 * 1000;
+        long millis = ride.getDate().getTime() - 6 * 60 * 60 * 1000;
         java.sql.Date dayBeforeRide = new java.sql.Date(millis);
         Date currentDate = new Date();
         if(currentDate.after(dayBeforeRide)){
@@ -166,10 +166,12 @@ public class RideService implements InitializingBean {
                     availabilityRepository.save(a);
 
                     //Warn each escort of the ride
-                    String direction = ride.getDirection().equals("O") ? "outbound" : "return";
-                    notificationService.createNotification(a.getUser(), "Ride consolidated", "The ride for the " +
-                            direction + " direction of line '" + ride.getLine().getName() + " on " + ride.getDate() + " has " +
-                            "been consolidated");
+                    if(!a.getUser().getEmail().equals(currentUser.getEmail())) {
+                        String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+                        notificationService.createNotification(a.getUser(), "Ride consolidated", "The ride for the " +
+                                direction + " direction of line '" + ride.getLine().getName() + " on " + ride.getDate() + " has " +
+                                "been consolidated");
+                    }
 
                     // Notify new assigned line to the user
                     msgTemplate.convertAndSend(
@@ -202,10 +204,12 @@ public class RideService implements InitializingBean {
                     availabilityRepository.save(a);
 
                     //Warn each escort of the ride
-                    String direction = ride.getDirection().equals("O") ? "outbound" : "return";
-                    notificationService.createNotification(a.getUser(), "Ride re-opened", "The ride for the " +
-                            direction + " direction of line '" + ride.getLine().getName() + " on " + ride.getDate() + " has " +
-                            "been re-opened");
+                    if(!a.getUser().getEmail().equals(currentUser.getEmail())) {
+                        String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+                        notificationService.createNotification(a.getUser(), "Ride re-opened", "The ride for the " +
+                                direction + " direction of line '" + ride.getLine().getName() + " on " + ride.getDate() + " has " +
+                                "been re-opened");
+                    }
 
                     // Notify line removal to those assigned to the user
                     msgTemplate.convertAndSend(
@@ -240,7 +244,7 @@ public class RideService implements InitializingBean {
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
-            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+            throw new NotFoundException("Ride not found");
         }
 
         if(ride.getConsolidated() == true){
@@ -260,7 +264,7 @@ public class RideService implements InitializingBean {
                         "of line '" + ride.getLine().getName() + "'  " + "on " + ride.getDate() + " has been cancelled");
             }
         }
-        //DA MODIFICARE
+
         List<User> parents = ride.getReservations().stream()
                                                     .map(r -> r.getPupil().getUser())
                                                     .distinct()
@@ -288,7 +292,7 @@ public class RideService implements InitializingBean {
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
-            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+            throw new NotFoundException("Ride not found");
         }
 
         // Check if the user is SYSTEM-ADMIN or ADMIN of the line or conductor or the ride
@@ -327,7 +331,7 @@ public class RideService implements InitializingBean {
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
-            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+            throw new NotFoundException("Ride not found");
         }
 
         // Check if the user is SYSTEM-ADMIN or ADMIN of the line or conductor or the ride
@@ -365,7 +369,7 @@ public class RideService implements InitializingBean {
 
         Ride ride = rideRepository.getById(rideId).orElse(null);
         if(ride == null){
-            throw new NotFoundException("The ride with id " + rideId + " does not exist");
+            throw new NotFoundException("Ride not found");
         }
 
         /* Check if the user is SYSTEM-ADMIN or ADMIN of line with {lineId} */

@@ -1,13 +1,13 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
-import { LineService } from '../../line.service';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { MatSnackBar} from '@angular/material';
-import { HttpErrorResponse } from '@angular/common/http';
-import { PupilsComponent } from '../pupils.component';
+import { FormGroup, FormBuilder, Validators} from '@angular/forms';
+
 import { UsersService } from '../../users.service';
 import { AuthenticationService } from '../../authentication.service';
-import { FormGroup, FormBuilder, Validators} from '@angular/forms';
+import { LineService } from '../../line.service';
+import { handleError } from '../../utils';
 
 export interface Lines {
   value: string;
@@ -71,7 +71,7 @@ export class DialogPupilComponent implements OnInit {
       }
     },
     (error) => {
-      this.handleError(error)
+      handleError(error, this._snackBar);
     });
   }
   
@@ -124,17 +124,4 @@ export class DialogPupilComponent implements OnInit {
       );
     }
   }
-
-  private handleError(error: HttpErrorResponse) {
-    if (!(error.error instanceof ErrorEvent) && error.status == 401) {
-      // Not authenticated or auth expired
-      this.authenticationService.logout();
-    
-    } else {
-      // All other errors
-      console.error("Error contacting server");
-      this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
-    }
-  };
-
 }

@@ -1,3 +1,4 @@
+<div *ngIf="pupils && pupils.length > 0; else noPupils">
 <div class="pupil-select">
     <span>Pupil: <strong>{{selectedPupil?.name}}</strong></span>
     <button (click)="changePupil()" mat-raised-button color="primary">Change</button>
@@ -27,4 +28,10 @@
       PRESENT
     </div>
   </div>
-</app-ride-selector> 
+</app-ride-selector>
+</div>
+<ng-template #noPupils>
+  <div class="no-pupils">
+    <strong>No pupils registered</strong>
+  </div>
+</ng-template>

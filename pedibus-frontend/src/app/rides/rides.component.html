@@ -46,7 +46,7 @@
 
 </app-simple-ride-selector>
 
-<mat-card class="legend">
+<mat-card class="legend" *ngIf="!nullRide" >
   <mat-card-title class="legend-title">Legend</mat-card-title>
   <mat-card-content class="legend-content">
     <span><mat-icon class="new-icon brush">brush</mat-icon> = NEW</span>

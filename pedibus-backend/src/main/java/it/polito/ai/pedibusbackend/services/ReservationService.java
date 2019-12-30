@@ -49,17 +49,17 @@ public class ReservationService{
         //Check existence of the referenced entities
         Ride ride = rideRepository.findById(reservationDTO.getRideId()).orElse(null);
         if(ride == null) {
-            throw new BadRequestException("Unknown ride with id " + reservationDTO.getRideId());
+            throw new BadRequestException("Unknown ride");
         }
 
         Pupil pupil = pupilRepository.findById(reservationDTO.getPupilId()).orElse(null);
         if(pupil == null) {
-            throw new BadRequestException("Unknown pupil with id " + reservationDTO.getPupilId());
+            throw new BadRequestException("Unknown pupil");
         }
 
         Stop stop = stopRepository.findById(reservationDTO.getStopId()).orElse(null);
         if(stop == null) {
-            throw new BadRequestException("Unknown stop with id " + reservationDTO.getStopId());
+            throw new BadRequestException("Unknown stop");
         }
 
         //Check if the logged user is the system admin
@@ -87,7 +87,7 @@ public class ReservationService{
         Reservation r = reservationRepository.findByPupilAndDateAndDirection(pupil, ride.getDate(),
                 ride.getDirection()).orElse(null);
         if(r != null){
-            throw new BadRequestException("The pupil was already reserved that day in the same direction");
+            throw new BadRequestException("The pupil is already reserved on another ride at the same time");
         }
 
         //Create the reservation and add it to the repository
@@ -99,10 +99,12 @@ public class ReservationService{
 
         //Warn each escort of the ride
         for (Availability a : availabilityRepository.findByRideAndStatus(ride, "CONSOLIDATED")){
-            String direction = ride.getDirection().equals("O") ? "outbound" : "return";
-            notificationService.createNotification(a.getUser(), "New reservation", "New reservation for " +
-                    pupil.getName() + " of user '" + pupil.getUser().getEmail() + "' on stop '" + stop.getName() +
-                    "' for the " + direction + " direction of line '" + ride.getLine().getName() + "' on " + ride.getDate());
+            if(!a.getUser().getEmail().equals(currentUser.getEmail())) {
+                String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+                notificationService.createNotification(a.getUser(), "New reservation", "New reservation for " +
+                        pupil.getName() + " of user '" + pupil.getUser().getEmail() + "' on stop '" + stop.getName() +
+                        "' for the " + direction + " direction of line '" + ride.getLine().getName() + "' on " + ride.getDate());
+            }
         }
         // Notify reservation creation
         notifyReservationOperation(reservation);
@@ -117,7 +119,7 @@ public class ReservationService{
 
         Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
         if(reservation == null) {
-            throw new NotFoundException("Reservation with id " + reservationId + " not found");
+            throw new NotFoundException("Reservation not found");
         }
 
         //Check if the user can update the reservation (user who made it or system admin)
@@ -131,7 +133,7 @@ public class ReservationService{
         //Check stop existence
         Stop stop = stopRepository.findById(newStopId).orElse(null);
         if(stop == null) {
-            throw new BadRequestException("Unknown stop with id " + newStopId);
+            throw new BadRequestException("Unknown stop");
         }
 
         //Check that the new stop belongs to the same ride
@@ -147,11 +149,13 @@ public class ReservationService{
 
         //Warn each escort of the ride
         for (Availability a : availabilityRepository.findByRideAndStatus(reservation.getRide(), "CONSOLIDATED")) {
-            String direction = reservation.getRide().getDirection().equals("O") ? "outbound" : "return";
-            notificationService.createNotification(a.getUser(), "Reservation updated", "Reservation for " +
-                    reservation.getPupil().getName() + " of user '" + currentUser.getEmail() + "' for the " + direction +
-                    " direction of line '" + reservation.getRide().getLine().getName() + "' on " + reservation.getRide().getDate() +
-                    " has been updated");
+            if(!a.getUser().getEmail().equals(currentUser.getEmail())) {
+                String direction = reservation.getRide().getDirection().equals("O") ? "outbound" : "return";
+                notificationService.createNotification(a.getUser(), "Reservation updated", "Reservation for " +
+                        reservation.getPupil().getName() + " of user '" + currentUser.getEmail() + "' for the " + direction +
+                        " direction of line '" + reservation.getRide().getLine().getName() + "' on " + reservation.getRide().getDate() +
+                        " has been updated");
+            }
         }
 
         // Notify reservation update
@@ -165,7 +169,7 @@ public class ReservationService{
 
         Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
         if(reservation == null) {
-            throw new NotFoundException("Reservation with id " + reservationId + " not found");
+            throw new NotFoundException("Reservation not found");
         }
 
         //Check if the user can delete the reservation (user who made it or system admin)
@@ -178,13 +182,15 @@ public class ReservationService{
 
         reservationRepository.delete(reservation);
 
-        //Warn each escort of the ride
+        //Warn each escort of the ride but the one who deleted the reservation (if it is an escort of this ride)
         for (Availability a : availabilityRepository.findByRideAndStatus(reservation.getRide(), "CONSOLIDATED")) {
-            String direction = reservation.getRide().getDirection().equals("O") ? "outbound" : "return";
-            notificationService.createNotification(a.getUser(), "A reservation was cancelled", "Reservation for " +
-                    reservation.getPupil().getName() + " of user '" + currentUser.getEmail() +
-                    "' on stop '" + reservation.getStop().getName() + "' for the " + direction + " direction of line '" +
-                    reservation.getRide().getLine().getName() + "' on " + reservation.getRide().getDate() + " has been cancelled");
+            if(!a.getUser().equals(currentUser)){
+                String direction = reservation.getRide().getDirection().equals("O") ? "outbound" : "return";
+                notificationService.createNotification(a.getUser(), "A reservation was cancelled", "Reservation for " +
+                        reservation.getPupil().getName() + " of user '" + currentUser.getEmail() +
+                        "' on stop '" + reservation.getStop().getName() + "' for the " + direction + " direction of line '" +
+                        reservation.getRide().getLine().getName() + "' on " + reservation.getRide().getDate() + " has been cancelled");
+            }
         }
 
         // Notify reservation deletion

@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatSnackBar, MatDialog } from '@angular/material';
 import * as moment from 'moment';
@@ -8,6 +7,7 @@ import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
 import { StopDialogComponent } from './stop-dialog/stop-dialog.component';
 import { AppComponent } from '../app.component';
+import { handleError, findElement, findClosestRide } from '../utils';
 
 
 @Component({
@@ -53,7 +53,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -110,7 +110,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         this.stops = res;
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
 
@@ -125,7 +125,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         }
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
 
@@ -146,42 +146,21 @@ export class AttendanceComponent implements OnInit, OnDestroy {
           if (selRide) {
             // Check if current ride is present in the new list,
             // if it is stay on that ride
-            this.selectedRideIndex = this.findRide(selRide);
+            this.selectedRideIndex = findElement(selRide, this.rides);
           }
 
           // If prevoius current ride was removed or this is the first time displaying a ride
           // pick the closest ride with date >= current date
           if (this.selectedRideIndex == -1) {
-            let curDate = moment().format('YYYY-MM-DD');
-            let closestRide = this.rides.length-1;
-
-            while (closestRide > 0 && this.rides[closestRide].date >= curDate) {
-              closestRide--;
-            }
-
-            if (this.rides[closestRide].date < curDate && !(closestRide === this.rides.length-1)) {
-              closestRide++;
-            }
-            this.selectedRideIndex = closestRide;
-
+            this.selectedRideIndex = findClosestRide(this.rides);
             this.loadRideData();
           }
         }
       },
       (error) => {
-        this.handleError(error)
+        handleError(error, this._snackBar);
       }
     );
-  }
-
-  private findRide(ride): number {
-    for (let [i, r] of this.rides.entries()) {
-      if (ride.id == r.id) {
-        return i;
-      }
-    }
-
-    return -1;
   }
 
   loadRideData() {
@@ -196,7 +175,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         }
       },
       (error) => {
-        this.handleError(error);
+        handleError(error, this._snackBar);
       }
     );
   }
@@ -244,18 +223,19 @@ export class AttendanceComponent implements OnInit, OnDestroy {
           data.type = 'both';
         },
         (error) => {
-          this.handleError(error);
+          handleError(error, this._snackBar);
         }
       );
 
     } else {
       // Both other types represent an attendance, delete it
+      let rideData = this.rideData;
       this.attendanceService.deleteAttendance(data.attendanceId).subscribe(
         () => {
           if (data.type == 'attendance') {
             // Just deleted an attendance without reservation, delete data an add pupil to missing
-            this.rideData.get(data.stopId).splice(i, 1);
-            this.missingPupils.push(data.pupil)
+            rideData.get(data.stopId).splice(i, 1);
+            this.computeMissingPupils();
           
           } else {
             // Just deleted an attendance with reservation, mark data as simple reservation
@@ -265,7 +245,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
           }
         },
         (error) => {
-          this.handleError(error);
+          handleError(error, this._snackBar);
         }
       );
 
@@ -289,6 +269,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
       }
     });
 
+    let rideData = this.rideData;
     dialogRef.afterClosed().subscribe(stop => {
       if (stop) {
         this.attendanceService.createAttendance(pupil.id, this.selectedRide.id, stop.id).subscribe(
@@ -301,15 +282,17 @@ export class AttendanceComponent implements OnInit, OnDestroy {
               stopId: stop.id
             };
             if (!this.rideData.has(stop.id)) {
-              this.rideData.set(stop.id, []);
+              rideData.set(stop.id, []);
             }
-            this.rideData.get(stop.id).push(data);
+            let pupilsData = rideData.get(stop.id);
+            pupilsData.push(data);
+            pupilsData.sort((a, b) => a.pupil.name.localeCompare(b.pupil.name));
             
             // Remove the pupil from missing ones
-            this.missingPupils.splice(i, 1);
+            this.computeMissingPupils();
           },
           (error) => {
-            this.handleError(error);
+            handleError(error, this._snackBar);
           }
         );
       }
@@ -440,16 +423,4 @@ export class AttendanceComponent implements OnInit, OnDestroy {
 
     return csvContent;
   }
-
-  private handleError(error: HttpErrorResponse) {
-    if (!(error.error instanceof ErrorEvent) && error.status == 401) {
-      // Not authenticated or auth expired
-      this.authenticationService.logout();
-    
-    } else {
-      // All other errors
-      console.error("Error contacting server");
-      this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
-    }
-  };
 }
