@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { RidesService } from '../rides.service';
-import { AuthenticationService } from '../authentication.service';
-import { HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material';
-import { LineService } from '../line.service';
 import * as moment from 'moment';
-import { AppComponent } from '../app.component';
 
+import { AppComponent } from '../app.component';
+import { AuthenticationService } from '../authentication.service';
+import { LineService } from '../line.service';
+import { RidesService } from '../rides.service';
 import { handleError } from '../utils';
 
 @Component({
@@ -62,6 +61,7 @@ export class RidesComponent implements OnInit {
 
     // Get the ride of the current day for the selected line  (for the outward direction)
     this.currentDate = new Date();
+    this.currentDate.setHours(0, 0, 0, 0);
     this.loadRide('O');
   }
 
@@ -163,8 +163,7 @@ export class RidesComponent implements OnInit {
   }
 
   createRide(){
-    let date = this.currentDate.getFullYear()+'-'+(this.currentDate.getMonth()+1)+'-'+this.currentDate.getDate();
-    this.rideService.createRide(date, this.selectedLine.id, this.currentDirection).subscribe(
+    this.rideService.createRide(this.currentDate.getTime(), this.selectedLine.id, this.currentDirection).subscribe(
       (res) => {
         this.loadRide(this.currentDirection);
       },
@@ -195,16 +194,4 @@ export class RidesComponent implements OnInit {
       }
     );
   }
-
-  // private handleError(error: HttpErrorResponse) {
-  //   if (!(error.error instanceof ErrorEvent) && error.status == 401) {
-  //     // Not authenticated or auth expired
-  //     this.authenticationService.logout();
-    
-  //   } else {
-  //     // All other errors
-  //     console.error("Error contacting server");
-  //     this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
-  //   }
-  // };
 }

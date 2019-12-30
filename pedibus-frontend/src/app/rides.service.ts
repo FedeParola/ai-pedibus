@@ -74,7 +74,7 @@ export class RidesService {
     )
   }
 
-  createRide(date: string, lineId: number, direction: string){
+  createRide(date: number, lineId: number, direction: string){
     return this.http.post(environment.apiUrl+'/rides', {date, lineId, direction});
   }
 

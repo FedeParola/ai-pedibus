@@ -70,7 +70,7 @@ public class RideService implements InitializingBean {
 
         // Check if the date is > then 18:00 of the previous day
         //create the day before at 18:00
-        long millis = newRideDTO.getDate().getTime() - 8 * 60 * 60 * 1000;
+        long millis = newRideDTO.getDate().getTime() - 6 * 60 * 60 * 1000;
         Date dayBeforeRide = new Date(millis);
         //check if the date if after the day before at 18:00
         //current date
@@ -121,7 +121,7 @@ public class RideService implements InitializingBean {
 
         // Check if the date is > then 18:00 of the previous day
         //create the day before at 18:00
-        long millis = ride.getDate().getTime() - 8 * 60 * 60 * 1000;
+        long millis = ride.getDate().getTime() - 6 * 60 * 60 * 1000;
         java.sql.Date dayBeforeRide = new java.sql.Date(millis);
         Date currentDate = new Date();
         if(currentDate.after(dayBeforeRide)){
