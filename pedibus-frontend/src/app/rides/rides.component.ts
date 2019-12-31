@@ -189,7 +189,7 @@ export class RidesComponent implements OnInit {
   deleteRide(){
     this.rideService.deleteRide(this.selectedRide.id).subscribe(
       () => {
-        this.selectedRide = undefined;
+        this.nullRide = true;
       },
       (error) => {
         handleError(error, this._snackBar);

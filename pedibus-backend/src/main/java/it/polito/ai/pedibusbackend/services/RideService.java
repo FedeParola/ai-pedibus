@@ -270,12 +270,13 @@ public class RideService implements InitializingBean {
                                                     .distinct()
                                                     .collect(Collectors.toList());
         for(User u : parents){
-            String direction = ride.getDirection().equals("O") ? "outbound" : "return";
-            notificationService.createNotification(u, "Ride cancelled", "The ride of line '" +
-                    ride.getLine().getName() + "' for the " + direction + " direction " + "on " +
-                    ride.getDate() + " for which one (or more) of your pupils were reserved has been cancelled");
+            if(!u.getEmail().equals(currentUser.getEmail())) {
+                String direction = ride.getDirection().equals("O") ? "outbound" : "return";
+                notificationService.createNotification(u, "Ride cancelled", "The ride of line '" +
+                        ride.getLine().getName() + "' for the " + direction + " direction " + "on " +
+                        ride.getDate() + " for which one (or more) of your pupils were reserved has been cancelled");
+            }
         }
-        //o indicare il nome dei pupils che erano prenotati? o ancora, inviare una notifica per bambino prenotato?
 
         // Notify ride deletion
         msgTemplate.convertAndSend("/topic/lines/" + ride.getLine().getId() + "/rides", "");
