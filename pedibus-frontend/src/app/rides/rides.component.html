@@ -14,7 +14,7 @@
     <mat-list>
       <mat-list-item *ngFor="let stop of (selectedRide?.direction == 'O' ? stops.outwardStops : stops.returnStops)"> 
         <mat-icon matListIcon>fiber_manual_record</mat-icon>
-        <h4 mat-line><span class="hour">{{stop.time}}</span> <strong>{{stop.name}}</strong></h4>
+        <h4 mat-line><span class="hour">{{stop.time}}</span>&nbsp;<strong>{{stop.name}}</strong></h4>
         <mat-chip-list mat-line>
           <mat-chip *ngFor="let availability of availabilities?.get(stop.id)"
               (click)="isChipDisabled(stop)? undefined : onAvailabilityClick(availability)"
