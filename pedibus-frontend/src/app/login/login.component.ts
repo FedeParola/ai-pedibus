@@ -29,6 +29,9 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.loginButtonDisabled = false;
+    if(this.authService.isLoggedIn()){
+      this.router.navigateByUrl('/reservation');
+    }
   }
 
   login() {

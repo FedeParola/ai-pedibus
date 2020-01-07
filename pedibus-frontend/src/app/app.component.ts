@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticationService } from './authentication.service';
 import { RxStompService } from '@stomp/ng2-stompjs';
-
+import { Location } from '@angular/common';
 import { NotificationService } from './notification.service';
 
 
@@ -22,7 +22,8 @@ export class AppComponent implements OnInit {
   constructor(private authService: AuthenticationService,
               private router: Router,
               private rxStompService: RxStompService,
-              private notificationService: NotificationService) {}
+              private notificationService: NotificationService,
+              private location: Location) {}
 
   ngOnInit() {
     this.notificationService.getNotificationsUpdate$().subscribe(
@@ -59,6 +60,11 @@ export class AppComponent implements OnInit {
         }
       }
     )
+    
+    if(this.location.path() == ''){
+      this.router.navigateByUrl('/reservation');
+    }
+
   }
 
   logout() {
