@@ -3,6 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { MatSnackBar} from '@angular/material';
 import { FormGroup, FormBuilder, Validators} from '@angular/forms';
+import { ChangeDetectorRef } from '@angular/core';
 
 import { UsersService } from '../../users.service';
 import { AuthenticationService } from '../../authentication.service';
@@ -38,6 +39,7 @@ export class DialogPupilComponent implements OnInit {
               private fb: FormBuilder, 
               public dialogRef: MatDialogRef<DialogPupilComponent>,
               private authenticationService: AuthenticationService,
+              private cdRef:ChangeDetectorRef,
               @Inject(MAT_DIALOG_DATA) data) { 
 
     this.form = this.fb.group({
@@ -53,6 +55,10 @@ export class DialogPupilComponent implements OnInit {
       this.previousPupilName = this.currentPupil.name;//sa the previous name of the pupil before changing
       this.inputValue = this.previousPupilName;
     }
+  }
+
+  ngAfterViewChecked(){
+    this.cdRef.detectChanges();
   }
 
   ngOnInit() {

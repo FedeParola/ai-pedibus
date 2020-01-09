@@ -4,13 +4,17 @@
         <mat-divider></mat-divider>
         <mat-list>
             <mat-list-item *ngFor="let user of users">
-                <span class="spacer"></span> 
-                <p>{{user.email}}</p>
+                <div class="userEmail">
+                    <p>{{user.email}}</p>
+                </div>
+                <div class="userName">
+                    <p *ngIf="user.enabled">{{user.name}} {{user.surname}}</p>
+                    <p *ngIf="!user.enabled">Waiting for registration</p>
+                </div>
                 <span class="spacer"></span>
-                <p *ngIf="user.enabled">{{user.name}} {{user.surname}}</p>
-                <p *ngIf="!user.enabled">Waiting for registration</p>
-                <span class="spacer"></span>
-                <button mat-raised-button [disabled]="!user.enabled || checkCurrent(user.email) || checkSystemAdmin(user)" (click)="openDialogUserLines(user.email, user.lines)" color="primary">Lines</button>
+                <div matTooltip="You cannot change admin and your own lines" [matTooltipDisabled]="!(!user.enabled || checkCurrent(user.email) || checkSystemAdmin(user))">
+                    <button mat-raised-button [disabled]="!user.enabled || checkCurrent(user.email) || checkSystemAdmin(user)" (click)="openDialogUserLines(user.email, user.lines)" color="primary">Lines</button>
+                </div>
                 <mat-divider></mat-divider>
             </mat-list-item>
         </mat-list>

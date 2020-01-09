@@ -10,7 +10,7 @@
                 Pupil name must contain only letters
             </mat-error>
         </mat-form-field>
-        <mat-form-field>
+        <mat-form-field class="selectLine">
             <mat-select [(value)]="selected" placeholder="Select line">
                 <mat-option *ngFor="let line of lines" [value]="line">
                     {{line.name}}

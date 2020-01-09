@@ -11,12 +11,14 @@
         <mat-accordion>
             <mat-expansion-panel *ngFor="let notification of notifications" hideToggle='true' (closed)=readNotification(notification)>
                 <mat-expansion-panel-header>
-                    <span class="spacer"></span> 
-                    <p *ngIf="notification.read == false">{{notification.title}}</p>
-                    <p *ngIf="notification.read == true" class="read">{{notification.title}}</p>
-                    <span class="spacer"></span>
-                    <p *ngIf="notification.read == false">{{notification.date | date:'dd/M/yy, H:mm'}}</p>
-                    <p *ngIf="notification.read == true" class="read">{{notification.date | date:'dd/M/yy, H:mm'}}</p>
+                    <div class="notTitle">
+                        <p *ngIf="notification.read == false">{{notification.title}}</p>
+                        <p *ngIf="notification.read == true" class="read">{{notification.title}}</p>
+                    </div>
+                    <div class="notData">
+                        <p *ngIf="notification.read == false">{{notification.date | date:'dd/M/yy, H:mm'}}</p>
+                        <p *ngIf="notification.read == true" class="read">{{notification.date | date:'dd/M/yy, H:mm'}}</p>
+                    </div>
                     <span class="spacer"></span>
                     <button mat-icon-button class="remove-button" (click)="removeNotification(notification)" color="warn"><mat-icon>close</mat-icon></button>
                 </mat-expansion-panel-header>
@@ -24,9 +26,9 @@
             </mat-expansion-panel>
         </mat-accordion>   
         
-        <span class="nav-buttons">
+        <div class="nav-buttons">
             <button mat-icon-button (click)="prevPage()" [disabled]="!prevEnabled"><mat-icon>chevron_left</mat-icon></button>
             <button mat-icon-button (click)="nextPage()" [disabled]="!nextEnabled"><mat-icon>chevron_right</mat-icon></button>
-        </span>
+        </div>
     </mat-card-content>
 </mat-card>

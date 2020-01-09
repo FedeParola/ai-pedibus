@@ -4,13 +4,15 @@ body{
 
 .title {
     font-size: 45px;
-    color: whitesmoke;
     margin: 0px;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
+    justify-content: center;
+    font-weight: bold;
+    color: rgb(230, 208, 18);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .toolbar{
-    background-color: steelblue;
+    background-color: rgb(39, 79, 112);
     text-align: center;
     height: 65px;
     line-height: 65px;

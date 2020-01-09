@@ -50,3 +50,13 @@
     text-align: center;
     margin-bottom: 10px;
 }
+
+.userEmail{
+    position: absolute;
+    left: 10%;
+}
+
+.userName{
+    position: absolute;
+    left: 45%;
+}

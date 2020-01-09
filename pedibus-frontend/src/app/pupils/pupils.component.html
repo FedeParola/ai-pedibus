@@ -9,10 +9,12 @@
                 <span class="spacer"></span>
             </mat-list-item>
             <mat-list-item *ngFor="let pupil of pupils">
-                <span class="spacer"></span> 
-                <p>{{pupil.name}}</p>
-                <span class="spacer"></span>
-                <p>{{pupil.lineName}}</p>
+                <div class="pupilName">
+                    <p>{{pupil.name}}</p>
+                </div>
+                <div class="pupilLine">
+                    <p>{{pupil.lineName}}</p>
+                </div>
                 <span class="spacer"></span>
                 <button mat-icon-button class="edit-button" (click)="openDialog(pupil)" ><mat-icon>edit</mat-icon></button>
                 <button mat-icon-button class="remove-button" (click)="removePupil(pupil)"><mat-icon>delete</mat-icon></button>
