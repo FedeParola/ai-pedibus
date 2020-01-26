@@ -1,8 +1,10 @@
 import { InjectableRxStompConfig } from '@stomp/ng2-stompjs';
 
+import { environment } from '../environments/environment';
+
 export const rxStompConfig: InjectableRxStompConfig = {
   // Which server?
-  brokerURL: 'ws://127.0.0.1:8080/stomp-websocket',
+  brokerURL: environment.brokerUrl,
 
   // How often to heartbeat?
   // Interval in milliseconds, set to 0 to disable

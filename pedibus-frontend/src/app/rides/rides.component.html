@@ -1,7 +1,6 @@
 
 <app-simple-ride-selector
-    [lines]="lines" (lineSelect)="selectLine($event)" [line]="selectedLine"
-    [ride]="selectedRide" [currentDirection]="currentDirection" [currentDate]="currentDate"
+    [lines]="lines" (lineSelect)="selectLine($event)" [line]="selectedLine" [ride]="selectedRide"
     (prevRideClick)="prevRide()" [prevRideDisabled]="false"
     (nextRideClick)="nextRide()" [nextRideDisabled]="false">
 

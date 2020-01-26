@@ -39,7 +39,7 @@
   </div>
 </app-ride-selector>
 
-<mat-card class="legend mat-elevation-z3" *ngIf="!rides?.length == 0">
+<mat-card class="legend mat-elevation-z3" *ngIf="!(rides?.length == 0)">
   <mat-card-title class="legend-title">Legend</mat-card-title>
   <mat-card-content class="legend-content">
     <span><mat-icon class="reservation-icon brush">brush</mat-icon> = RESERVATION</span>

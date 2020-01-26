@@ -17,9 +17,6 @@ export class SimpleRideSelectorComponent {
   @Output() nextRideClick = new EventEmitter();
   @Input() prevRideDisabled: boolean;
   @Input() nextRideDisabled: boolean;
-  
-  @Input() currentDate;
-  @Input() currentDirection;
 
   title;
   

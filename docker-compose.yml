@@ -1,0 +1,19 @@
+version: "3"
+services:
+    db:
+        image: mdillon/postgis
+        environment:
+            POSTGRES_PASSWORD: admin
+            POSTGRES_DB: pedibus
+        container_name: pedibus-db
+    backend: 
+        build: ./pedibus-backend
+        depends_on:
+            - db
+        ports: 
+           - "8080:8080"
+            
+    frontend: 
+        build: ./pedibus-frontend
+        ports: 
+            - "80:80"
