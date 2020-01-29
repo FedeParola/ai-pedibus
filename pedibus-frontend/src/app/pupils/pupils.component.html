@@ -3,7 +3,7 @@
     <mat-card-content class="card-content">
         <mat-divider></mat-divider>
         <mat-list>
-            <mat-list-item *ngIf="noPupils">
+            <mat-list-item *ngIf="pupils?.length == 0">
                 <span class="spacer"></span> 
                 <p>No pupils registered yet</p>
                 <span class="spacer"></span>

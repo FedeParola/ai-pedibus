@@ -19,26 +19,21 @@ export class PupilsComponent implements OnInit, OnDestroy {
   pageSize: number;
   nextEnabled;
   prevEnabled;
-  noPupils;
   pupilsSub;
 
   constructor(private usersService: UsersService,
               private authService: AuthenticationService,
               public dialog: MatDialog,
               private _snackBar: MatSnackBar) { 
-                this.pageNumber = 0;
-                this.pageSize = 6;
-                this.noPupils = false;
-              }
+    this.pageNumber = 0;
+    this.pageSize = 6;
+  }
 
   ngOnInit() {
     
     this.pupilsSub=this.usersService.getUserPupils(this.pageNumber, this.pageSize).subscribe((res) => {
       this.pupils = res;
       this.prevEnabled = false;
-      if(this.pupils.length==0){
-        this.noPupils = true;
-      }
       if(this.pupils[this.pupils.length - 1].hasNext){
         this.nextEnabled = true;
       }else{
