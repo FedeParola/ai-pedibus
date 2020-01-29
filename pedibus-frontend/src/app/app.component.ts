@@ -45,7 +45,7 @@ export class AppComponent implements OnInit {
           this.loggedUser = this.authService.getUsername();
 
           const roles = this.authService.getRoles();
-          if (roles.indexOf('ROLE_ADMIN') > -1) {
+          if (roles.indexOf('ROLE_ADMIN') > -1 || roles.indexOf('ROLE_SYSTEM-ADMIN') > -1) {
             this.usersDisabled = false;
             this.ridesDisabled = false;
           } else {
