@@ -2,7 +2,7 @@
     <mat-card-title class="title">Notifications</mat-card-title>
     <mat-card-content class="card-content">
         
-        <div *ngIf="noNotifications">
+        <div *ngIf="notifications?.length == 0">
             <span class="spacer"></span> 
             <p>There are no new notifications</p>
             <span class="spacer"></span> 

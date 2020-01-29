@@ -19,17 +19,15 @@ export class NotificationComponent implements OnInit {
   pageSize: number;
   nextEnabled;
   prevEnabled;
-  noNotifications;
   notificationsSub = undefined;
 
   constructor(private notificationService: NotificationService,
               private authService: AuthenticationService,
               public dialog: MatDialog,
               private _snackBar: MatSnackBar) { 
-                this.pageNumber = 0;
-                this.pageSize = 6;
-                this.noNotifications = false;
-    }
+    this.pageNumber = 0;
+    this.pageSize = 6;
+  }
 
   ngOnInit() {
     this.updateNotifications();
@@ -52,9 +50,6 @@ export class NotificationComponent implements OnInit {
                                               this.pageSize).subscribe(
       (res) => {
         this.notifications = res;
-        if(this.notifications.length==0){
-          this.noNotifications = true;
-        }
         if(this.pageNumber == 0){
           this.prevEnabled = false;
         }
