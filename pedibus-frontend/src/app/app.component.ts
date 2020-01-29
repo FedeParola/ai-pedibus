@@ -31,6 +31,10 @@ export class AppComponent implements OnInit {
         this.pendingNotifications = pendingNotifications;
       }
     );
+
+    if(this.location.path() == '' && this.authService.isLoggedIn()){
+      this.router.navigateByUrl('/reservation');
+    }
     
     this.authService.getLoggedIn$().subscribe(
       (loggedIn) => {
@@ -60,11 +64,6 @@ export class AppComponent implements OnInit {
         }
       }
     )
-    
-    if(this.location.path() == ''){
-      this.router.navigateByUrl('/reservation');
-    }
-
   }
 
   logout() {
