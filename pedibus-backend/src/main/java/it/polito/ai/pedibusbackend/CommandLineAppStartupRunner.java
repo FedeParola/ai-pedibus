@@ -3,12 +3,17 @@ package it.polito.ai.pedibusbackend;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.polito.ai.pedibusbackend.entities.*;
+import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.repositories.*;
 import it.polito.ai.pedibusbackend.services.LineService;
+import it.polito.ai.pedibusbackend.services.MailService;
+import it.polito.ai.pedibusbackend.services.UserService;
 import it.polito.ai.pedibusbackend.viewmodels.LineDTO;
+import it.polito.ai.pedibusbackend.viewmodels.NewUserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +37,10 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
     @Autowired
     private LineService lineService;
     @Autowired
+    private UserService userService;
+    @Autowired
+    private MailService mailService;
+    @Autowired
     private LineRepository lineRepository;
     @Autowired
     private UserRepository userRepository;
@@ -43,11 +51,11 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
     @Autowired
     private ReservationRepository reservationRepository;
     @Autowired
-    private NotificationRepository notificationRepository;
-    @Autowired
     private AttendanceRepository attendanceRepository;
     @Autowired
     private RideRepository rideRepository;
+    @Value("${backend.url}")
+    private String serverUrl;
 
     @Override
     public void run(String...args) {
@@ -89,38 +97,43 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
                             log.error(err.toString());
                         } else {
                             //Try to add line and stops to the DB
+                            Line addedLine = null;
                             try {
-                                lineService.addLine(lineDTO);
+                                addedLine = lineService.addLine(lineDTO);
                                 log.info("Line " + lineDTO.getName() + " added to the DB");
-                                /*
-                                //try to create a new user
-                                try{
-                                    NewUserDTO newUserDTO = new NewUserDTO();
-                                    newUserDTO.setEmail(lineDTO.getEmail());
-                                    String uuid = userService.createUser(newUserDTO); //could throw BadRequestException
-                                    User u = userRepository.getByEmail(lineDTO.getEmail());
 
-                                    // Build registration URL
-                                    String requestUrl = request.getRequestURL().toString();
-                                    String registerUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/register/" + uuid;
-
-                                    mailService.sendRegistrationMail(newUser.getEmail(), registerUrl);
-
-                                    //add user roles
-                                    u.getRoles().add("ROLE_ADMIN");
-                                    u.getRoles().add("ROLE_USER");
-                                    //add the line to the user
-                                    u.getLines().add(addedLine);
-                                    userRepository.save(u);
-                                }catch(BadRequestException bre){   //enter here if user already exist
-                                    User u = userRepository.getByEmail(lineDTO.getEmail());
-                                    //add the line to the user
-                                    u.getLines().add(addedLine);
-                                    userRepository.save(u);
-                                }
-                                */
                             } catch (Exception e) {
                                 log.error("Error adding line " + lineDTO.getName() + " to the DB: " + e.getMessage());
+                            }
+
+                            // try to create a new user
+                            try{
+                                NewUserDTO newUserDTO = new NewUserDTO();
+                                newUserDTO.setEmail(lineDTO.getEmail());
+
+                                String uuid = userService.createUser(newUserDTO); //could throw BadRequestException
+                                User u = userRepository.findById(lineDTO.getEmail()).orElse(null);
+
+                                // Build registration URL
+                                String registerUrl = serverUrl + "register/" + uuid;
+
+                                mailService.sendRegistrationMail(u.getEmail(), registerUrl);
+
+                                //add user roles
+                                u.getRoles().add("ROLE_ADMIN");
+                                u.getRoles().add("ROLE_USER");
+                                //add the line to the user
+
+                                List<Line> lines = new ArrayList<>();
+                                lines.add(addedLine);
+                                u.setLines(lines);
+                                userRepository.save(u);
+
+                            } catch(BadRequestException bre) {   //enter here if user already exist
+                                User u = userRepository.findById(lineDTO.getEmail()).orElse(null);
+                                //add the line to the user
+                                u.getLines().add(addedLine);
+                                userRepository.save(u);
                             }
                         }
                     } catch (JsonProcessingException e) {
@@ -132,8 +145,7 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
             }
         }
 
-        Line line1 = lineRepository.getById(Long.parseLong("1"));
-        Line line2 = lineRepository.getById(Long.parseLong("14"));
+        List<Line> dbLines = lineRepository.findAll();
 
         log.info("Adding users to the DB...");
         User user;
@@ -142,13 +154,13 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 
         //Create some rides
         //Yesterday
-        Ride r1 = persistNewRide(new java.sql.Date(System.currentTimeMillis()-24*60*60*1000), line1, 'O', true);
+        Ride r1 = persistNewRide(new java.sql.Date(System.currentTimeMillis()-24*60*60*1000), dbLines.get(0), 'O', true);
         //Today
-        Ride r2 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'O', true);
-        Ride r3 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'R', true);
+        Ride r2 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), dbLines.get(0), 'O', true);
+        Ride r3 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), dbLines.get(0), 'R', true);
         //Tomorrow
-        Ride r4 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'O', true);
-        Ride r5 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'R', false);
+        Ride r4 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), dbLines.get(0), 'O', true);
+        Ride r5 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), dbLines.get(0), 'R', false);
 
         //Create Admin
         roles = new ArrayList<>();
@@ -161,41 +173,41 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
         lines = new ArrayList<>();
         roles.add("ROLE_ADMIN");
         roles.add("ROLE_USER");
-        lines.add(line1);
-        lines.add(line2);
-        user = persistNewUser("user0@email.it", "user0", "user0", roles, lines, "Password0");
+        lines.add(dbLines.get(0));
+        lines.add(dbLines.get(1));
+        user = persistNewUser("user0@email.it", "Mario", "Rossi", roles, lines, "Password0");
         log.info("Created " + user.getEmail());
 
         //Create User0's pupils
-        Pupil p1 = persistNewPupil("Andrea", line1, user);
-        Pupil p2 = persistNewPupil("Federico", line1, user);
-        Pupil p3 = persistNewPupil("Kamil", line2, user);
+        Pupil p1 = persistNewPupil("Andrea", dbLines.get(0), user);
+        Pupil p2 = persistNewPupil("Federico", dbLines.get(0), user);
+        Pupil p3 = persistNewPupil("Kamil", dbLines.get(1), user);
 
         //Create some availabilities
-        persistNewAvailability(user, r1, line1.getStops().get(0), "CONSOLIDATED");
-        persistNewAvailability(user, r2, line1.getStops().get(0), "CONSOLIDATED");
-        persistNewAvailability(user, r3, line1.getStops().get(3), "CONSOLIDATED");
-        persistNewAvailability(user, r4, line1.getStops().get(0), "CONSOLIDATED");
-        persistNewAvailability(user, r5, line1.getStops().get(3), "ASSIGNED");
+        persistNewAvailability(user, r1, dbLines.get(0).getStops().get(0), "CONSOLIDATED");
+        persistNewAvailability(user, r2, dbLines.get(0).getStops().get(0), "CONSOLIDATED");
+        persistNewAvailability(user, r3, dbLines.get(0).getStops().get(3), "CONSOLIDATED");
+        persistNewAvailability(user, r4, dbLines.get(0).getStops().get(0), "CONSOLIDATED");
+        persistNewAvailability(user, r5, dbLines.get(0).getStops().get(3), "ASSIGNED");
 
         //Create some reservations
-        Reservation r = persistNewReservation(p1, r4, line1.getStops().get(0));
-        persistNewReservation(p2, r4, line1.getStops().get(1));
+        Reservation r = persistNewReservation(p1, r4, dbLines.get(0).getStops().get(0));
+        persistNewReservation(p2, r4, dbLines.get(0).getStops().get(1));
 
         //Create some attendances
-        persistNewAttendance(p1, r4, line1.getStops().get(0), r);
-        persistNewAttendance(p3, r4, line1.getStops().get(0), null);
+        persistNewAttendance(p1, r4, dbLines.get(0).getStops().get(0), r);
+        persistNewAttendance(p3, r4, dbLines.get(0).getStops().get(0), null);
 
         //Create User1
         roles = new ArrayList<>();
         lines = new ArrayList<>();
         roles.add("ROLE_USER");
-        user = persistNewUser("user1@email.it", "user1", "user1", roles, lines, "Password1");
+        user = persistNewUser("user1@email.it", "Giuseppe", "Verdi", roles, lines, "Password1");
         log.info("Created " + user.getEmail());
 
         //Create User1's pupils
-        persistNewPupil("Luigi", line1, user);
-        persistNewPupil("Mario", line1, user);
+        persistNewPupil("Luigi", dbLines.get(0), user);
+        persistNewPupil("Mario", dbLines.get(0), user);
     }
 
     private User persistNewUser(String email, String name, String surname, List<String> roles, List<Line> lines, String password) {
