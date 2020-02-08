@@ -184,11 +184,11 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
         Pupil p3 = persistNewPupil("Kamil", dbLines.get(1), user);
 
         //Create some availabilities
-        persistNewAvailability(user, r1, dbLines.get(0).getStops().get(0), "CONSOLIDATED");
-        persistNewAvailability(user, r2, dbLines.get(0).getStops().get(0), "CONSOLIDATED");
-        persistNewAvailability(user, r3, dbLines.get(0).getStops().get(3), "CONSOLIDATED");
-        persistNewAvailability(user, r4, dbLines.get(0).getStops().get(0), "CONSOLIDATED");
-        persistNewAvailability(user, r5, dbLines.get(0).getStops().get(3), "ASSIGNED");
+        persistNewAvailability(user, r1, findCoveringStop(r1), "CONSOLIDATED");
+        persistNewAvailability(user, r2, findCoveringStop(r2), "CONSOLIDATED");
+        persistNewAvailability(user, r3, findCoveringStop(r3), "CONSOLIDATED");
+        persistNewAvailability(user, r4, findCoveringStop(r4), "CONSOLIDATED");
+        persistNewAvailability(user, r5, findCoveringStop(r5), "ASSIGNED");
 
         //Create some reservations
         Reservation r = persistNewReservation(p1, r4, dbLines.get(0).getStops().get(0));
@@ -264,5 +264,11 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
         a.setStop(stop);
         a.setReservation(reservation);
         return attendanceRepository.save(a);
+    }
+
+    private Stop findCoveringStop(Ride r) {
+        return r.getLine().getStops().stream().filter((s) -> s.getDirection() == r.getDirection())
+                                              .sorted((s1, s2) -> s1.getOrder()-s2.getOrder())
+                                              .findFirst().orElse(null);
     }
 }

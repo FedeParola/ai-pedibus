@@ -1,6 +1,9 @@
 package it.polito.ai.pedibusbackend.services;
 
-import it.polito.ai.pedibusbackend.entities.*;
+import it.polito.ai.pedibusbackend.entities.Availability;
+import it.polito.ai.pedibusbackend.entities.Ride;
+import it.polito.ai.pedibusbackend.entities.Stop;
+import it.polito.ai.pedibusbackend.entities.User;
 import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
@@ -11,6 +14,8 @@ import it.polito.ai.pedibusbackend.repositories.UserRepository;
 import it.polito.ai.pedibusbackend.security.AuthorizationManager;
 import it.polito.ai.pedibusbackend.viewmodels.AvailabilityUpdateDTO;
 import it.polito.ai.pedibusbackend.viewmodels.NewAvailabilityDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +29,7 @@ import java.util.Date;
 
 @Service
 public class AvailabilityService {
+    private static final Logger log = LoggerFactory.getLogger(AvailabilityService.class);
     @Autowired
     private AvailabilityRepository availabilityRepository;
     @Autowired
