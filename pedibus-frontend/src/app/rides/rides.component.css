@@ -31,9 +31,11 @@
 }
 
 .legend{
+  position: fixed;
+  right: 2%;
+  top: 80px;
   min-width: 150px;
   max-width: 650px;
-  width: 100%;
   margin: auto;
   margin-top: 20px;
   border-radius: 10px;
@@ -48,7 +50,7 @@
   font-size: 15px;
   font-style: italic;
   font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  text-align: center;
+  text-align: left;
 }
 
 .new-icon{
