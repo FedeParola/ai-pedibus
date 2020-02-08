@@ -20,16 +20,18 @@ body{
 
 .container{
     width: 500px;
-    margin-top: 10px;
+    margin-top: 30px;
     box-shadow: 0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);
     border-radius: 4px;
     font-family: Roboto, "Helvetica Neue", sans-serif;
+    border-radius: 10px;
 }
 
 .cardTitle{
     text-align: center;
     font-size: 25px;
     margin: 10px;
+    padding-top: 10px;
 }
 
 .buttonContainer{
