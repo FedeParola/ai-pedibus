@@ -136,7 +136,7 @@ export class UsersComponent implements OnInit, OnDestroy {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.disableClose = true;
     dialogConfig.autoFocus = true;
-    dialogConfig.width = '230px';
+    dialogConfig.width = '260px';
     dialogConfig.data = {
       username: username,
       userLines: lines

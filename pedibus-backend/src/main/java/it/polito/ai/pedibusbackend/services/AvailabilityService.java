@@ -21,7 +21,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Valid;
@@ -43,7 +42,7 @@ public class AvailabilityService {
     @Autowired
     private NotificationService notificationService;
 
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public Long addAvailability(@Valid NewAvailabilityDTO availabilityDTO, UserDetails loggedUser)
             throws BadRequestException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
@@ -119,7 +118,7 @@ public class AvailabilityService {
         return availability.getId();
     }
 
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void updateAvailability(Long availabilityId, AvailabilityUpdateDTO newAvailability, UserDetails loggedUser)
             throws NotFoundException, BadRequestException, ForbiddenException {
         User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
@@ -267,7 +266,7 @@ public class AvailabilityService {
         }
     }
 
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void deleteAvailability(Long availabilityId, UserDetails loggedUser) throws BadRequestException,
             NotFoundException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());

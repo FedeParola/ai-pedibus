@@ -29,6 +29,7 @@ public class NotificationService {
     @Autowired
     private SimpMessagingTemplate template;
 
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void deleteNotification(Long notificationId, String name) throws NotFoundException, BadRequestException,
             ForbiddenException {
         Notification notification = notificationRepository.findById(notificationId).orElseThrow(

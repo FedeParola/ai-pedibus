@@ -1,5 +1,6 @@
 package it.polito.ai.pedibusbackend.services;
 
+import it.polito.ai.pedibusbackend.CommandLineAppStartupRunner;
 import it.polito.ai.pedibusbackend.entities.*;
 import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
@@ -8,14 +9,12 @@ import it.polito.ai.pedibusbackend.repositories.*;
 import it.polito.ai.pedibusbackend.viewmodels.NewReservationDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Valid;
@@ -24,7 +23,6 @@ import java.util.Date;
 @Service
 @DependsOn("userService")
 public class ReservationService{
-    private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -41,8 +39,9 @@ public class ReservationService{
     private NotificationService notificationService;
     @Autowired
     private SimpMessagingTemplate msgTemplate;
+    private static final Logger log = LoggerFactory.getLogger(CommandLineAppStartupRunner.class);
 
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public Long addReservation(@Valid NewReservationDTO reservationDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
 
@@ -70,10 +69,11 @@ public class ReservationService{
             }
         }
 
-        //Check if current date and time is before than when the ride takes place
-        Date utilDate = new Date();
-        if(ride.getDate().compareTo(new java.sql.Date(utilDate.getTime())) < 0){
-            throw new BadRequestException("The ride has already taken place");
+        //Check if current date and time is before than when the stop takes place
+        Date stopDateTime = new java.util.Date(ride.getDate().getTime() + stop.getTime().getTime());
+        Date now = new Date();
+        if(stopDateTime.compareTo(now) <= 0){
+            throw new BadRequestException("The ride's stop has already taken place");
         }
 
         //Check if the stop belongs to the ride
@@ -112,7 +112,7 @@ public class ReservationService{
         return reservation.getId();
     }
 
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void updateReservation(Long reservationId, Long newStopId, UserDetails loggedUser) throws NotFoundException,
             BadRequestException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
@@ -134,6 +134,13 @@ public class ReservationService{
         Stop stop = stopRepository.findById(newStopId).orElse(null);
         if(stop == null) {
             throw new BadRequestException("Unknown stop");
+        }
+
+        //Check if current date and time is before than when the stop takes place
+        Date stopDateTime = new java.util.Date(reservation.getRide().getDate().getTime() + stop.getTime().getTime());
+        Date now = new Date();
+        if(stopDateTime.compareTo(now) <= 0){
+            throw new BadRequestException("The ride's stop has already taken place");
         }
 
         //Check that the new stop belongs to the same ride
@@ -162,7 +169,7 @@ public class ReservationService{
         notifyReservationOperation(reservation);
     }
 
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void deleteReservation(Long reservationId, UserDetails loggedUser) throws NotFoundException, BadRequestException,
             ForbiddenException {
         User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
@@ -178,6 +185,14 @@ public class ReservationService{
             if(!currentUser.getEmail().equals(reservation.getPupil().getUser().getEmail())){
                 throw new ForbiddenException("The user is not allowed to do this action");
             }
+        }
+
+        //Check if current date and time is before than when the stop takes place
+        Date stopDateTime = new java.util.Date(reservation.getRide().getDate().getTime() +
+                reservation.getStop().getTime().getTime());
+        Date now = new Date();
+        if(stopDateTime.compareTo(now) <= 0){
+            throw new BadRequestException("The ride's stop has already taken place");
         }
 
         reservationRepository.delete(reservation);
