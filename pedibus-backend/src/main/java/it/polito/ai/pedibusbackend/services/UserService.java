@@ -9,9 +9,7 @@ import it.polito.ai.pedibusbackend.security.AuthorizationManager;
 import it.polito.ai.pedibusbackend.viewmodels.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -31,8 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
-@DependsOn("lineService")
-public class UserService implements InitializingBean, UserDetailsService {
+public class UserService implements UserDetailsService {
     private static final long CONF_TOKEN_EXPIRY_HOURS = 24;
     private static final long RECOVER_TOKEN_EXPIRY_MIN = 30;
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
@@ -447,16 +444,6 @@ public class UserService implements InitializingBean, UserDetailsService {
         }
 
         return rideDTOs;
-    }
-
-    @Override
-    public void afterPropertiesSet() {
-        ArrayList<String> roles;
-
-        /* Create Admin */
-        roles = new ArrayList<>();
-        roles.add("ROLE_SYSTEM-ADMIN");
-        persistNewUser("admin@email.it", "admin", "admin", roles, null, "Admin0");
     }
 
     private User persistNewUser(String email, String name, String surname, List<String> roles, List<Line> lines, String password) {

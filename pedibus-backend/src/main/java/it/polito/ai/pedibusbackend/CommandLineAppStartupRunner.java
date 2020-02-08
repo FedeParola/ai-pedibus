@@ -1,7 +1,11 @@
 package it.polito.ai.pedibusbackend;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.polito.ai.pedibusbackend.entities.*;
 import it.polito.ai.pedibusbackend.repositories.*;
+import it.polito.ai.pedibusbackend.services.LineService;
+import it.polito.ai.pedibusbackend.viewmodels.LineDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,18 +14,28 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 @Component
 public class CommandLineAppStartupRunner implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(CommandLineAppStartupRunner.class);
     @Autowired
-    private UserRepository userRepository;
+    private LineService lineService;
     @Autowired
     private LineRepository lineRepository;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private PupilRepository pupilRepository;
     @Autowired
@@ -37,14 +51,112 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
 
     @Override
     public void run(String...args) {
-        log.info("Adding users to the DB...");
+        log.info("Adding lines to the db...");
+
+        //Find lines dir resource
+        URL linesDirURL = this.getClass().getResource("/lines");
+
+        //Check dir existence
+        if(linesDirURL == null) {
+            log.error("Cannot access lines directory");
+        } else {
+            File linesDir = new File(linesDirURL.getFile());
+
+            //Check dir existence
+            if (!linesDir.isDirectory()) {
+                log.error("Cannot access lines directory");
+            } else {
+                ObjectMapper objectMapper = new ObjectMapper();
+                Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+                //Retrieve all json files in the dir
+                Pattern p = Pattern.compile(".*\\.json");
+                File[] linesFiles = linesDir.listFiles((dir, name) -> p.matcher(name).matches());
+
+                //Parse every file
+                for (File f: linesFiles) {
+                    try {
+                        //Read the json into a DTO
+                        LineDTO lineDTO = objectMapper.readValue(f, LineDTO.class);
+
+                        //Check DTO validity
+                        Set<ConstraintViolation<LineDTO>> violations = validator.validate(lineDTO);
+                        if (violations.size() > 0) {
+                            StringBuilder err = new StringBuilder("Errors validating file " + f.getName() + ":");
+                            for (ConstraintViolation<LineDTO> violation : violations) {
+                                err.append("\n" + violation.getPropertyPath() + ": " + violation.getMessage());
+                            }
+                            log.error(err.toString());
+                        } else {
+                            //Try to add line and stops to the DB
+                            try {
+                                lineService.addLine(lineDTO);
+                                log.info("Line " + lineDTO.getName() + " added to the DB");
+                                /*
+                                //try to create a new user
+                                try{
+                                    NewUserDTO newUserDTO = new NewUserDTO();
+                                    newUserDTO.setEmail(lineDTO.getEmail());
+                                    String uuid = userService.createUser(newUserDTO); //could throw BadRequestException
+                                    User u = userRepository.getByEmail(lineDTO.getEmail());
+
+                                    // Build registration URL
+                                    String requestUrl = request.getRequestURL().toString();
+                                    String registerUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/register/" + uuid;
+
+                                    mailService.sendRegistrationMail(newUser.getEmail(), registerUrl);
+
+                                    //add user roles
+                                    u.getRoles().add("ROLE_ADMIN");
+                                    u.getRoles().add("ROLE_USER");
+                                    //add the line to the user
+                                    u.getLines().add(addedLine);
+                                    userRepository.save(u);
+                                }catch(BadRequestException bre){   //enter here if user already exist
+                                    User u = userRepository.getByEmail(lineDTO.getEmail());
+                                    //add the line to the user
+                                    u.getLines().add(addedLine);
+                                    userRepository.save(u);
+                                }
+                                */
+                            } catch (Exception e) {
+                                log.error("Error adding line " + lineDTO.getName() + " to the DB: " + e.getMessage());
+                            }
+                        }
+                    } catch (JsonProcessingException e) {
+                        log.error("Errors parsing file " + f.getName() + ": " + e.getMessage());
+                    } catch (IOException e) {
+                        log.error("Unable to open file " + f.getName() + ": " + e.getMessage());
+                    }
+                }
+            }
+        }
+
         Line line1 = lineRepository.getById(Long.parseLong("1"));
         Line line2 = lineRepository.getById(Long.parseLong("8"));
+
+        log.info("Adding users to the DB...");
         User user;
         ArrayList<String> roles;
         ArrayList<Line> lines;
 
-        /* Create User0 */
+        //Create some rides
+        //Yesterday
+        Ride r1 = persistNewRide(new java.sql.Date(System.currentTimeMillis()-24*60*60*1000), line1, 'O', true);
+        //Today
+        Ride r2 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'O', true);
+        Ride r3 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'R', true);
+        //Tomorrow
+        Ride r4 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'O', true);
+        Ride r5 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'R', false);
+
+        //Create Admin
+        roles = new ArrayList<>();
+        roles.add("ROLE_SYSTEM-ADMIN");
+        user = persistNewUser("admin@email.it", "admin", "admin", roles, null, "Admin0");
+        log.info("Created " + user.getEmail());
+
+        //Create User0
         roles = new ArrayList<>();
         lines = new ArrayList<>();
         roles.add("ROLE_ADMIN");
@@ -54,100 +166,36 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
         user = persistNewUser("user0@email.it", "user0", "user0", roles, lines, "Password0");
         log.info("Created " + user.getEmail());
 
-        /* Create User0's pupils */
+        //Create User0's pupils
         Pupil p1 = persistNewPupil("Andrea", line1, user);
         Pupil p2 = persistNewPupil("Federico", line1, user);
-        Pupil p3 = persistNewPupil("Kamil", line1, user);
-        Pupil p4 = persistNewPupil("Mario", line2, user);
-        Pupil p5 = persistNewPupil("Marco", line2, user);
-        Pupil p6 = persistNewPupil("Luigi", line1, user);
-        Pupil p7 = persistNewPupil("Pietro", line2, user);
+        Pupil p3 = persistNewPupil("Kamil", line2, user);
 
-        // Create some notifications for User0
-        persistNewNotification(user, "Notification1", "This is the message of notification1!", false, new java.sql.Timestamp(System.currentTimeMillis()));
-        persistNewNotification(user, "Notification2", "This is the message of notification2!", false, new java.sql.Timestamp(System.currentTimeMillis()));
-        persistNewNotification(user, "Notification3", "This is the message of notification3!", false, new java.sql.Timestamp(System.currentTimeMillis()));
-        persistNewNotification(user, "Notification4", "This is the message of notification4!", true, new java.sql.Timestamp(System.currentTimeMillis()));
-        persistNewNotification(user, "Notification5", "This is the message of notification5!", false, new java.sql.Timestamp(System.currentTimeMillis()));
-        persistNewNotification(user, "Notification6", "This is the message of notification6!", false, new java.sql.Timestamp(System.currentTimeMillis()));
-        persistNewNotification(user, "Notification7", "This is the message of notification7!", false, new java.sql.Timestamp(System.currentTimeMillis()));
-
-        /* Create some rides for yesterday */
-        Ride r1 = persistNewRide(new java.sql.Date(System.currentTimeMillis()-24*60*60*1000), line1, 'O', true);
-
-        /* Create some rides for today */
-        Ride r2 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'O', true);
-        Ride r3 = persistNewRide(new java.sql.Date(System.currentTimeMillis()), line1, 'R', true);
-
-        /* Create some rides for tomorrow */
-        Ride r4 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'O', true);
-        Ride r5 = persistNewRide(new java.sql.Date(System.currentTimeMillis()+24*60*60*1000), line1, 'R', false);
-
-        /* Create some availabilities */
+        //Create some availabilities
         persistNewAvailability(user, r1, line1.getStops().get(0), "CONSOLIDATED");
         persistNewAvailability(user, r2, line1.getStops().get(0), "CONSOLIDATED");
         persistNewAvailability(user, r3, line1.getStops().get(3), "CONSOLIDATED");
         persistNewAvailability(user, r4, line1.getStops().get(0), "CONSOLIDATED");
         persistNewAvailability(user, r5, line1.getStops().get(3), "ASSIGNED");
 
-        /* Create some reservations */
+        //Create some reservations
         Reservation r = persistNewReservation(p1, r4, line1.getStops().get(0));
         persistNewReservation(p2, r4, line1.getStops().get(1));
 
-        /* Create some attendances */
+        //Create some attendances
         persistNewAttendance(p1, r4, line1.getStops().get(0), r);
         persistNewAttendance(p3, r4, line1.getStops().get(0), null);
 
-        /* Create User1 */
+        //Create User1
         roles = new ArrayList<>();
         lines = new ArrayList<>();
         roles.add("ROLE_USER");
         user = persistNewUser("user1@email.it", "user1", "user1", roles, lines, "Password1");
         log.info("Created " + user.getEmail());
 
-        /* Create User1's pupils */
+        //Create User1's pupils
         persistNewPupil("Luigi", line1, user);
         persistNewPupil("Mario", line1, user);
-
-        /* Create User2 */
-        roles = new ArrayList<>();
-        lines = new ArrayList<>();
-        roles.add("ROLE_ADMIN");
-        roles.add("ROLE_USER");
-        lines.add(line1);
-        //lines.add(line2);
-        user = persistNewUser("user2@email.it", "user2", "user2", roles, lines, "Password2");
-        log.info("Created " + user.getEmail());
-
-        /* Create User2's pupils */
-        persistNewPupil("Giovanni", line2, user);
-        persistNewPupil("Piero", line2, user);
-        persistNewPupil("Anna", line2, user);
-
-        /* Create User3 */
-        roles = new ArrayList<>();
-        lines = new ArrayList<>();
-        roles.add("ROLE_USER");
-        user = persistNewUser("user3@email.it", "user3", "user3", roles, lines, "Password3");
-        log.info("Created " + user.getEmail());
-
-        /* Create User4 */
-        roles = new ArrayList<>();
-        lines = new ArrayList<>();
-        roles.add("ROLE_USER");
-        user = persistNewUser("user4@email.it", "user4", "user4", roles, lines, "Password4");
-        log.info("Created " + user.getEmail());
-
-        /* Create User5 */
-        roles = new ArrayList<>();
-        lines = new ArrayList<>();
-        roles.add("ROLE_USER");
-        user = persistNewUser("user5@email.it", "user5", "user5", roles, lines, "Password5");
-        log.info("Created " + user.getEmail());
-
-        /* Create User5's pupils */
-        persistNewPupil("Massimo", line2, user);
-        persistNewPupil("Giorgia", line2, user);
     }
 
     private User persistNewUser(String email, String name, String surname, List<String> roles, List<Line> lines, String password) {
@@ -204,15 +252,5 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
         a.setStop(stop);
         a.setReservation(reservation);
         return attendanceRepository.save(a);
-    }
-
-    private void persistNewNotification(User user, String title, String message, Boolean read, Timestamp timestamp) {
-        Notification n = new Notification();
-        n.setUser(user);
-        n.setTitle(title);
-        n.setMessage(message);
-        n.setRead(read);
-        n.setTimestamp(timestamp);
-        notificationRepository.save(n);
     }
 }
