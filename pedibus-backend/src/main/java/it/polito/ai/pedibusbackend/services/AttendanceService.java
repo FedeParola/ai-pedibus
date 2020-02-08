@@ -38,7 +38,7 @@ public class AttendanceService {
     @Autowired
     private SimpMessagingTemplate msgTemplate;
 
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public Long addAttendance(@Valid NewAttendanceDTO attendanceDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
         User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
 
@@ -127,6 +127,7 @@ public class AttendanceService {
         return attendance.getId();
     }
 
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void deleteAttendance(Long attendanceId, UserDetails loggedUser) throws NotFoundException, BadRequestException,
             ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());

@@ -16,8 +16,6 @@ import it.polito.ai.pedibusbackend.viewmodels.LineDTO;
 import it.polito.ai.pedibusbackend.viewmodels.PupilDTO;
 import it.polito.ai.pedibusbackend.viewmodels.RideDTO;
 import it.polito.ai.pedibusbackend.viewmodels.StopDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -33,7 +31,6 @@ import java.util.TimeZone;
 
 @Service
 public class LineService{
-    private static final Logger log = LoggerFactory.getLogger(LineService.class);
     @Autowired
     private LineRepository lineRepository;
     @Autowired

@@ -7,8 +7,6 @@ import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.repositories.*;
 import it.polito.ai.pedibusbackend.security.AuthorizationManager;
 import it.polito.ai.pedibusbackend.viewmodels.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -32,7 +30,6 @@ import java.util.stream.StreamSupport;
 public class UserService implements UserDetailsService {
     private static final long CONF_TOKEN_EXPIRY_HOURS = 24;
     private static final long RECOVER_TOKEN_EXPIRY_MIN = 30;
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
     @Autowired
     private AvailabilityRepository availabilityRepository;
     @Autowired
@@ -85,6 +82,7 @@ public class UserService implements UserDetailsService {
         registrationTokenRepository.delete(token);
     }
 
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public String createRecoverToken(String email) {
         String uuid = UUID.randomUUID().toString();
 
@@ -444,18 +442,6 @@ public class UserService implements UserDetailsService {
         }
 
         return rideDTOs;
-    }
-
-    private User persistNewUser(String email, String name, String surname, List<String> roles, List<Line> lines, String password) {
-        User user = new User();
-        user.setEmail(email);
-        user.setName(name);
-        user.setSurname(surname);
-        user.setEnabled(true);
-        user.setRoles(roles);
-        user.setLines(lines);
-        user.setPassword(passwordEncoder.encode(password));
-        return userRepository.save(user);
     }
 
     @Override

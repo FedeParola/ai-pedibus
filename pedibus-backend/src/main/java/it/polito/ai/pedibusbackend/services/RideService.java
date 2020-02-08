@@ -10,13 +10,11 @@ import it.polito.ai.pedibusbackend.repositories.RideRepository;
 import it.polito.ai.pedibusbackend.repositories.UserRepository;
 import it.polito.ai.pedibusbackend.security.AuthorizationManager;
 import it.polito.ai.pedibusbackend.viewmodels.*;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -25,7 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class RideService implements InitializingBean {
+public class RideService {
     @Autowired
     private RideRepository rideRepository;
     @Autowired
@@ -55,7 +53,7 @@ public class RideService implements InitializingBean {
         return rides;
     }
 
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public Long addRide(NewRideDTO newRideDTO, UserDetails loggedUser) throws BadRequestException, NotFoundException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
 
@@ -105,6 +103,7 @@ public class RideService implements InitializingBean {
         return ride.getId();
     }
 
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void consolidateRide(Long rideId, UpdateRideDTO updateRideDTO, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
 
@@ -239,6 +238,7 @@ public class RideService implements InitializingBean {
         return;
     }
 
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void deleteRide(Long rideId, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
         User currentUser = userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
 
@@ -388,10 +388,5 @@ public class RideService implements InitializingBean {
         }
 
         return availabilities;
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-
     }
 }

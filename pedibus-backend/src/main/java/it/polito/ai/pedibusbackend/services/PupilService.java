@@ -34,7 +34,6 @@ public class PupilService {
     @Autowired
     private SimpMessagingTemplate msgTemplate;
 
-
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public Long createPupil(NewPupilDTO newPupil, String loggedUserId) throws BadRequestException, ForbiddenException {
         /* Authorize access */
