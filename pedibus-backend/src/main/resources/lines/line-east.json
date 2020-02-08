@@ -1,0 +1,92 @@
+{
+	"email": "kamil.smolen94@gmail.com",
+	"name": "Line East",
+	"outwardStops": [
+		{
+			"name": "Porta Nuova",
+			"order": 0,
+			"time": "07:30",
+			"lng": 7.678876,
+			"lat": 45.062770
+		},
+		{
+			"name": "Re Umberto",
+			"order": 1,
+			"time": "07:35",
+			"lng": 7.674439,
+			"lat": 45.064300
+		},
+		{
+			"name": "Galileo Ferraris",
+			"order": 2,
+			"time": "07:40",
+			"lng": 7.669549,
+			"lat": 45.066177
+		},
+		{
+			"name": "Vinzaglio",
+			"order": 3,
+			"time": "07:45",
+			"lng": 7.666289,
+			"lat": 45.067265
+		},
+		{
+			"name": "Stati Uniti",
+			"order": 4,
+			"time": "07:50",
+			"lng": 7.664598,
+			"lat": 45.065236
+		},
+		{
+			"name": "School",
+			"order": 5,
+			"time": "07:55",
+			"lng": 7.662410,
+			"lat": 45.062463
+		}
+	],
+	"returnStops": [
+		{
+			"name": "School",
+			"order": 0,
+			"time": "13:00",
+			"lng": 7.662410,
+			"lat": 45.062463
+		},
+		{
+			"name": "Stati Uniti",
+			"order": 1,
+			"time": "13:05",
+			"lng": 7.664598,
+			"lat": 45.065236
+		},
+		{
+			"name": "Vinzaglio",
+			"order": 2,
+			"time": "13:10",
+			"lng": 7.666289,
+			"lat": 45.067265
+		},
+		{
+			"name": "Galileo Ferraris",
+			"order": 3,
+			"time": "13:15",
+			"lng": 7.669549,
+			"lat": 45.066177
+		},
+		{
+			"name": "Re Umberto",
+			"order": 4,
+			"time": "13:20",
+			"lng": 7.674439,
+			"lat": 45.064300
+		},
+		{
+			"name": "Porta Nuova",
+			"order": 5,
+			"time": "13:25",
+			"lng": 7.678876,
+			"lat": 45.062770
+		}
+	]
+}

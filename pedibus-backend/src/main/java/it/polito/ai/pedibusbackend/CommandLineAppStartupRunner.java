@@ -133,7 +133,7 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
         }
 
         Line line1 = lineRepository.getById(Long.parseLong("1"));
-        Line line2 = lineRepository.getById(Long.parseLong("8"));
+        Line line2 = lineRepository.getById(Long.parseLong("14"));
 
         log.info("Adding users to the DB...");
         User user;

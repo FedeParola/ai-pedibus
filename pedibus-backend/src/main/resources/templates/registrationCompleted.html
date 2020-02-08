@@ -7,7 +7,7 @@
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel = "stylesheet"
           type = "text/css"
-          href = "registrationCompleted.css" />
+          href = "/stylesheets/registrationCompleted.css" />
 </head>
 <body>
     <div class="toolbar">
@@ -15,6 +15,7 @@
     </div>
     <div class="container">
         <p class="message">Your account was created</p>
+        <p class="submessage"><a th:href="${frontendUrl}">Log in</a> to access the pedibus</p>
     </div>
 </body>
 </html>

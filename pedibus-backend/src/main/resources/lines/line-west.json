@@ -1,0 +1,78 @@
+{
+	"email": "user0@email.it",
+	"name": "Line West",
+	"outwardStops": [
+		{
+			"name": "Sabotino",
+			"order": 0,
+			"time": "07:30",
+			"lng": 7.650716,
+			"lat": 45.064088
+		},
+		{
+			"name": "San Paolo",
+			"order": 1,
+			"time": "07:35",
+			"lng": 7.652594,
+			"lat": 45.063582
+		},
+		{
+			"name": "Ferrucci",
+			"order": 2,
+			"time": "07:40",
+			"lng": 7.655570,
+			"lat": 45.062197
+		},
+		{
+			"name": "Mediterraneo",
+			"order": 3,
+			"time": "07:45",
+			"lng": 7.658628,
+			"lat": 45.061237
+		},
+		{
+			"name": "School",
+			"order": 4,
+			"time": "07:50",
+			"lng": 7.662410,
+			"lat": 45.062463
+		}
+	],
+	"returnStops": [
+		{
+			"name": "School",
+			"order": 0,
+			"time": "13:00",
+			"lng": 7.662410,
+			"lat": 45.062463
+		},
+		{
+			"name": "Mediterraneo",
+			"order": 1,
+			"time": "13:05",
+			"lng": 7.658628,
+			"lat": 45.061237
+		},
+		{
+			"name": "Ferrucci",
+			"order": 2,
+			"time": "13:10",
+			"lng": 7.655570,
+			"lat": 45.062197
+		},
+		{
+			"name": "San Paolo",
+			"order": 1,
+			"time": "13:15",
+			"lng": 7.652594,
+			"lat": 45.063582
+		},
+		{
+			"name": "Sabotino",
+			"order": 0,
+			"time": "13:20",
+			"lng": 7.650716,
+			"lat": 45.064088
+		}
+	]
+}

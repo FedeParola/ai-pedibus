@@ -10,6 +10,7 @@ import it.polito.ai.pedibusbackend.viewmodels.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -43,6 +44,8 @@ public class UserController {
     private AuthenticationManager authenticationManager;
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     @PostMapping(value = "/login", consumes= MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, String> login(@RequestBody @Valid LoginDTO loginDTO) throws BadRequestException {
@@ -108,6 +111,7 @@ public class UserController {
             /* Register user */
             userService.register(uuid, registrationDTO);
             response.setViewName("registrationCompleted");
+            response.getModel().put("frontendUrl", frontendUrl);
         }
 
         return response;
