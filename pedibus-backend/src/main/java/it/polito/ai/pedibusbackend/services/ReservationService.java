@@ -1,11 +1,14 @@
 package it.polito.ai.pedibusbackend.services;
 
+import it.polito.ai.pedibusbackend.CommandLineAppStartupRunner;
 import it.polito.ai.pedibusbackend.entities.*;
 import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.repositories.*;
 import it.polito.ai.pedibusbackend.viewmodels.NewReservationDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -36,6 +39,7 @@ public class ReservationService{
     private NotificationService notificationService;
     @Autowired
     private SimpMessagingTemplate msgTemplate;
+    private static final Logger log = LoggerFactory.getLogger(CommandLineAppStartupRunner.class);
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public Long addReservation(@Valid NewReservationDTO reservationDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
@@ -65,10 +69,11 @@ public class ReservationService{
             }
         }
 
-        //Check if current date and time is before than when the ride takes place
-        Date utilDate = new Date();
-        if(ride.getDate().compareTo(new java.sql.Date(utilDate.getTime())) < 0){
-            throw new BadRequestException("The ride has already taken place");
+        //Check if current date and time is before than when the stop takes place
+        Date stopDateTime = new java.util.Date(ride.getDate().getTime() + stop.getTime().getTime());
+        Date now = new Date();
+        if(stopDateTime.compareTo(now) <= 0){
+            throw new BadRequestException("The ride's stop has already taken place");
         }
 
         //Check if the stop belongs to the ride
@@ -131,6 +136,13 @@ public class ReservationService{
             throw new BadRequestException("Unknown stop");
         }
 
+        //Check if current date and time is before than when the stop takes place
+        Date stopDateTime = new java.util.Date(reservation.getRide().getDate().getTime() + stop.getTime().getTime());
+        Date now = new Date();
+        if(stopDateTime.compareTo(now) <= 0){
+            throw new BadRequestException("The ride's stop has already taken place");
+        }
+
         //Check that the new stop belongs to the same ride
         if(!reservation.getRide().getLine().getStops().stream()
                                                       .filter((s) -> s.getId() == stop.getId())
@@ -173,6 +185,14 @@ public class ReservationService{
             if(!currentUser.getEmail().equals(reservation.getPupil().getUser().getEmail())){
                 throw new ForbiddenException("The user is not allowed to do this action");
             }
+        }
+
+        //Check if current date and time is before than when the stop takes place
+        Date stopDateTime = new java.util.Date(reservation.getRide().getDate().getTime() +
+                reservation.getStop().getTime().getTime());
+        Date now = new Date();
+        if(stopDateTime.compareTo(now) <= 0){
+            throw new BadRequestException("The ride's stop has already taken place");
         }
 
         reservationRepository.delete(reservation);
