@@ -27,7 +27,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
   selectedRideIndex = -1;
   reservations: Map<number, any>;  // K: rideId, V: reservation, contains reservations for all lines
   reservationsSub;
-  cantUpdateExplanation: string;
+  cantUpdateExplanations: string[];  // K: stopId, V: why can't select that stop
 
   constructor(private reservationService: ReservationService,
               private authenticationService: AuthenticationService,
@@ -40,6 +40,8 @@ export class ReservationComponent implements OnInit, OnDestroy {
               }
 
   ngOnInit() {
+    this.cantUpdateExplanations = [];
+
     this.pupilsSub = this.usersService.getPupils(this.authenticationService.getUsername()).subscribe(
       (res) => {
         this.pupils = res;
@@ -253,21 +255,24 @@ export class ReservationComponent implements OnInit, OnDestroy {
     return false;  // Stop event propagation (change selected radio only on api req success)
   }
 
-  cantUpdate(): boolean {
+  cantUpdate(stop): boolean {
     let cantUpdate = false;
-    this.cantUpdateExplanation = '';
+    this.cantUpdateExplanations[stop.id] = '';
 
-    if (moment().isAfter(moment(this.selectedRide.date))) {
+    // Check if time of the given stop has exceeded
+    let time = stop.time.split(':');
+    if (moment().isAfter(moment(this.selectedRide.date).hour(time[0]).minute(time[1]))) {
       cantUpdate = true;
-      this.cantUpdateExplanation += "Time expired for this ride"
+      this.cantUpdateExplanations[stop.id] += "Time expired for this stop";
     }
     
+    // Check if pupil is already marked as present
     if (this.selectedReservation && this.selectedReservation.attendanceId !== undefined) {
       cantUpdate = true;
-      if (this.cantUpdateExplanation != '') {
-        this.cantUpdateExplanation += '\n';
+      if (this.cantUpdateExplanations[stop.id] != '') {
+        this.cantUpdateExplanations[stop.id] += '\n';
       }
-      this.cantUpdateExplanation += "Pupil already marked as present";
+      this.cantUpdateExplanations[stop.id] += "Pupil already marked as present";
     }
     
     return cantUpdate;

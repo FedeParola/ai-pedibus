@@ -12,13 +12,13 @@
     <div class="radio-group-container">
       <mat-radio-group
           class="stops-radio-group"
-          [value]="selectedReservation ? selectedReservation.stopId : undefined"
-          [disabled]="cantUpdate()"
-          [matTooltip]="cantUpdateExplanation">
+          [value]="selectedReservation ? selectedReservation.stopId : undefined">
         <mat-radio-button 
             *ngFor="let stop of (selectedRide.direction == 'O' ? stops.outwardStops : stops.returnStops)"
             [value]="stop.id"
-            (click)="stop.name.toLowerCase() == 'school' || cantUpdate() ? false : onStopClick(stop.id)"
+            (click)="stop.name.toLowerCase() == 'school' || cantUpdate(stop) ? false : onStopClick(stop.id)"
+            [disabled]="cantUpdate(stop)"
+            [matTooltip]="cantUpdateExplanations[stop.id]"
             [ngClass]="stop.name.toLowerCase() == 'school' ? 'school' : ''">
           <h4 mat-line><span class="hour">{{stop.time}}</span> {{stop.name}}</h4>
         </mat-radio-button>

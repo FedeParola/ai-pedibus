@@ -191,12 +191,12 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
         persistNewAvailability(user, r5, findCoveringStop(r5), "ASSIGNED");
 
         //Create some reservations
-        Reservation r = persistNewReservation(p1, r4, dbLines.get(0).getStops().get(0));
+        persistNewReservation(p1, r4, dbLines.get(0).getStops().get(0));
         persistNewReservation(p2, r4, dbLines.get(0).getStops().get(1));
 
         //Create some attendances
-        persistNewAttendance(p1, r4, dbLines.get(0).getStops().get(0), r);
-        persistNewAttendance(p3, r4, dbLines.get(0).getStops().get(0), null);
+        persistNewAttendance(p1, r1, dbLines.get(0).getStops().get(0), null);
+        persistNewAttendance(p3, r1, dbLines.get(0).getStops().get(0), null);
 
         //Create User1
         roles = new ArrayList<>();
