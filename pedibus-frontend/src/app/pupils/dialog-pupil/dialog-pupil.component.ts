@@ -97,9 +97,8 @@ export class DialogPupilComponent implements OnInit {
           this._snackBar.open("Pupil created", "",
               { panelClass: 'success-snackbar', duration: 5000 });
         },
-        () => {
-          this._snackBar.open("Error in the communication with the server!", "",
-              { panelClass: 'error-snackbar', duration: 5000 });
+        (error) => {
+          handleError(error, this._snackBar);
         }
       );
     }
@@ -123,9 +122,8 @@ export class DialogPupilComponent implements OnInit {
           this._snackBar.open("Pupil created", "",
               { panelClass: 'success-snackbar', duration: 5000 });
         },
-        () => {
-          this._snackBar.open("Error in the communication with the server!", "",
-              { panelClass: 'error-snackbar', duration: 5000 });
+        (error) => {
+          handleError(error, this._snackBar);
         }
       );
     }

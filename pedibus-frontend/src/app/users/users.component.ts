@@ -183,9 +183,8 @@ export class DialogNewUserComponent {
                 this._snackBar.open("Account created", "",
                     { panelClass: 'success-snackbar', duration: 5000 });
               },
-              () => {
-                this._snackBar.open("Error in the communication with the server!", "",
-                    { panelClass: 'error-snackbar', duration: 5000 });
+              (error) => {
+                handleError(error, this._snackBar);
               }
           );
     }

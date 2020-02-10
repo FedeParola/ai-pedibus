@@ -138,9 +138,8 @@ export class NotificationComponent implements OnInit {
           notification.read = true;
           console.log("Notification read");
         },
-        () => {
-          this._snackBar.open("Error in the communication with the server!", "",
-              { panelClass: 'error-snackbar', duration: 5000 });
+        (error) => {
+          handleError(error, this._snackBar);
         }
       );
     }
