@@ -6,8 +6,19 @@
     text-align: center;
 }
 
+.add-button{
+    background-color: #009600;
+    color: white;
+}
+
 .done-button{
     margin-top: 30px;
     margin-bottom: 10px;
-    width: 100%;
+    width: 50%;
+}
+
+.remove-button{
+    margin-left: 2%;
+    background-color: rgb(211, 37, 37);
+    color: white;
 }

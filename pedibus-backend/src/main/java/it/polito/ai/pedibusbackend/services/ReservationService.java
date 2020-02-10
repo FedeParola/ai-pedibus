@@ -36,6 +36,8 @@ public class ReservationService{
     @Autowired
     private AvailabilityRepository availabilityRepository;
     @Autowired
+    private AttendanceRepository attendanceRepository;
+    @Autowired
     private NotificationService notificationService;
     @Autowired
     private SimpMessagingTemplate msgTemplate;
@@ -90,6 +92,13 @@ public class ReservationService{
             throw new BadRequestException("The pupil is already reserved on another ride at the same time");
         }
 
+        //Check if the pupil is already marked as present (and thus the reservation cannot be deleted)
+        Attendance attendance = attendanceRepository.findByPupilAndDateAndDirection(pupil, ride.getDate(),
+                ride.getDirection()).orElse(null);
+        if (attendance != null){
+            throw new BadRequestException("The pupil was already marked as present! ");
+        }
+
         //Create the reservation and add it to the repository
         Reservation reservation = new Reservation();
         reservation.setPupil(pupil);
@@ -128,6 +137,11 @@ public class ReservationService{
             if(!currentUser.getEmail().equals(reservation.getPupil().getUser().getEmail())){
                 throw new ForbiddenException("The user is not allowed to do this action");
             }
+        }
+
+        //Check if the pupil is already marked as present (and thus the reservation cannot be deleted)
+        if (reservation.getAttendance() != null){
+            throw new BadRequestException("The pupil has been already marked as present! ");
         }
 
         //Check stop existence
@@ -193,6 +207,11 @@ public class ReservationService{
         Date now = new Date();
         if(stopDateTime.compareTo(now) <= 0){
             throw new BadRequestException("The ride's stop has already taken place");
+        }
+
+        //Check if the pupil is already marked as present (and thus the reservation cannot be deleted)
+        if (reservation.getAttendance() != null){
+            throw new BadRequestException("The pupil has been already marked as present! ");
         }
 
         reservationRepository.delete(reservation);

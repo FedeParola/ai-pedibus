@@ -32,7 +32,7 @@
       </mat-chip-list>
     </mat-list-item>
   </mat-list>
-  <div class="buttons">
+  <div class="buttons" *ngIf="!(rides?.length == 0)">
     <h4 mat-line id="separator"><strong>Export ride</strong></h4>
     <button mat-raised-button class="download" (click)="downloadJSON()" color="primary">Download JSON <mat-icon>file_download</mat-icon></button>
     <button mat-raised-button class="download " (click)="downloadCSV()" color="primary">Download CSV <mat-icon>file_download</mat-icon></button>

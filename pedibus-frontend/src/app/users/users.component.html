@@ -13,7 +13,7 @@
                         <p *ngIf="!user.enabled">Waiting for registration</p>
                     </div>
                     <span class="spacer"></span>
-                    <div matTooltip="You cannot change admin and your own lines" [matTooltipDisabled]="!(!user.enabled || checkCurrent(user.email) || checkSystemAdmin(user))">
+                    <div matTooltip="" [matTooltipDisabled]="!(!user.enabled || checkCurrent(user.email) || checkSystemAdmin(user))">
                         <button mat-raised-button *ngIf="!(checkCurrent(user.email) || checkSystemAdmin(user))" (click)="openDialogUserLines(user.email, user.lines)" color="primary">Lines</button>
                     </div>
                     <mat-divider></mat-divider>

@@ -1,8 +1,8 @@
 <div mat-dialog-content class="dialog-content">
-    <h3>Are you sure to remove {{currentPupil.name}}?</h3>
-    <p>If you accept all the data related to {{currentPupil.name}} will be lost</p>
+    <h3>Are you sure you want to remove {{currentPupil.name}}?</h3>
+    <p>If you accept, all the data related to {{currentPupil.name}} will be lost</p>
 </div>
 <div mat-dialog-actions>
-    <button mat-button (click)="onCancelClick()">Cancel</button>
-    <button mat-button (click)="onAcceptClick()">Remove</button>
+    <button mat-raised-button (click)="onCancelClick()" color="primary">Cancel</button>
+    <button mat-raised-button (click)="onAcceptClick()" color="warn">Remove</button>
 </div>

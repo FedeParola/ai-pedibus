@@ -119,7 +119,7 @@ export class DialogPupilComponent implements OnInit {
         () => {
           console.log("Pupil edited");
           this.dialogRef.close();
-          this._snackBar.open("Pupil created", "",
+          this._snackBar.open("Pupil updated", "",
               { panelClass: 'success-snackbar', duration: 5000 });
         },
         (error) => {

@@ -4,11 +4,11 @@
             <span class="spacer"></span> 
             <p>{{line.name}}</p>
             <span class="spacer"></span>
-            <button mat-raised-button [disabled]="checkDisabled(line)" (click)="removeLine(line)">Remove</button>
+            <button mat-icon-button [disabled]="checkDisabled(line)" (click)="removeLine(line)" class="remove-button"><mat-icon>delete</mat-icon></button>
             <mat-divider></mat-divider>
         </mat-list-item>
     </mat-list>
-    <p *ngIf="!selectedUserLines.length">User do not have any line yet</p>
+    <p *ngIf="!selectedUserLines.length">This user does not administer any line yet</p>
     <div>
         <mat-form-field>
             <mat-select cdkFocusInitial [(value)]="selected">
@@ -17,8 +17,8 @@
               </mat-option>
             </mat-select>
         </mat-form-field>
-        <button mat-raised-button (click)="addLine()">Add</button>
+        <button mat-raised-button (click)="addLine()" class="add-button">Add</button>
     </div>
     
-    <button mat-raised-button class="done-button" (click)="onDoneClick()">Done</button>
+    <button mat-raised-button class="done-button" (click)="onDoneClick()" color="primary">Done</button>
 </div>

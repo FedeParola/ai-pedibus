@@ -20,7 +20,7 @@
     </form>
 </div>
 <div mat-dialog-actions>
-    <button mat-raised-button class="action-button" (click)="onCancelClick()">Cancel</button>
-    <button mat-raised-button *ngIf="addPupil" class="action-button" (click)="onAddClick()">Add</button>
-    <button mat-raised-button *ngIf="!addPupil" class="action-button" (click)="onEditClick()">Edit</button>
+    <button mat-raised-button class="action-button" (click)="onCancelClick()" color="primary">Cancel</button>
+    <button mat-raised-button *ngIf="addPupil" class="action-button add-button" (click)="onAddClick()">Add</button>
+    <button mat-raised-button *ngIf="!addPupil" class="action-button edit-button" (click)="onEditClick()">Edit</button>
 </div>
