@@ -3,20 +3,22 @@
     <mat-card-content class="card-content">
         <mat-divider></mat-divider>
         <mat-list>
-            <mat-list-item *ngFor="let user of users">
-                <div class="userEmail">
-                    <p>{{user.email}}</p>
-                </div>
-                <div class="userName">
-                    <p *ngIf="user.enabled">{{user.name}} {{user.surname}}</p>
-                    <p *ngIf="!user.enabled">Waiting for registration</p>
-                </div>
-                <span class="spacer"></span>
-                <div matTooltip="You cannot change admin and your own lines" [matTooltipDisabled]="!(!user.enabled || checkCurrent(user.email) || checkSystemAdmin(user))">
-                    <button mat-raised-button *ngIf="!(checkCurrent(user.email) || checkSystemAdmin(user))" (click)="openDialogUserLines(user.email, user.lines)" color="primary">Lines</button>
-                </div>
-                <mat-divider></mat-divider>
-            </mat-list-item>
+            <div *ngFor="let user of users">
+                <mat-list-item *ngIf="!checkSystemAdmin(user)">
+                    <div class="userEmail">
+                        <p>{{user.email}}</p>
+                    </div>
+                    <div class="userName">
+                        <p *ngIf="user.enabled">{{user.name}} {{user.surname}}</p>
+                        <p *ngIf="!user.enabled">Waiting for registration</p>
+                    </div>
+                    <span class="spacer"></span>
+                    <div matTooltip="You cannot change admin and your own lines" [matTooltipDisabled]="!(!user.enabled || checkCurrent(user.email) || checkSystemAdmin(user))">
+                        <button mat-raised-button *ngIf="!(checkCurrent(user.email) || checkSystemAdmin(user))" (click)="openDialogUserLines(user.email, user.lines)" color="primary">Lines</button>
+                    </div>
+                    <mat-divider></mat-divider>
+                </mat-list-item>
+            </div>
         </mat-list>
         <button mat-raised-button class="new-button" (click)="openDialogNewUser()">NEW</button>
         <span class="nav-buttons">
