@@ -26,3 +26,14 @@
     text-align: center;
 }
 
+.recover{
+    margin-top: 20px;
+    text-align: center;
+}
+
+.link{
+    cursor: pointer;
+    color: rgb(43, 16, 161);
+    text-decoration-line: underline;
+}
+

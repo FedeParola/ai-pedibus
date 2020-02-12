@@ -118,7 +118,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/recover", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void recover(@RequestBody Map<String, String> emailMap, HttpServletRequest request){
+    public void recover(@RequestBody Map<String, String> emailMap, HttpServletRequest request) throws BadRequestException {
 
         String email = emailMap.get("email");
         String uuid = userService.createRecoverToken(email);
@@ -141,7 +141,9 @@ public class UserController {
     }
 
     @PostMapping(value = "/recover/{randomUUID}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public void postNewPass(RecoverDTO recoverDTO, @PathVariable String randomUUID) throws NotFoundException {
+    public ModelAndView postNewPass(RecoverDTO recoverDTO, @PathVariable String randomUUID) throws NotFoundException {
+        ModelAndView response = new ModelAndView();
+
         String newPass = recoverDTO.getPass();
         String confPass = recoverDTO.getConfPass();
         Matcher m = pattern.matcher(newPass);
@@ -151,6 +153,10 @@ public class UserController {
         }
 
         userService.tryChangePassword(randomUUID, newPass);
+
+        response.setViewName("passwordChanged");
+        response.getModel().put("frontendUrl", frontendUrl);
+        return response;
     }
 
     @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -83,15 +83,14 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
-    public String createRecoverToken(String email) {
+    public String createRecoverToken(String email) throws BadRequestException {
         String uuid = UUID.randomUUID().toString();
 
         RecoverToken token = new RecoverToken();
-        User u = userRepository.findById(email).orElse(null);
+        User u = userRepository.findById(email).orElseThrow(()-> new BadRequestException("Unknown email"));
 
-        if(u == null)
-        {
-            return null;
+        if(!u.isEnabled()){
+            throw new BadRequestException("User has not completed his registration");
         }
 
         token.setUser(u);

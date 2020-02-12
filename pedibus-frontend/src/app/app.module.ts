@@ -49,6 +49,7 @@ import { DialogRemovePupilComponent } from './pupils/pupils.component';
 import { rxStompConfig } from './rx-stomp.config';
 import { myRxStompServiceFactory } from './my-rx-stomp-service-factory';
 import { from } from 'rxjs';
+import { RecoverDialogComponent } from './login/recover-dialog/recover-dialog.component';
 
 
 @NgModule({
@@ -70,7 +71,8 @@ import { from } from 'rxjs';
     DialogPupilComponent,
     RidesComponent,
     NotificationComponent,
-    DialogRemovePupilComponent
+    DialogRemovePupilComponent,
+    RecoverDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -123,7 +125,8 @@ import { from } from 'rxjs';
     DeletionConfirmDialogComponent,
     PupilsDialogComponent,
     DialogPupilComponent,
-    DialogRemovePupilComponent
+    DialogRemovePupilComponent,
+    RecoverDialogComponent
   ]
 })
 export class AppModule { }

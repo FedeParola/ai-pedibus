@@ -96,4 +96,9 @@ export class AuthenticationService {
   checkEmail(username: string){
     return this.http.get(environment.apiUrl+'/users/'+username+'?check=true');
   }
+
+  recover(email: string){
+    return this.http.post(environment.apiUrl+'/recover', {email});
+  }
+
 }

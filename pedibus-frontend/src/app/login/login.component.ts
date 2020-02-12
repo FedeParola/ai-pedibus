@@ -5,6 +5,8 @@ import { AuthenticationService } from '../authentication.service';
 import { MatSnackBar } from '@angular/material';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AppComponent } from '../app.component';
+import { MatDialog, MatDialogRef, MatDialogConfig } from '@angular/material/dialog';
+import { RecoverDialogComponent } from './recover-dialog/recover-dialog.component';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +18,7 @@ export class LoginComponent implements OnInit {
   loginButtonDisabled: boolean;
 
   constructor(private _snackBar: MatSnackBar,
+              public dialog: MatDialog,
               private fb: FormBuilder, 
               private authService: AuthenticationService, 
               private router: Router,
@@ -51,6 +54,10 @@ export class LoginComponent implements OnInit {
                 }
             );
       }
+  }
+
+  recoverPsw(){
+    this.dialog.open(RecoverDialogComponent);
   }
 
   private handleError(error: HttpErrorResponse) {

@@ -1,0 +1,17 @@
+<div mat-dialog-content>
+    <form [formGroup]="form">
+        <mat-form-field class="form-field">
+            <input matInput cdkFocusInitial type="text" formControlName="email" placeholder="Email">
+            <mat-error *ngIf="form.controls.email.hasError('required')">
+                Email is <strong>required</strong>
+            </mat-error>
+            <mat-error *ngIf="form.controls.email.hasError('email')">
+                Insert a valid email address
+            </mat-error>
+        </mat-form-field>
+    </form>
+</div>
+<div mat-dialog-actions>
+    <button mat-raised-button mat-dialog-close>Cancel</button>
+    <button mat-raised-button (click)="onRecoverClick()">Recover</button>
+</div>
