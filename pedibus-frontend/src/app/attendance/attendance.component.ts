@@ -72,14 +72,14 @@ export class AttendanceComponent implements OnInit, OnDestroy {
   }
 
   downloadJSON(){
-    this.dyanmicDownloadByHtmlTag({
+    this.dynamicDownloadByHtmlTag({
       fileName: this.selectedLine.name.split(' ').join('_')+this.selectedRide.date+this.selectedRide.direction+'.json',
       text: this.exportoJSON()
     });
   }
 
   downloadCSV(){
-    this.dyanmicDownloadByHtmlTag({
+    this.dynamicDownloadByHtmlTag({
       fileName: this.selectedLine.name.split(' ').join('_')+this.selectedRide.date+this.selectedRide.direction+'.csv',
       text: this.exportToCsv()
     });
@@ -299,7 +299,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     });
   }
 
-  private dyanmicDownloadByHtmlTag(arg: {
+  private dynamicDownloadByHtmlTag(arg: {
     fileName: string,
     text: string
   }) {
@@ -359,7 +359,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     var stringPupils;
 
     //create the first row + line, date and direction of the second
-    csvContent = 'line' + ',' + 'date' + ',' + 'direction' + ',' + 'stops_time' + ',' + 'stops_name' + ',' + 'stops_pupils_name' + ',' + 'stops_pupils_uderId' + '\n'
+    csvContent = 'line' + ',' + 'date' + ',' + 'direction' + ',' + 'stops_time' + ',' + 'stops_name' + ',' + 'stops_pupils_name' + ',' + 'stops_pupils_userId' + '\n'
     + '"' + this.selectedLine.name + '"' + ',' + '"' +  this.selectedRide.date + '"' + ',' + '"' + this.selectedRide.direction + '"';
     //concatenate stops
     for(let stop of (this.selectedRide.direction == 'O' ? this.stops.outwardStops : this.stops.returnStops)){
@@ -400,7 +400,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
             for(let data of stopPupils){
               if(data.type == "both" || data.type == "attendance"){
                 if(firstPupil){
-                  stringPupils = + ',' + '"' + data.pupil.name + '"' + ',' + '"' + data.pupil.userId + '"' + '\n';
+                  stringPupils = ',' + '"' + data.pupil.name + '"' + ',' + '"' + data.pupil.userId + '"' + '\n';
                   csvContent += stringPupils;
                   firstPupil = false;
                 }else{
