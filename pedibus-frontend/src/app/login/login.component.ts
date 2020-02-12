@@ -57,7 +57,10 @@ export class LoginComponent implements OnInit {
   }
 
   recoverPsw(){
-    this.dialog.open(RecoverDialogComponent);
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.width = '260px';
+
+    this.dialog.open(RecoverDialogComponent, dialogConfig);
   }
 
   private handleError(error: HttpErrorResponse) {
