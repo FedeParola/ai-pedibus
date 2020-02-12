@@ -73,14 +73,14 @@ export class AttendanceComponent implements OnInit, OnDestroy {
 
   downloadJSON(){
     this.dyanmicDownloadByHtmlTag({
-      fileName: 'ride'+this.selectedRide.date+this.selectedRide.direction+'.json',
+      fileName: this.selectedLine.name.split(' ').join('_')+this.selectedRide.date+this.selectedRide.direction+'.json',
       text: this.exportoJSON()
     });
   }
 
   downloadCSV(){
     this.dyanmicDownloadByHtmlTag({
-      fileName: 'ride'+this.selectedRide.date+this.selectedRide.direction+'.csv',
+      fileName: this.selectedLine.name.split(' ').join('_')+this.selectedRide.date+this.selectedRide.direction+'.csv',
       text: this.exportToCsv()
     });
   }
