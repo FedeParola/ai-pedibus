@@ -123,6 +123,7 @@ public class AttendanceService {
 
         // Notify attendance creation
         msgTemplate.convertAndSend("/topic/rides/" + attendance.getRide().getId() + "/attendances", "");
+        msgTemplate.convertAndSend("/topic/pupils/" + attendance.getPupil().getId() + "/attendances", "");
 
         return attendance.getId();
     }
@@ -181,5 +182,6 @@ public class AttendanceService {
 
         // Notify attendance deletion
         msgTemplate.convertAndSend("/topic/rides/" + attendance.getRide().getId() + "/attendances", "");
+        msgTemplate.convertAndSend("/topic/pupils/" + attendance.getPupil().getId() + "/attendances", "");
     }
 }

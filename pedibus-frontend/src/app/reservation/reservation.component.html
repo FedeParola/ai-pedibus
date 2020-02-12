@@ -9,6 +9,9 @@
     [rides]="rides"
     [(selectedRide)]="selectedRideIndex">
   <div class="content" *ngIf="selectedRide && stops && reservations">
+    <div *ngIf="selectedAttendance" class="present-msg">
+      PRESENT
+    </div>
     <div class="radio-group-container">
       <mat-radio-group
           class="stops-radio-group"
@@ -23,9 +26,6 @@
           <h4 mat-line><span class="hour">{{stop.time}}</span> {{stop.name}}</h4>
         </mat-radio-button>
       </mat-radio-group>
-    </div>
-    <div *ngIf="selectedReservation && selectedReservation.attendanceId !== undefined" class="present-msg">
-      PRESENT
     </div>
   </div>
 </app-ride-selector>

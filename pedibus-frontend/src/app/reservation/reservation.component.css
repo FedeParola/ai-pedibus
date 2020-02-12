@@ -60,6 +60,6 @@ h4 {
   font-size: 18px;
   font-weight: 700;
   color: rgba(6, 193, 0, 1);
-  border-top: 1px solid rgba(0,0,0,.12);
-  padding-top: 25px;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+  padding-bottom: 20px;
 }

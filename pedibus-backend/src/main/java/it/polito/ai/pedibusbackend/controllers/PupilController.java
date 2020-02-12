@@ -44,6 +44,12 @@ public class PupilController {
         pupilService.deletePupil(pupilId, principal.getName());
     }
 
+    @GetMapping(value = "/pupils/{pupilId}/attendances", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<AttendanceDTO> getAttendances(@PathVariable Long pupilId, Principal principal)
+            throws BadRequestException, NotFoundException, ForbiddenException {
+        return pupilService.getAttendances(pupilId, principal.getName());
+    }
+
     @GetMapping(value = "/pupils/{pupilId}/reservations", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ReservationDTO> getReservations(@PathVariable Long pupilId, Principal principal)
             throws BadRequestException, NotFoundException, ForbiddenException {

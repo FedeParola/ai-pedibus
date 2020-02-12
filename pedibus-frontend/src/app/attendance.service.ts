@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { concat, forkJoin, merge } from 'rxjs';
+import { concat, forkJoin, merge, Observable } from 'rxjs';
 import { map, concatAll } from 'rxjs/operators';
 
 import { environment } from '../environments/environment';
@@ -107,6 +107,38 @@ export class AttendanceService {
         return dataMap;
       })
     )
+  }
+
+  /**
+   * Returns an observable that emits the list of attendances of the given pupil.
+   * The observable emits the first time on subscription and every time there is a change
+   * in the data.
+   * @param pupilId 
+   */
+  getAttendancesByPupil(pupilId: number): Observable<Map<number, any>> {
+    let path = '/pupils/' + pupilId + '/attendances';
+    let url = environment.apiUrl + path;
+    
+    return concat(
+      // Retrieve data for the first time
+      this.http.get(url),
+
+      // On every event retrieve data again
+      this.rxStompService.watch('/topic' + path).pipe(
+        map(() => this.http.get(url)),
+        concatAll()
+      )
+    ).pipe(
+      map((res: any[]) => {
+        let attendancesMap = new Map();
+
+        for (let attendace of res) {
+          attendancesMap.set(attendace.rideId, attendace);
+        }
+
+        return attendancesMap;
+      })
+    );
   }
 
   createAttendance(pupilId: number, rideId: number, stopId) {

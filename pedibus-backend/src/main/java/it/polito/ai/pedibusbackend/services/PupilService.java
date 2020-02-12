@@ -1,15 +1,13 @@
 package it.polito.ai.pedibusbackend.services;
 
-import it.polito.ai.pedibusbackend.entities.Line;
-import it.polito.ai.pedibusbackend.entities.Pupil;
-import it.polito.ai.pedibusbackend.entities.Reservation;
-import it.polito.ai.pedibusbackend.entities.User;
+import it.polito.ai.pedibusbackend.entities.*;
 import it.polito.ai.pedibusbackend.exceptions.BadRequestException;
 import it.polito.ai.pedibusbackend.exceptions.ForbiddenException;
 import it.polito.ai.pedibusbackend.exceptions.NotFoundException;
 import it.polito.ai.pedibusbackend.repositories.LineRepository;
 import it.polito.ai.pedibusbackend.repositories.PupilRepository;
 import it.polito.ai.pedibusbackend.repositories.UserRepository;
+import it.polito.ai.pedibusbackend.viewmodels.AttendanceDTO;
 import it.polito.ai.pedibusbackend.viewmodels.NewPupilDTO;
 import it.polito.ai.pedibusbackend.viewmodels.PupilUpdateDTO;
 import it.polito.ai.pedibusbackend.viewmodels.ReservationDTO;
@@ -108,6 +106,29 @@ public class PupilService {
 
         /* Notify pupil deletion */
         notifyPupilOperation(pupil);
+    }
+
+    public List<AttendanceDTO> getAttendances(Long pupilId, String loggedUserId)
+            throws ForbiddenException, BadRequestException, NotFoundException {
+        Pupil pupil = pupilRepository.findById(pupilId).orElseThrow(() -> new NotFoundException("Pupil not found"));
+
+        /* Authorize access */
+        User loggedUser = userRepository.findById(loggedUserId).orElseThrow(BadRequestException::new);
+        if (!(loggedUserId.equals(pupil.getUser().getEmail()) || loggedUser.getRoles().contains("ROLE_SYSTEM-ADMIN"))) {
+            throw new ForbiddenException("The user is not allowed to do this action");
+        }
+
+        /* Build result structure */
+        List<AttendanceDTO> attendanceDTOs = new ArrayList<>();
+        for (Attendance a : pupil.getAttendances()) {
+            AttendanceDTO attendanceDTO = new AttendanceDTO();
+            attendanceDTO.setId(a.getId());
+            attendanceDTO.setRideId(a.getRide().getId());
+            attendanceDTO.setStopId(a.getStop().getId());
+            attendanceDTOs.add(attendanceDTO);
+        }
+
+        return attendanceDTOs;
     }
 
     public List<ReservationDTO> getReservations(Long pupilId, String loggedUserId)

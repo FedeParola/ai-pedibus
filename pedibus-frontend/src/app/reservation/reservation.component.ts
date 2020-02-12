@@ -3,12 +3,13 @@ import { MatSnackBar, MatDialog } from '@angular/material';
 import * as moment from 'moment';
 
 import { PupilsDialogComponent } from './pupils-dialog/pupils-dialog.component';
+import { AttendanceService } from '../attendance.service';
 import { ReservationService } from '../reservation.service';
 import { AuthenticationService } from '../authentication.service';
 import { LineService } from '../line.service';
 import { UsersService } from '../users.service';
 import { AppComponent } from '../app.component';
-import { handleError, findElement, findNextClosestRide } from '../utils';
+import { handleError, findElement, findClosestRide } from '../utils';
 
 @Component({
   selector: 'app-reservation',
@@ -25,11 +26,14 @@ export class ReservationComponent implements OnInit, OnDestroy {
   rides;
   ridesSub;
   selectedRideIndex = -1;
-  reservations: Map<number, any>;  // K: rideId, V: reservation, contains reservations for all lines
+  reservations: Map<number, any>;  // K: rideId, V: reservation; contains reservations for all lines
   reservationsSub;
+  attendances: Map<number, any>;  // K: rideId, V: attendance; contains attendances for all lines
+  attendancesSub;
   cantUpdateExplanations: string[];  // K: stopId, V: why can't select that stop
 
-  constructor(private reservationService: ReservationService,
+  constructor(private attendanceService: AttendanceService,
+              private reservationService: ReservationService,
               private authenticationService: AuthenticationService,
               private lineService: LineService,
               private usersService: UsersService,
@@ -96,6 +100,9 @@ export class ReservationComponent implements OnInit, OnDestroy {
     if (this.reservationsSub) {
       this.reservationsSub.unsubscribe();
     }
+    if (this.attendancesSub) {
+      this.attendancesSub.unsubscribe();
+    }
   }
 
   get selectedRide() {
@@ -109,6 +116,10 @@ export class ReservationComponent implements OnInit, OnDestroy {
 
   get selectedReservation() {
     return this.reservations.get(this.selectedRide.id);
+  }
+
+  get selectedAttendance() {
+    return this.attendances.get(this.selectedRide.id);
   }
 
   loadLine() {
@@ -145,7 +156,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
           // If prevoius current ride was removed or this is the first time displaying a ride
           // pick the closest ride with date >= current date
           if (this.selectedRideIndex == -1) {
-            this.selectedRideIndex = findNextClosestRide(this.rides);
+            this.selectedRideIndex = findClosestRide(this.rides);
           }
         }
       },
@@ -169,6 +180,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
 
   loadPupil() {
     this.reservations = null;
+    this.attendances = null;
 
     if (this.reservationsSub) {
       this.reservationsSub.unsubscribe();
@@ -176,6 +188,18 @@ export class ReservationComponent implements OnInit, OnDestroy {
     this.reservationsSub = this.reservationService.getReservations(this.selectedPupil.id).subscribe(
       (res) => {
         this.reservations = res;
+      },
+      (error) => {
+        handleError(error, this._snackBar);
+      }
+    );
+
+    if (this.attendancesSub) {
+      this.attendancesSub.unsubscribe();
+    }
+    this.attendancesSub = this.attendanceService.getAttendancesByPupil(this.selectedPupil.id).subscribe(
+      (res) => {
+        this.attendances = res;
       },
       (error) => {
         handleError(error, this._snackBar);
@@ -267,7 +291,7 @@ export class ReservationComponent implements OnInit, OnDestroy {
     }
     
     // Check if pupil is already marked as present
-    if (this.selectedReservation && this.selectedReservation.attendanceId !== undefined) {
+    if (this.selectedAttendance) {
       cantUpdate = true;
       if (this.cantUpdateExplanations[stop.id] != '') {
         this.cantUpdateExplanations[stop.id] += '\n';

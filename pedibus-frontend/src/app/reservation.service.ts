@@ -17,7 +17,7 @@ export class ReservationService {
    * Returns an observable that emits the list of reservations of the given pupil.
    * The observable emits the first time on subscription and every time there is a change
    * in the data.
-   * @param lineId 
+   * @param pupilId 
    */
   getReservations(pupilId: number): Observable<Map<number, any>> {
     let path = '/pupils/' + pupilId + '/reservations';

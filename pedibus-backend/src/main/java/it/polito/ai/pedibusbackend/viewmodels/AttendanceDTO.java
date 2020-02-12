@@ -12,6 +12,7 @@ import javax.validation.constraints.Pattern;
 public class AttendanceDTO {
     private Long id;
     private PupilDTO pupil;
+    private Long rideId;
     private Long stopId;
     private Boolean hasReservation;
 }
