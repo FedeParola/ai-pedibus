@@ -6,3 +6,8 @@
 .controlButton{
     width: 48%;
 }
+
+.recover-button{
+    background-color: #009600;
+    color: white;
+}

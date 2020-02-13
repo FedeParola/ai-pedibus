@@ -141,21 +141,34 @@ public class UserController {
     }
 
     @PostMapping(value = "/recover/{randomUUID}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ModelAndView postNewPass(RecoverDTO recoverDTO, @PathVariable String randomUUID) throws NotFoundException {
+    public ModelAndView postNewPass(@PathVariable String randomUUID,
+                                    @Valid RecoverDTO recoverDTO,
+                                    BindingResult res) throws NotFoundException {
         ModelAndView response = new ModelAndView();
 
-        String newPass = recoverDTO.getPass();
-        String confPass = recoverDTO.getConfPass();
-        Matcher m = pattern.matcher(newPass);
+        /* Check form correctness */
+        if (res.hasErrors() || !recoverDTO.getPass().equals(recoverDTO.getConfPass())) {
 
-        if (newPass == null || confPass == null || !(newPass.equals(recoverDTO.getConfPass()) && m.matches())) {
-            throw new NotFoundException();
+            /* Send back registration form with error messages */
+            if (res.getFieldErrors("pass").size() > 0) {
+                response.getModel().put("errPassword", "The password must contain at least one uppercase," +
+                        "one lowercase character and a digit and be at least 6 characters long");
+            }
+            if (!recoverDTO.getPass().equals(recoverDTO.getConfPass())) {
+                response.getModel().put("errPasswordConf", "Passwords not corresponding");
+            }
+
+            response.getModel().put("randomUUID", randomUUID);
+            response.setViewName("passChangeForm");
+        } else {
+            /*Change password*/
+            String newPass = recoverDTO.getPass();
+            userService.tryChangePassword(randomUUID, newPass);
+
+            response.setViewName("passwordChanged");
+            response.getModel().put("frontendUrl", frontendUrl);
         }
 
-        userService.tryChangePassword(randomUUID, newPass);
-
-        response.setViewName("passwordChanged");
-        response.getModel().put("frontendUrl", frontendUrl);
         return response;
     }
 

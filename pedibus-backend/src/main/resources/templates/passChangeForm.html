@@ -8,6 +8,9 @@
         <link rel = "stylesheet"
               type = "text/css"
               href = "/stylesheets/passChangeForm.css" />
+        <style>
+            .errorMsg { color: red; }
+        </style>
     </head>
     <body>
         <div class="toolbar">
@@ -21,10 +24,12 @@
                         <div class="form-group">
                             <label for="pass">New password</label>
                             <input type="password" name="pass" value="" id="pass" class="form-control" placeholder="Enter password...">
+                            <p class="errorMsg" th:text="${errPassword}"></p>
                         </div>
                         <div class="form-group">
                             <label for="confPass">Confirm new password</label>
                             <input type="password" name="confPass" value="" id="confPass" class="form-control" placeholder="Confirm password...">
+                            <p class="errorMsg" th:text="${errPasswordConf}"></p>
                         </div>
                         <div class="buttonContainer">
                             <input type="submit" value="Change Password" class="btn btn-primary">
